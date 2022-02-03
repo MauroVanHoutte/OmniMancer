@@ -97,28 +97,30 @@ void AWizardCharacter::Tick(float DeltaTime)
 
 	controller->bShowMouseCursor = true;
 
-	m_Rotation += m_TurnSpeed * DeltaTime * m_TurnDirection;
+	//m_Rotation += m_TurnSpeed * DeltaTime * m_TurnDirection;
 
-	FVector frontOfActor = GetActorLocation() + FRotator(0.f, m_Rotation, 0.f).Vector() * 50;
+	//FVector frontOfActor = GetActorLocation() + FRotator(0.f, m_Rotation, 0.f).Vector() * 50;
 
-	m_Mesh->SetRelativeRotation(FRotator(0.f, m_Rotation, 0.f));
+	//m_Mesh->SetRelativeRotation(FRotator(0.f, m_Rotation, 0.f));
 
-	FVector negativeFovBound = FRotator( 0.f, m_Rotation - m_FovAngle / 2.f, 0.f ).Vector();
-	FVector positiveFovBound = FRotator(0.f, m_Rotation + m_FovAngle / 2.f, 0.f).Vector();
+	//FVector negativeFovBound = FRotator( 0.f, m_Rotation - m_FovAngle / 2.f, 0.f ).Vector();
+	//FVector positiveFovBound = FRotator(0.f, m_Rotation + m_FovAngle / 2.f, 0.f).Vector();
 
-	DrawDebugLine(GetWorld(), frontOfActor, frontOfActor + negativeFovBound * 2000.f, FColor::Cyan, false, 0.02f, 1, 5.f);
-	DrawDebugLine(GetWorld(), frontOfActor, frontOfActor + positiveFovBound * 2000.f, FColor::Cyan, false, 0.02f, 1, 5.f);
+	//DrawDebugLine(GetWorld(), frontOfActor, frontOfActor + negativeFovBound * 2000.f, FColor::Cyan, false, 0.02f, 1, 5.f);
+	//DrawDebugLine(GetWorld(), frontOfActor, frontOfActor + positiveFovBound * 2000.f, FColor::Cyan, false, 0.02f, 1, 5.f);
 
 	FVector mousePosWorld, mouseDirWorld;
 	controller->DeprojectMousePositionToWorld(mousePosWorld, mouseDirWorld);
 	mousePosWorld = FMath::RayPlaneIntersection(mousePosWorld, mouseDirWorld, FPlane(GetActorLocation(), FVector(0.f, 0.f, 1.f))); //screen position raycast to plane at actor height
+
+	m_Mesh->SetRelativeRotation((mousePosWorld - GetActorLocation()).Rotation());
 	
-	float distanceToActor = FVector::Dist(mousePosWorld, frontOfActor);
+	/*float distanceToActor = FVector::Dist(mousePosWorld, frontOfActor);
 
 	FVector crossOne = FVector::CrossProduct(negativeFovBound, mousePosWorld - frontOfActor);
-	FVector crossTwo = FVector::CrossProduct(mousePosWorld - frontOfActor, positiveFovBound);
+	FVector crossTwo = FVector::CrossProduct(mousePosWorld - frontOfActor, positiveFovBound);*/
 
-	if (crossOne.Z < 0 && crossTwo.Z < 0)
+	/*if (crossOne.Z < 0 && crossTwo.Z < 0)
 	{
 		FVector mouseToActor = frontOfActor - mousePosWorld;
 
@@ -146,7 +148,7 @@ void AWizardCharacter::Tick(float DeltaTime)
 		controller->ProjectWorldLocationToScreen(newPos, screenPos);
 
 		controller->SetMouseLocation(screenPos.X, screenPos.Y);
-	}
+	}*/
 
 	//cooldowns
 	for (auto& pair : m_CooldownCounter)

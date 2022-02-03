@@ -150,6 +150,9 @@ void ABaseCharacter::Knockup()
 
 void ABaseCharacter::Push(const FVector& force)
 {
+	AAIController* controller = GetController<AAIController>();
+	if (controller != nullptr)
+		controller->StopMovement();
 	TArray<UCharacterMovementComponent*> comps;
 	GetComponents(comps);
 	if (comps.Num() > 0)
