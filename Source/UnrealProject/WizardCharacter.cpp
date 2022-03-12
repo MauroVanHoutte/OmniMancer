@@ -18,7 +18,7 @@ AWizardCharacter::AWizardCharacter()
 	m_SpringArm = CreateDefaultSubobject<USpringArmComponent>("Springarm");
 	m_SpringArm->SetupAttachment(RootComponent);
 	m_SpringArm->SetRelativeLocationAndRotation(FVector(-10.f, 0, 300.f), FRotator(FMath::RadiansToDegrees(FMath::Asin(0.1)) + 270.f, 0, 0));
-	m_SpringArm->bEnableCameraLag = true;
+	m_SpringArm->bEnableCameraLag = false;
 	m_SpringArm->CameraLagSpeed = 10.f;
 	m_SpringArm->TargetArmLength = 1200.f;
 
