@@ -9,7 +9,7 @@ AIceWall::AIceWall()
 	RootComponent = m_Mesh;
 	UStaticMesh* cubeMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")).Object;
 	m_Mesh->SetStaticMesh(cubeMesh);
-	m_Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	m_Mesh->SetCollisionProfileName(FName("BlockAll"));
 	m_Mesh->SetCanEverAffectNavigation(true);
 	
 }
