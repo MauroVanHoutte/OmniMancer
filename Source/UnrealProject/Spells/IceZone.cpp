@@ -19,6 +19,75 @@ AIceZone::AIceZone()
 	
 }
 
+void AIceZone::SetBurnParams(bool applyBurns, float tickDamage, float tickInterval, float duration)
+{
+	auto effect = m_StatusEffects.FindByPredicate([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Damage; });
+
+	if (applyBurns)
+	{
+		if (effect != nullptr)
+		{
+			effect->Value = tickDamage;
+			effect->Interval = tickInterval;
+			effect->Duration = duration;
+		}
+		else
+		{
+			m_StatusEffects.Add(FStatusEffect(Type::Slow, tickInterval, tickDamage, duration, this));
+		}
+	}
+	else
+	{
+		if (effect != nullptr)
+		{
+			m_StatusEffects.RemoveAll([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Damage; });
+		}
+	}
+}
+
+void AIceZone::SetSlowParams(bool applySlow, float value, float duration)
+{
+	auto effect = m_StatusEffects.FindByPredicate([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Slow; });
+
+	if (applySlow)
+	{
+		if (effect != nullptr)
+		{
+			effect->Value = value;
+			effect->Duration = duration;
+		}
+		else
+		{
+			m_StatusEffects.Add(FStatusEffect(Type::Slow, -1, value, duration, this));
+		}
+	}
+	else
+	{
+		if (effect != nullptr)
+		{
+			m_StatusEffects.RemoveAll([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Slow; });
+		}
+	}
+}
+
+void AIceZone::SetRadius(float radius)
+{
+	auto scale = m_CylinderMesh->GetRelativeScale3D();
+	scale.X = radius;
+	scale.Y = radius;
+	m_CylinderMesh->SetRelativeScale3D(scale);
+}
+
+void AIceZone::SetLifetime(float lifetime)
+{
+	GetWorld()->GetTimerManager().SetTimer(m_LifetimeHandle, this, &AIceZone::Destroy, lifetime);
+}
+
+void AIceZone::Destroy()
+{
+	AActor::Destroy();
+}
+
 // Called when the game starts or when spawned
 void AIceZone::BeginPlay()
 {

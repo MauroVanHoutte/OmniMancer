@@ -17,6 +17,13 @@ public:
 	// Sets default values for this actor's properties
 	AIceZone();
 
+	void SetBurnParams(bool applyBurns, float tickDamage, float tickInterval, float duration);
+	void SetSlowParams(bool applySlow, float value, float duration);
+	void SetRadius(float radius);
+	void SetLifetime(float lifetime);
+
+	void Destroy();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -52,4 +59,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* m_CylinderMesh;
+
+	FTimerHandle m_LifetimeHandle;
 };
