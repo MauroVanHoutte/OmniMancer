@@ -40,12 +40,7 @@ void AMortarProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActor* Other
 {
 	if (OtherComp->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic)
 	{
-		if (m_ExplosionClass == nullptr)
-			return;
-		auto explosion = GetWorld()->SpawnActor(m_ExplosionClass);
-		explosion->SetActorLocation(GetActorLocation());
-		explosion->SetInstigator(GetInstigator());
-		explosion->SetOwner(GetOwner());
+		SpawnExplosion(GetActorLocation());
 		Destroy();
 	}
 }

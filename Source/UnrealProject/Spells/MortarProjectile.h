@@ -25,6 +25,9 @@ public:
 
 	void BeginPlay() override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void SpawnExplosion(const FVector& location );
+
 protected:
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -45,6 +48,4 @@ private:
 	UPROPERTY(EditAnywhere)
 	float m_ProjectileSpeedZ = 1000.f;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<ABaseSpell> m_ExplosionClass = nullptr;
 };
