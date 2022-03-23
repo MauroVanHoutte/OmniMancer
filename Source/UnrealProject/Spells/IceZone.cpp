@@ -14,9 +14,7 @@ AIceZone::AIceZone()
 	RootComponent = m_CylinderMesh;
 	auto mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder")).Object;
 	m_CylinderMesh->SetStaticMesh(mesh);
-	m_CylinderMesh->SetCollisionProfileName(TEXT("OverlapAll"));
-	m_CylinderMesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	
+	m_CylinderMesh->SetCollisionProfileName(TEXT("NoCollision"));	
 }
 
 void AIceZone::SetBurnParams(bool applyBurns, float tickDamage, float tickInterval, float duration)
