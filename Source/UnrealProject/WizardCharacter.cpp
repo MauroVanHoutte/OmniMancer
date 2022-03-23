@@ -165,7 +165,7 @@ void AWizardCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	PlayerInputComponent->BindAxis("MoveUp", this, &AWizardCharacter::MoveUp);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AWizardCharacter::MoveRight);
-	PlayerInputComponent->BindAction("Space", IE_Pressed, this, &AWizardCharacter::ChangeTurnDirection);
+	PlayerInputComponent->BindAction("Space", IE_Pressed, this, &AWizardCharacter::Dash);
 	PlayerInputComponent->BindAction("LMB", IE_Pressed, this, &AWizardCharacter::Fire);
 	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AWizardCharacter::CastSpell);
 	PlayerInputComponent->BindAction<FAddElementDelegate>("FireElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Fire);
@@ -348,6 +348,11 @@ void AWizardCharacter::CastSpell()
 	
 }
 
+void AWizardCharacter::Dash()
+{
+	Cast<UCharacterMovementComponent>(GetMovementComponent())->AddImpulse(GetMovementComponent()->Velocity.GetSafeNormal() * m_DashForce, true);
+}
+
 void AWizardCharacter::CastFlameColumn(const FVector& worldPos)
 {
 	auto spell = GetWorld()->SpawnActor(m_FlameColumnClass);
@@ -362,6 +367,11 @@ void AWizardCharacter::CastIceZone(const FVector& worldPos)
 	spell->SetOwner(this);
 	spell->SetInstigator(GetInstigator());
 	spell->SetActorLocation(worldPos);
+	auto icezone = Cast<AIceZone>(spell);
+	icezone->SetBurnParams(true, 1.f, 0.2f, 2.f);
+	icezone->SetSlowParams(true, 50, 2.f);
+	icezone->SetRadius(7.f);
+	icezone->SetLifetime(2.f);
 }
 
 void AWizardCharacter::CastIceWall(const FVector& worldPos)

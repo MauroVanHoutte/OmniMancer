@@ -67,6 +67,11 @@ private:
 	void Fire(); //Base Projectile
 	void CastSpell();
 
+	void Dash();
+
+	UPROPERTY(EditDefaultsOnly)
+	float m_DashForce = 10000.f;
+
 	void CastFlameColumn(const FVector& worldPos);
 	void CastIceZone(const FVector& worldPos);
 	void CastIceWall(const FVector& worldPos);
