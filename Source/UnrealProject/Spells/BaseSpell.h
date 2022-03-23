@@ -22,6 +22,7 @@ protected:
 
 	float m_Damage = 0;
 
+	UPROPERTY(EditAnywhere)
 	TArray<FStatusEffect> m_StatusEffects{};
 
 	TArray<AActor*> m_HitActors{};
