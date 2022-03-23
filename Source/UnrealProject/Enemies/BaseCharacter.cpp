@@ -131,7 +131,7 @@ void ABaseCharacter::AddStatusEffects(const TArray<FStatusEffect>& statusEffects
 
 void ABaseCharacter::SpawnDamageText(float damage)
 {
-	if (m_FloatingTextClass == nullptr)
+	if (m_FloatingTextClass == nullptr || FMath::IsNearlyEqual(damage, 0.f))
 		return;
 	auto text = GetWorld()->SpawnActor(m_FloatingTextClass);
 	Cast<AFloatingTextActor>(text)->Initialize(FText::FromString(FString::SanitizeFloat(damage)), m_DamageTextColor);
