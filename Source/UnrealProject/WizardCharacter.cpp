@@ -7,6 +7,7 @@
 #include <GameFramework/CharacterMovementComponent.h>
 #include <Components/CapsuleComponent.h>
 #include <AIController.h>
+#include "Powerups/PowerUpEffect.h"
 
 // Sets default values
 AWizardCharacter::AWizardCharacter()
@@ -91,6 +92,8 @@ void AWizardCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	m_BasicAttackTimer += DeltaTime;
+
 	APlayerController* controller = GetController<APlayerController>();
 	if (controller == nullptr)
 		return;
@@ -166,7 +169,7 @@ void AWizardCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("MoveUp", this, &AWizardCharacter::MoveUp);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AWizardCharacter::MoveRight);
 	PlayerInputComponent->BindAction("Space", IE_Pressed, this, &AWizardCharacter::Dash);
-	PlayerInputComponent->BindAction("LMB", IE_Pressed, this, &AWizardCharacter::Fire);
+	PlayerInputComponent->BindAxis("LMB", this, &AWizardCharacter::Fire);
 	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AWizardCharacter::CastSpell);
 	PlayerInputComponent->BindAction<FAddElementDelegate>("FireElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Fire);
 	PlayerInputComponent->BindAction<FAddElementDelegate>("FrostElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Frost);
@@ -195,6 +198,12 @@ TMap<int, float>& AWizardCharacter::GetCooldownCounters()
 	return m_CooldownCounter;
 }
 
+void AWizardCharacter::AddPowerUpEffect( UPowerUpEffect* effect)
+{
+	effect->Apply(this);
+	PowerUpEffects.Add(effect);
+}
+
 
 
 void AWizardCharacter::MoveUp(float value)
@@ -205,11 +214,6 @@ void AWizardCharacter::MoveUp(float value)
 void AWizardCharacter::MoveRight(float value)
 {
 	AddMovementInput(FVector(0.f, 1.f, 0.f), value);
-}
-
-void AWizardCharacter::ChangeTurnDirection()
-{
-	m_TurnDirection *= -1;
 }
 
 void AWizardCharacter::AddElement(WizardElement element)
@@ -264,8 +268,17 @@ void AWizardCharacter::AddElement(WizardElement element)
 	OnAddElement();
 }
 
-void AWizardCharacter::Fire()
+void AWizardCharacter::Fire(float input)
 {
+	if (input < 1.f)
+		return;
+
+	if (m_BasicAttackTimer > m_BasicAttackCooldown)
+		m_BasicAttackTimer = 0;
+	else
+		return;
+
+
 	APlayerController* controller = GetController<APlayerController>();
 
 	FVector mousePosWorld, mouseDirWorld;
@@ -351,6 +364,21 @@ void AWizardCharacter::CastSpell()
 void AWizardCharacter::Dash()
 {
 	Cast<UCharacterMovementComponent>(GetMovementComponent())->AddImpulse(GetMovementComponent()->Velocity.GetSafeNormal() * m_DashForce, true);
+}
+
+void AWizardCharacter::UpdatePowerups(float deltaTime)
+{
+	for (size_t i = 0; i < PowerUpEffects.Num(); i++)
+	{
+		PowerUpEffects[i]->Timer += deltaTime;
+		if (PowerUpEffects[i]->Timer > PowerUpEffects[i]->Duration)
+		{
+			PowerUpEffects[i]->Remove(this);
+			PowerUpEffects[i]->ConditionalBeginDestroy();
+			PowerUpEffects.RemoveAt(i);
+			i--;
+		}
+	}
 }
 
 void AWizardCharacter::CastFlameColumn(const FVector& worldPos)
