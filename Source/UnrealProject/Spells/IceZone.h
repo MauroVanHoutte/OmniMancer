@@ -17,7 +17,9 @@ public:
 	// Sets default values for this actor's properties
 	AIceZone();
 
+	UFUNCTION(BlueprintCallable)
 	void SetBurnParams(bool applyBurns, float tickDamage, float tickInterval, float duration);
+	UFUNCTION(BlueprintCallable)
 	void SetSlowParams(bool applySlow, float value, float duration);
 	void SetRadius(float radius);
 	void SetLifetime(float lifetime);
@@ -28,6 +30,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(BlueprintReadWrite)
+	UStaticMeshComponent* m_CylinderMesh;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -56,9 +60,6 @@ private:
 	float m_ApplicationInterval = 0.2f;
 
 	float m_ApplicationTimer = 0.f;
-
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* m_CylinderMesh;
 
 	FTimerHandle m_LifetimeHandle;
 };
