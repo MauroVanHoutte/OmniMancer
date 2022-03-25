@@ -9,6 +9,15 @@ APowerUp::APowerUp()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	Collider = CreateDefaultSubobject<UBoxComponent>(FName("Collider"));
+
+	RootComponent = Collider;
+
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName("Mesh"));
+
+	Mesh->SetupAttachment(Collider);
+
 	Collider->OnComponentBeginOverlap.AddDynamic(this, &APowerUp::OnPickup);
 }
 
@@ -18,7 +27,7 @@ void APowerUp::OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 
 	if (player != nullptr)
 	{
-		player->AddPowerUpEffect(Effect); 
+		player->AddPowerUpEffect(Effect.GetDefaultObject()); 
 		Destroy();
 	}
 }

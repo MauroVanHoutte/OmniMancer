@@ -9,7 +9,7 @@
 
 #include "PowerUp.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class UNREALPROJECT_API APowerUp : public AActor
 {
 	GENERATED_BODY()
@@ -18,6 +18,7 @@ public:
 
 	APowerUp();
 
+	UFUNCTION()
 	void OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 protected:
@@ -28,6 +29,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	UBoxComponent* Collider;
 
-	UPROPERTY(EditDefaultsOnly)
-	UPowerUpEffect* Effect;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UPowerUpEffect> Effect;
 };

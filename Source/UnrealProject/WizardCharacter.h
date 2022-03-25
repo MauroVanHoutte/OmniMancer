@@ -148,4 +148,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<UPowerUpEffect*> PowerUpEffects;
+
+	friend class UPowerUpEffect;
 };

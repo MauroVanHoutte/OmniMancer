@@ -159,6 +159,8 @@ void AWizardCharacter::Tick(float DeltaTime)
 		m_CooldownCounter[pair.Key] += DeltaTime;
 	}
 
+	UpdatePowerups(DeltaTime);
+
 }
 
 // Called to bind functionality to input

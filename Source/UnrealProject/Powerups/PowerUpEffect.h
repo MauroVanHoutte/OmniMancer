@@ -4,27 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "../WizardCharacter.h"
 
 #include "PowerUpEffect.generated.h"
-
-class AWizardCharacter;
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class UNREALPROJECT_API UPowerUpEffect : public UObject
 {
 	GENERATED_BODY()
 
 public:
 
-	void Apply(AWizardCharacter* target) const;
-	void Remove(AWizardCharacter* target) const;
+	virtual void Apply(AWizardCharacter* target) {};
+	virtual void Remove(AWizardCharacter* target) {};
 
 	UPROPERTY(EditDefaultsOnly)
-	float Duration;
+	float Duration = 20;
 
 	UPROPERTY(EditDefaultsOnly)
-	float Timer;
+	float Timer = 0;
 	
 };

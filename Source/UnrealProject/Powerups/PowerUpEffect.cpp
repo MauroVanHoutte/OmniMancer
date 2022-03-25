@@ -2,14 +2,6 @@
 
 
 #include "PowerUpEffect.h"
-#include "../WizardCharacter.h"
 
-void UPowerUpEffect::Apply(AWizardCharacter* target) const
-{
 
-}
-
-void UPowerUpEffect::Remove(AWizardCharacter* target) const
-{
-}
 
