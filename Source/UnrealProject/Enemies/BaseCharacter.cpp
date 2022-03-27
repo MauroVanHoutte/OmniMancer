@@ -138,6 +138,60 @@ void ABaseCharacter::SpawnDamageText(float damage)
 	text->SetActorLocation(GetActorLocation());
 }
 
+void ABaseCharacter::UpdateStatusEffects(float deltaTime)
+{
+	for (size_t i = 0; i < m_CurrentStatusEffects.Num(); i++)
+	{
+		if (m_CurrentStatusEffects[i].EffectType == Type::Damage)
+		{
+			m_CurrentStatusEffects[i].Timer += deltaTime;
+			if (m_CurrentStatusEffects[i].Timer > m_CurrentStatusEffects[i].Interval)
+			{
+				m_CurrentStatusEffects[i].Timer -= m_CurrentStatusEffects[i].Interval;
+				TakeTickDamage(m_CurrentStatusEffects[i].Value);
+				m_CurrentStatusEffects[i].Duration -= m_CurrentStatusEffects[i].Interval;
+				if (m_CurrentStatusEffects[i].Duration < m_CurrentStatusEffects[i].Interval)
+				{
+					m_CurrentStatusEffects.RemoveAt(i);
+					i--;
+
+					auto otherBurnEffect = m_CurrentStatusEffects.FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Damage; });
+					if (otherBurnEffect == nullptr && m_NiagaraComponent != nullptr)
+						m_NiagaraComponent->SetVariableFloat(TEXT("Burning"), 0.f);
+
+					continue;
+				}
+			}
+		}
+		else
+		{
+			m_CurrentStatusEffects[i].Timer += deltaTime;
+			if (m_CurrentStatusEffects[i].Timer > m_CurrentStatusEffects[i].Duration)
+			{
+				FStatusEffect effect = m_CurrentStatusEffects[i];
+				m_CurrentStatusEffects.RemoveAt(i);
+				if (effect.EffectType == Type::Slow)
+				{
+					m_SlowAmount -= effect.Value;
+					m_CharacterMovement->MaxWalkSpeed /= (1 - effect.Value / 100.f);
+				}
+				if (effect.EffectType == Type::Stun)
+				{
+					auto otherStunEffect = m_CurrentStatusEffects.FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Stun; });
+					if (otherStunEffect == nullptr)
+					{
+						m_Stunned = false;
+						if (m_NiagaraComponent != nullptr)
+							m_NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 0.f);
+					}
+				}
+				i--;
+				continue;
+			}
+		}
+	}
+}
+
 void ABaseCharacter::Knockup()
 {
 	auto controller = GetController<AAIController>();
@@ -216,56 +270,8 @@ void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	for (size_t i = 0; i < m_CurrentStatusEffects.Num(); i++)
-	{
-		if (m_CurrentStatusEffects[i].EffectType == Type::Damage)
-		{
-			m_CurrentStatusEffects[i].Timer += DeltaTime;
-			if (m_CurrentStatusEffects[i].Timer > m_CurrentStatusEffects[i].Interval)
-			{
-				m_CurrentStatusEffects[i].Timer -= m_CurrentStatusEffects[i].Interval;
-				TakeTickDamage(m_CurrentStatusEffects[i].Value);
-				m_CurrentStatusEffects[i].Duration -= m_CurrentStatusEffects[i].Interval;
-				if (m_CurrentStatusEffects[i].Duration < m_CurrentStatusEffects[i].Interval)
-				{
-					m_CurrentStatusEffects.RemoveAt(i);
-					i--;
-
-					auto otherBurnEffect = m_CurrentStatusEffects.FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Damage; });
-					if (otherBurnEffect == nullptr && m_NiagaraComponent != nullptr)
-						m_NiagaraComponent->SetVariableFloat(TEXT("Burning"), 0.f);
-
-					continue;
-				}
-			}
-		}
-		else
-		{
-			m_CurrentStatusEffects[i].Timer += DeltaTime;
-			if (m_CurrentStatusEffects[i].Timer > m_CurrentStatusEffects[i].Duration)
-			{
-				FStatusEffect effect = m_CurrentStatusEffects[i];
-				m_CurrentStatusEffects.RemoveAt(i);
-				if (effect.EffectType == Type::Slow)
-				{
-					m_SlowAmount -= effect.Value;
-					m_CharacterMovement->MaxWalkSpeed /= (1 - effect.Value / 100.f);
-				}
-				if (effect.EffectType == Type::Stun)
-				{
-					auto otherStunEffect = m_CurrentStatusEffects.FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Stun; });
-					if (otherStunEffect == nullptr)
-					{
-						m_Stunned = false;
-						if (m_NiagaraComponent != nullptr)
-							m_NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 0.f);
-					}
-				}
-				i--;
-				continue;
-			}
-		}
-	}
+	UpdateStatusEffects(DeltaTime);
+	
 }
 
 // Called to bind functionality to input

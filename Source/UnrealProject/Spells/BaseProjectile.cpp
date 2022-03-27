@@ -2,6 +2,8 @@
 
 
 #include "BaseProjectile.h"
+#include <Kismet/KismetSystemLibrary.h>
+#include "../Enemies/BaseCharacter.h"
 
 // Sets default values
 ABaseProjectile::ABaseProjectile()
@@ -28,10 +30,9 @@ ABaseProjectile::ABaseProjectile()
 	auto sphereMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'")).Object;
 	m_Mesh->SetStaticMesh(sphereMesh);
 	m_Mesh->SetWorldScale3D(FVector(1.5f, 0.5f, 0.5f));
-	m_Mesh->SetupAttachment(RootComponent);
+	m_Mesh->SetupAttachment(m_CollisionComponent);
 	m_Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	
 }
 
 // Called when the game starts or when spawned
@@ -57,6 +58,19 @@ void ABaseProjectile::FireInDirection(const FVector& direction)
 
 void ABaseProjectile::OnHit(AActor* hitActor)
 {
+	if (m_Explosive)
+	{
+		auto particleActor = GetWorld()->SpawnActor<AParticleActor>(m_ParticleActorClass);
+		particleActor->SetSystem(m_ExplosionSystem, 0.5f);
+		particleActor->SetActorScale3D(FVector(m_ExplosionRadius));
+		particleActor->SetActorLocation(GetActorLocation());
+		TArray<AActor*> outActors{};
+		UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), m_ExplosionRadius * 100, TArray<TEnumAsByte<EObjectTypeQuery>>{}, ABaseCharacter::StaticClass(), TArray<AActor*>{GetOwner()}, outActors);
+		for (AActor* actor : outActors)
+		{
+			Cast<ABaseCharacter>(actor)->TakeSpellDamage(m_ExplosionDamage);
+		}
+	}
 	Destroy();
 }
 
@@ -64,8 +78,15 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 {
 	if (OtherComp->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic)
 	{
-		Destroy();
+		OnHit(OtherActor);
 	}
+}
+
+void ABaseProjectile::SetExplosion(float radius, float damage)
+{
+	m_Explosive = true;
+	m_ExplosionDamage = damage;
+	m_ExplosionRadius = radius;
 }
 
 

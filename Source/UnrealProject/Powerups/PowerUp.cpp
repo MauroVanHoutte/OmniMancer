@@ -3,6 +3,10 @@
 
 #include "PowerUp.h"
 #include "../WizardCharacter.h"
+#include <Kismet2/KismetEditorUtilities.h>
+
+TArray<TSubclassOf<UPowerUpEffect>> APowerUp::AllEffects{};
+bool APowerUp::EffectsInitialized{ false };
 
 // Sets default values
 APowerUp::APowerUp()
@@ -27,7 +31,43 @@ void APowerUp::OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 
 	if (player != nullptr)
 	{
-		player->AddPowerUpEffect(Effect.GetDefaultObject()); 
+		player->AddPowerUpEffect(NewObject<UPowerUpEffect>(this, Effect.Get()));
 		Destroy();
 	}
+}
+
+void APowerUp::SetRandomEffect()
+{
+	if (!EffectsInitialized)
+	{
+		for (TObjectIterator<UClass> ClassIt; ClassIt; ++ClassIt)
+		{
+			UClass* Class = *ClassIt;
+
+
+			if (!Class->IsChildOf(UPowerUpEffect::StaticClass()) ||
+				Class == UPowerUpEffect::StaticClass() ||
+				!Class->IsNative())
+			{
+				continue;
+			}
+
+			AllEffects.Add(Class);
+		}
+
+		EffectsInitialized = true;
+	}
+
+	int idx = FMath::RandRange(0, AllEffects.Num()-1);
+
+	if (AllEffects.Num() == 0)
+		return;
+
+	Effect = AllEffects[idx];
+}
+
+void APowerUp::ReInitializeEffects()
+{
+	EffectsInitialized = false;
+	SetRandomEffect();
 }

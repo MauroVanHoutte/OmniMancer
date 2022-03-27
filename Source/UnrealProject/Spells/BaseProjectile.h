@@ -8,6 +8,7 @@
 #include <GameFramework/ProjectileMovementComponent.h>
 #include <Components/StaticMeshComponent.h>
 #include <GameplayTagContainer.h>
+#include "../ParticleActor.h"
 
 #include "BaseProjectile.generated.h"
 
@@ -36,6 +37,7 @@ public:
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	void SetExplosion(float radius, float damage);
 
 private:
 	USphereComponent* m_CollisionComponent;
@@ -46,4 +48,11 @@ private:
 	UPROPERTY(EditAnywhere)
 	float m_LifeTime = 5.f;
 
+	bool m_Explosive = false;
+	float m_ExplosionRadius = 0;
+	float m_ExplosionDamage = 0;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AParticleActor> m_ParticleActorClass;
+	UPROPERTY(EditDefaultsOnly)
+	UNiagaraSystem* m_ExplosionSystem;
 };

@@ -37,6 +37,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Heal(float hp);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void TakeSpellDamage(float damage);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -46,34 +49,36 @@ protected:
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	UFUNCTION(BlueprintCallable)
-	virtual void TakeSpellDamage(float damage);
+	
 	virtual void TakeTickDamage(float damage);
 	virtual void AddStatusEffects(const TArray<FStatusEffect>& statusEffects);
 	void SpawnDamageText(float damage);
 
-	UPROPERTY(EditAnywhere)
+	void UpdateStatusEffects(float deltaTime);
+
+	UPROPERTY(VisibleAnywhere)
 	TArray<FStatusEffect> m_CurrentStatusEffects{};
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere)
 	float m_Health;
+	UPROPERTY(EditDefaultsOnly)
 	float m_StartHealth;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere)
 	float m_SlowAmount = 0;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere)
 	bool m_Stunned = false;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	UNiagaraComponent* m_NiagaraComponent = nullptr;
 
 	UCharacterMovementComponent* m_CharacterMovement;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AFloatingTextActor> m_FloatingTextClass = nullptr;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	FColor m_DamageTextColor = FColor::White;
 
 

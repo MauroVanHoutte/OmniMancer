@@ -21,14 +21,25 @@ public:
 	UFUNCTION()
 	void OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION(BlueprintCallable, CallInEditor)
+	void SetRandomEffect();
+
+
 protected:
+
+	UFUNCTION(CallInEditor)
+	void ReInitializeEffects();
 
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* Mesh;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UBoxComponent* Collider;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UPowerUpEffect> Effect;
+
+	static TArray<TSubclassOf<UPowerUpEffect>> AllEffects;
+
+	static bool EffectsInitialized;
 };

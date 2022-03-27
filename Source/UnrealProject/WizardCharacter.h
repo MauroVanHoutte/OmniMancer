@@ -12,6 +12,7 @@
 #include "Spells/Tornado.h"
 #include "Spells/ChainLightning.h"
 #include "Spells/Shockwave.h"
+#include "Spells/BaseProjectile.h"
 #include <Components/BillboardComponent.h>
 #include "FloatingTextActor.h"
 #include "Enemies/BaseCharacter.h"
@@ -110,6 +111,8 @@ private:
 	TSubclassOf<AChainLightning> m_ChainLighningClass = nullptr;
 	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
 	TSubclassOf<AShockwave> m_ShockwaveClass = nullptr;
+	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
+	TSubclassOf<ABaseProjectile> m_BaseProjectile = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
 	int m_SpeedPerWind = 10;
@@ -147,7 +150,16 @@ private:
 	float m_BasicAttackTimer = m_BasicAttackCooldown;
 
 	UPROPERTY(VisibleAnywhere)
-	TArray<UPowerUpEffect*> PowerUpEffects;
+	TArray<UPowerUpEffect*> m_PowerUpEffects;
+
+	int m_Spread = 0;
+
+	bool m_ExplosiveBaseAttack = false;
+	float m_ExplosionRadius = 0;
+	float m_ExplosionDamage = 0;
 
 	friend class UPowerUpEffect;
+	friend class UFireRatePowerUpEffect;
+	friend class USpreadPowerUpEffect;
+	friend class UExplosionPowerUpEffect;
 };

@@ -4,20 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "PowerUpEffect.h"
-
-#include "SpeedPowerUpEffect.generated.h"
+#include "FireRatePowerUpEffect.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALPROJECT_API USpeedPowerUpEffect : public UPowerUpEffect
+class UNREALPROJECT_API UFireRatePowerUpEffect : public UPowerUpEffect
 {
 	GENERATED_BODY()
-public:
 
-	virtual void Apply(AWizardCharacter* target) override;
-	virtual void Remove(AWizardCharacter* target) override;
+	void Apply(AWizardCharacter* target) override;
+	void Remove(AWizardCharacter* target) override;
 
 	UPROPERTY(EditAnywhere)
 	float Value = 50;

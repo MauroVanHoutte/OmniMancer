@@ -203,7 +203,7 @@ TMap<int, float>& AWizardCharacter::GetCooldownCounters()
 void AWizardCharacter::AddPowerUpEffect( UPowerUpEffect* effect)
 {
 	effect->Apply(this);
-	PowerUpEffects.Add(effect);
+	m_PowerUpEffects.Add(effect);
 }
 
 
@@ -289,17 +289,66 @@ void AWizardCharacter::Fire(float input)
 
 	FVector direction{ (mousePosWorld - GetActorLocation()).GetSafeNormal() };
 
-	FActorSpawnParameters spawnParams;
+	FActorSpawnParameters spawnParams{};
 	spawnParams.Owner = this;
 	spawnParams.Instigator = GetInstigator();
 
-	auto projectile = GetWorld()->SpawnActor<ABaseProjectile>(spawnParams);
-	if (projectile)
+	auto actor = GetWorld()->SpawnActor<AActor>(m_BaseProjectile.Get(), spawnParams);
+	auto projectile = Cast<ABaseProjectile>(actor);
+
+	if (actor)
 	{
 		projectile->SetDamageMultiplier(m_BaseDamageMultiplier);
 		projectile->SetActorScale3D(FVector(0.75f, 0.75f, 0.75f));
 		projectile->SetActorLocationAndRotation(GetActorLocation(), direction.Rotation());
 		projectile->FireInDirection(direction);
+
+		projectile->SetInstigator(GetInstigator());
+		projectile->SetOwner(this);
+
+		if (m_ExplosiveBaseAttack)
+		{
+			projectile->SetExplosion(m_ExplosionRadius, m_ExplosionDamage);
+		}
+	}
+
+	for (size_t i = 0; i < m_Spread; i++)
+	{
+		float angleOffset = ((i + 1) * 45.f / m_Spread);
+		auto actorCW = GetWorld()->SpawnActor<AActor>(m_BaseProjectile.Get(), spawnParams);
+		auto actorCCW = GetWorld()->SpawnActor<AActor>(m_BaseProjectile.Get(), spawnParams);
+		auto projectileCW = Cast<ABaseProjectile>(actorCW);
+		auto projectileCCW = Cast<ABaseProjectile>(actorCCW);
+
+		projectileCW->SetInstigator(GetInstigator());
+		projectileCW->SetOwner(this);
+
+		projectileCCW->SetInstigator(GetInstigator());
+		projectileCCW->SetOwner(this);
+
+		projectileCW->SetActorScale3D(FVector(0.75f, 0.75f, 0.75f));
+		projectileCCW->SetActorScale3D(FVector(0.75f, 0.75f, 0.75f));
+
+		projectileCW->SetDamageMultiplier(m_BaseDamageMultiplier);
+		projectileCCW->SetDamageMultiplier(m_BaseDamageMultiplier);
+
+		auto rotation = direction.Rotation();
+		auto rotationCW = rotation;
+		rotationCW.Yaw += angleOffset;
+		auto rotationCCW = rotation;
+		rotationCCW.Yaw -= angleOffset;
+
+		projectileCW->SetActorLocationAndRotation(GetActorLocation(), rotationCW);
+		projectileCW->FireInDirection(rotationCW.Vector());
+
+		projectileCCW->SetActorLocationAndRotation(GetActorLocation(), rotationCCW);
+		projectileCCW->FireInDirection(rotationCCW.Vector());
+
+		if (m_ExplosiveBaseAttack)
+		{
+			projectileCW->SetExplosion(m_ExplosionRadius, m_ExplosionDamage);
+			projectileCCW->SetExplosion(m_ExplosionRadius, m_ExplosionDamage);
+		}
 	}
 }
 
@@ -370,14 +419,14 @@ void AWizardCharacter::Dash()
 
 void AWizardCharacter::UpdatePowerups(float deltaTime)
 {
-	for (size_t i = 0; i < PowerUpEffects.Num(); i++)
+	for (size_t i = 0; i < m_PowerUpEffects.Num(); i++)
 	{
-		PowerUpEffects[i]->Timer += deltaTime;
-		if (PowerUpEffects[i]->Timer > PowerUpEffects[i]->Duration)
+		m_PowerUpEffects[i]->Timer += deltaTime;
+		if (m_PowerUpEffects[i]->Timer > m_PowerUpEffects[i]->Duration)
 		{
-			PowerUpEffects[i]->Remove(this);
-			PowerUpEffects[i]->ConditionalBeginDestroy();
-			PowerUpEffects.RemoveAt(i);
+			m_PowerUpEffects[i]->Remove(this);
+			m_PowerUpEffects[i]->ConditionalBeginDestroy();
+			m_PowerUpEffects.RemoveAt(i);
 			i--;
 		}
 	}
