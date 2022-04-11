@@ -206,7 +206,58 @@ void AWizardCharacter::AddPowerUpEffect( UPowerUpEffect* effect)
 	m_PowerUpEffects.Add(effect);
 }
 
+void AWizardCharacter::SetExplosionVariables(float damage, float radius, bool explode)
+{
+	m_ExplosionDamage = damage;
+	m_ExplosionRadius = radius;
+	m_ExplosiveBaseAttack = explode;
+}
 
+void AWizardCharacter::GetExplosionVariables(float& damageOut, float& radiusOut)
+{
+	damageOut = m_ExplosionDamage;
+	radiusOut = m_ExplosionRadius;
+}
+
+void AWizardCharacter::SetSpread(int spread)
+{
+	m_Spread = spread;
+}
+
+int AWizardCharacter::GetSpread()
+{
+	return m_Spread;
+}
+
+void AWizardCharacter::SetBasicAttackCooldown(float cooldown)
+{
+	m_BasicAttackCooldown = cooldown;
+}
+
+float AWizardCharacter::GetBasicAttackCooldown()
+{
+	return m_BasicAttackCooldown;
+}
+
+void AWizardCharacter::SetSpeed(float speed)
+{
+	m_CharacterMovement->MaxWalkSpeed = speed;
+}
+
+float AWizardCharacter::GetSpeed()
+{
+	return m_CharacterMovement->MaxWalkSpeed;
+}
+
+void AWizardCharacter::SetBounces(int bounces)
+{
+	m_Bounces = bounces;
+}
+
+int AWizardCharacter::GetBounces()
+{
+	return m_Bounces;
+}
 
 void AWizardCharacter::MoveUp(float value)
 {
@@ -301,6 +352,7 @@ void AWizardCharacter::Fire(float input)
 		projectile->SetDamageMultiplier(m_BaseDamageMultiplier);
 		projectile->SetActorScale3D(FVector(0.75f, 0.75f, 0.75f));
 		projectile->SetActorLocationAndRotation(GetActorLocation(), direction.Rotation());
+		projectile->SetBounces(m_Bounces);
 		projectile->FireInDirection(direction);
 
 		projectile->SetInstigator(GetInstigator());
@@ -331,6 +383,8 @@ void AWizardCharacter::Fire(float input)
 
 		projectileCW->SetDamageMultiplier(m_BaseDamageMultiplier);
 		projectileCCW->SetDamageMultiplier(m_BaseDamageMultiplier);
+		projectileCW->SetBounces(m_Bounces);
+		projectileCCW->SetBounces(m_Bounces);
 
 		auto rotation = direction.Rotation();
 		auto rotationCW = rotation;

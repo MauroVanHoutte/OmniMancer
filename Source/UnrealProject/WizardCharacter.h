@@ -65,6 +65,17 @@ public:
 
 	void AddPowerUpEffect( UPowerUpEffect* effect);
 
+	void SetExplosionVariables(float damage, float radius, bool explode);
+	void GetExplosionVariables(float& damageOut, float& radiusOut);
+	void SetSpread(int spread);
+	int GetSpread();
+	void SetBasicAttackCooldown(float fireRate);
+	float GetBasicAttackCooldown();
+	void SetSpeed(float speed);
+	float GetSpeed();
+	void SetBounces(int bounces);
+	int GetBounces();
+
 private:
 	void MoveUp(float value);
 	void MoveRight(float value);
@@ -149,17 +160,16 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	float m_BasicAttackTimer = m_BasicAttackCooldown;
 
+	//Powerups
 	UPROPERTY(VisibleAnywhere)
 	TArray<UPowerUpEffect*> m_PowerUpEffects;
 
 	int m_Spread = 0;
 
+	int m_Bounces = 0;
+
 	bool m_ExplosiveBaseAttack = false;
 	float m_ExplosionRadius = 0;
 	float m_ExplosionDamage = 0;
 
-	friend class UPowerUpEffect;
-	friend class UFireRatePowerUpEffect;
-	friend class USpreadPowerUpEffect;
-	friend class UExplosionPowerUpEffect;
 };
