@@ -6,6 +6,7 @@
 #include "../Spells/BaseSpell.h"
 #include <GameFramework/CharacterMovementComponent.h>
 #include <AIController.h>
+#include "../Powerups/PowerUp.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -70,6 +71,10 @@ void ABaseCharacter::CheckDeath()
 {
 	if (m_Health <= 0)
 	{
+		if (m_SpawnPowerupOnDeath)
+		{
+			SpawnPowerup();
+		}
 		OnDeath();
 		Destroy();
 	}
@@ -136,6 +141,20 @@ void ABaseCharacter::SpawnDamageText(float damage)
 	auto text = GetWorld()->SpawnActor(m_FloatingTextClass);
 	Cast<AFloatingTextActor>(text)->Initialize(FText::FromString(FString::SanitizeFloat(damage)), m_DamageTextColor);
 	text->SetActorLocation(GetActorLocation());
+}
+
+void ABaseCharacter::SpawnPowerup()
+{
+	if (FMath::RandRange(0.f, 100.f) > m_PowerupSpawnChance)
+		return;
+	
+	auto location = GetActorLocation();
+	auto actor = GetWorld()->SpawnActor(m_Powerup.Get(), &location);
+	float angle = FMath::FRandRange(0.f, 360.f);
+	FVector direction{ FMath::Sin(FMath::DegreesToRadians(angle)), FMath::Cos(FMath::DegreesToRadians(angle)), 1 };
+	auto powerup = Cast<APowerUp>(actor);
+	powerup->SetRandomEffect();
+	powerup->LaunchInDirection(direction.GetSafeNormal(), 200);
 }
 
 void ABaseCharacter::UpdateStatusEffects(float deltaTime)

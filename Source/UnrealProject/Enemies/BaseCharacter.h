@@ -12,6 +12,8 @@
 
 #include "BaseCharacter.generated.h"
 
+class APowerUp;
+
 UCLASS(Abstract)
 class UNREALPROJECT_API ABaseCharacter : public ACharacter
 {
@@ -54,6 +56,8 @@ protected:
 	virtual void AddStatusEffects(const TArray<FStatusEffect>& statusEffects);
 	void SpawnDamageText(float damage);
 
+	void SpawnPowerup();
+
 	void UpdateStatusEffects(float deltaTime);
 
 	UPROPERTY(VisibleAnywhere)
@@ -81,6 +85,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	FColor m_DamageTextColor = FColor::White;
 
+	UPROPERTY(EditDefaultsOnly)
+	bool m_SpawnPowerupOnDeath = true;
+	UPROPERTY(EditDefaultsOnly)
+	float m_PowerupSpawnChance = 10;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<APowerUp> m_Powerup;
 
 public:	
 	// Called every frame
