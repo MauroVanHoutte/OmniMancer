@@ -6,10 +6,14 @@
 
 void USpeedPowerUpEffect::Apply(AWizardCharacter* target)
 {
-	Cast<UCharacterMovementComponent>(target->GetMovementComponent())->MaxWalkSpeed *= (1 + Value / 100.f);
+	float moveSpeedBefore{ target->GetSpeed() };
+	moveSpeedBefore *= (1 + Value / 100.f);
+	target->SetSpeed(moveSpeedBefore);
 }
 
 void USpeedPowerUpEffect::Remove(AWizardCharacter* target)
 {
-	Cast<UCharacterMovementComponent>(target->GetMovementComponent())->MaxWalkSpeed /= (1 + Value / 100.f);
+	float moveSpeedBefore{ target->GetSpeed() };
+	moveSpeedBefore /= (1 + Value / 100.f);
+	target->SetSpeed(moveSpeedBefore);
 }

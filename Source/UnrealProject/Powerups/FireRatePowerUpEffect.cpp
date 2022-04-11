@@ -5,10 +5,14 @@
 
 void UFireRatePowerUpEffect::Apply(AWizardCharacter* target)
 {
-	target->m_BasicAttackCooldown *= (1 - Value/100.f);
+	float attackCooldownBefore{ target->GetBasicAttackCooldown() };
+	attackCooldownBefore *= (1 - Value/100.f);
+	target->SetBasicAttackCooldown(attackCooldownBefore);
 }
 
 void UFireRatePowerUpEffect::Remove(AWizardCharacter* target)
 {
-	target->m_BasicAttackCooldown /= (1 - Value / 100.f);
+	float attackCooldownBefore{ target->GetBasicAttackCooldown() };
+	attackCooldownBefore /= (1 - Value / 100.f);
+	target->SetBasicAttackCooldown(attackCooldownBefore);
 }

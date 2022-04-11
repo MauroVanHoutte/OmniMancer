@@ -5,17 +5,25 @@
 
 void UExplosionPowerUpEffect::Apply(AWizardCharacter* target)
 {
-	target->m_ExplosiveBaseAttack = true;
-	target->m_ExplosionDamage += Damage;
-	target->m_ExplosionRadius += Radius;
+	float damageBefore{};
+	float radiusBefore{};
+
+	target->GetExplosionVariables(damageBefore, radiusBefore);
+	target->SetExplosionVariables(damageBefore + Damage, radiusBefore + Radius, true);
 }
 
 void UExplosionPowerUpEffect::Remove(AWizardCharacter* target)
 {
-	target->m_ExplosionDamage -= Damage;
-	target->m_ExplosionRadius -= Radius;
-	if (FMath::IsNearlyEqual(target->m_ExplosionDamage, 0.f))
+	float damageBefore{};
+	float radiusBefore{};
+	target->GetExplosionVariables(damageBefore, radiusBefore);
+	damageBefore -= Damage;
+	radiusBefore -= Radius;
+	bool explode = true;
+	if (FMath::IsNearlyEqual(damageBefore, 0.f))
 	{
-		target->m_ExplosiveBaseAttack = false;
+		explode = false;
 	}
+
+	target->SetExplosionVariables(damageBefore, radiusBefore, explode);
 }

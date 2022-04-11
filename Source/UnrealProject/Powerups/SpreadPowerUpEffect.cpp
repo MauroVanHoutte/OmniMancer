@@ -5,10 +5,14 @@
 
 void USpreadPowerUpEffect::Apply(AWizardCharacter* target)
 {
-	target->m_Spread += Value;
+	int spreadBefore{target->GetSpread()};
+	spreadBefore += Value;
+	target->SetSpread(spreadBefore);
 }
 
 void USpreadPowerUpEffect::Remove(AWizardCharacter* target)
 {
-	target->m_Spread -= Value;
+	int spreadBefore{ target->GetSpread() };
+	spreadBefore -= Value;
+	target->SetSpread(spreadBefore);
 }
