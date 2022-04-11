@@ -4,6 +4,8 @@
 #include "BaseProjectile.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include "../Enemies/BaseCharacter.h"
+#include <Kismet/GameplayStatics.h>
+#include "../WizardCharacter.h"
 
 // Sets default values
 ABaseProjectile::ABaseProjectile()
@@ -40,8 +42,21 @@ void ABaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	InitialLifeSpan = m_LifeTime;
 	m_Damage = 5;
+}
+
+void ABaseProjectile::Explode()
+{
+	auto particleActor = GetWorld()->SpawnActor<AParticleActor>(m_ParticleActorClass);
+	particleActor->SetSystem(m_ExplosionSystem, 0.5f);
+	particleActor->SetActorScale3D(FVector(m_ExplosionRadius));
+	particleActor->SetActorLocation(GetActorLocation());
+	TArray<AActor*> outActors{};
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), m_ExplosionRadius * 100, TArray<TEnumAsByte<EObjectTypeQuery>>{}, ABaseCharacter::StaticClass(), TArray<AActor*>{GetOwner()}, outActors);
+	for (AActor* actor : outActors)
+	{
+		Cast<ABaseCharacter>(actor)->TakeSpellDamage(m_ExplosionDamage);
+	}
 }
 
 // Called every frame
@@ -54,21 +69,31 @@ void ABaseProjectile::Tick(float DeltaTime)
 void ABaseProjectile::FireInDirection(const FVector& direction)
 {
 	m_ProjectileMovement->Velocity = direction * m_ProjectileMovement->InitialSpeed;
+	SetActorRotation(direction.Rotation());
 }
 
 void ABaseProjectile::OnHit(AActor* hitActor)
 {
 	if (m_Explosive)
 	{
-		auto particleActor = GetWorld()->SpawnActor<AParticleActor>(m_ParticleActorClass);
-		particleActor->SetSystem(m_ExplosionSystem, 0.5f);
-		particleActor->SetActorScale3D(FVector(m_ExplosionRadius));
-		particleActor->SetActorLocation(GetActorLocation());
-		TArray<AActor*> outActors{};
-		UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), m_ExplosionRadius * 100, TArray<TEnumAsByte<EObjectTypeQuery>>{}, ABaseCharacter::StaticClass(), TArray<AActor*>{GetOwner()}, outActors);
-		for (AActor* actor : outActors)
+		Explode();
+	}
+
+	if (m_BouceCount < m_TotalBounces)
+	{
+		TArray<AActor*> actors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), TSubclassOf<ABaseCharacter>(ABaseCharacter::StaticClass()), actors);
+
+		for (AActor* actor : actors)
 		{
-			Cast<ABaseCharacter>(actor)->TakeSpellDamage(m_ExplosionDamage);
+			if (Cast<AWizardCharacter>(actor) != nullptr)
+				continue;
+
+			if (!WasActorHit(actor) && FVector::DistSquared(actor->GetActorLocation(), GetActorLocation()) < m_BounceRange * m_BounceRange)
+			{
+				FireInDirection((actor->GetActorLocation() - GetActorLocation()).GetSafeNormal());
+				return;
+			}
 		}
 	}
 	Destroy();
@@ -78,7 +103,9 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 {
 	if (OtherComp->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic)
 	{
-		OnHit(OtherActor);
+		if(m_Explosive)
+			Explode();
+		Destroy();
 	}
 }
 
@@ -87,6 +114,11 @@ void ABaseProjectile::SetExplosion(float radius, float damage)
 	m_Explosive = true;
 	m_ExplosionDamage = damage;
 	m_ExplosionRadius = radius;
+}
+
+void ABaseProjectile::SetBounces(int bounces)
+{
+	m_TotalBounces = bounces;
 }
 
 

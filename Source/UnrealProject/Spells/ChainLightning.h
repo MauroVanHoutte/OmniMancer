@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseSpell.h"
+#include "BaseProjectile.h"
 #include <Components/SphereComponent.h>
 #include <GameFramework/ProjectileMovementComponent.h>
 
@@ -13,7 +13,7 @@
  * 
  */
 UCLASS()
-class UNREALPROJECT_API AChainLightning : public ABaseSpell
+class UNREALPROJECT_API AChainLightning : public ABaseProjectile
 {
 	GENERATED_BODY()
 	
@@ -25,30 +25,17 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UFUNCTION()
-	virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 public:
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
-	void FireInDirection(const FVector& direction);
-
-	void OnHit(AActor* hitActor) override;
 
 private:
-	USphereComponent* m_CollisionComponent;
-	UPROPERTY(EditAnywhere)
-	UProjectileMovementComponent* m_ProjectileMovement;
-	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* m_Mesh;
-	UPROPERTY(EditAnywhere)
-	float m_LifeTime = 2.f;
 	UPROPERTY(EditAnywhere)
 	float m_InitialDamage = 15.f;
-	UPROPERTY(EditAnywhere)
-	float m_BounceRange = 2000.f;
 	UPROPERTY(EditAnywhere)
 	bool m_Stuns = true;
 	UPROPERTY(EditAnywhere)
 	float m_StunDuration = 0.5f;
+	UPROPERTY(EditAnywhere)
+	float m_MaxSpeed = 2000.f;
 };

@@ -25,6 +25,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void Explode();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -39,14 +41,22 @@ public:
 
 	void SetExplosion(float radius, float damage);
 
-private:
+	void SetBounces(int bounces);
+
+protected:
 	USphereComponent* m_CollisionComponent;
 	UPROPERTY(EditAnywhere)
 	UProjectileMovementComponent* m_ProjectileMovement;
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* m_Mesh;
-	UPROPERTY(EditAnywhere)
-	float m_LifeTime = 5.f;
+
+	//Amount of times the projectile will bounce to nearby enemies
+	UPROPERTY(EditDefaultsOnly)
+	int m_TotalBounces = 0;
+	int m_BouceCount = 0;
+	//Maximum distance between enemies while still able to bounce
+	UPROPERTY(EditDefaultsOnly)
+	float m_BounceRange = 700.f;
 
 	bool m_Explosive = false;
 	float m_ExplosionRadius = 0;
