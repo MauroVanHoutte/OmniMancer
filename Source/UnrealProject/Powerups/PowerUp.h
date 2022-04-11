@@ -24,6 +24,9 @@ public:
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void SetRandomEffect();
 
+	virtual void Tick(float DeltaTime) override;
+
+	void LaunchInDirection(const FVector& direction, float strength);
 
 protected:
 
@@ -38,6 +41,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UPowerUpEffect> Effect;
+
+	UPROPERTY(EditDefaultsOnly)
+	float RotationSpeed = 1.f;
 
 	static TArray<TSubclassOf<UPowerUpEffect>> AllEffects;
 

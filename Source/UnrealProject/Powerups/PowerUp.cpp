@@ -45,7 +45,7 @@ void APowerUp::SetRandomEffect()
 			UClass* Class = *ClassIt;
 
 
-			if (!Class->IsChildOf(UPowerUpEffect::StaticClass()) ||
+			if (!Class->IsChildOf(UPowerUpEffect::StaticClass()) || //Ignore base class, blueprint classes and classes that arent a derived from the base
 				Class == UPowerUpEffect::StaticClass() ||
 				!Class->IsNative())
 			{
@@ -64,6 +64,20 @@ void APowerUp::SetRandomEffect()
 		return;
 
 	Effect = AllEffects[idx];
+}
+
+void APowerUp::Tick(float DeltaTime)
+{
+	auto rotation = Mesh->GetRelativeRotation();
+
+	rotation.Yaw += FMath::RadiansToDegrees(RotationSpeed) * DeltaTime;
+
+	Mesh->SetRelativeRotation(rotation);
+}
+
+void APowerUp::LaunchInDirection(const FVector& direction, float strength)
+{
+	Collider->AddImpulse(direction * strength, NAME_None, true);
 }
 
 void APowerUp::ReInitializeEffects()
