@@ -16,6 +16,8 @@ public:
 	// Sets default values for this actor's properties
 	ABaseSpell();
 
+	void Destroy();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -24,6 +26,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	TArray<FStatusEffect> m_StatusEffects{};
+
+	UPROPERTY(EditDefaultsOnly)
+	float m_LifeSpan = 5;
 
 	TArray<AActor*> m_HitActors{};
 
@@ -43,4 +48,6 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere)
 	int m_DamageMultiplier = 0;
+
+	FTimerHandle m_LifeTimer{};
 };

@@ -19,7 +19,7 @@ AFlameColumn::AFlameColumn()
 // Called when the game starts or when spawned
 void AFlameColumn::BeginPlay()
 {
-	InitialLifeSpan = m_ImpactDelay + m_VisualLinger;
+	m_LifeSpan = m_ImpactDelay + m_VisualLinger;
 
 	Super::BeginPlay();
 	m_CylinderMesh->SetRelativeScale3D(FVector(m_CircleScale, m_CircleScale, 1.f));

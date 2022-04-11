@@ -16,8 +16,6 @@ AIceWall::AIceWall()
 
 void AIceWall::BeginPlay()
 {
-	InitialLifeSpan = m_Lifetime;
-
 	Super::BeginPlay();
 	m_Mesh->SetRelativeScale3D(FVector(1.f, m_WallWidth, 3.f));
 }

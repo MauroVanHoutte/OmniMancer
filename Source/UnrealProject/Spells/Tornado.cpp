@@ -38,7 +38,6 @@ void ATornado::FireInDirection(const FVector& direction)
 
 void ATornado::BeginPlay()
 {
-	InitialLifeSpan = m_LifeTime;
 	m_Damage = m_TornadoDamage;
 	Super::BeginPlay();
 	m_ProjectileMovement->InitialSpeed = m_Speed;

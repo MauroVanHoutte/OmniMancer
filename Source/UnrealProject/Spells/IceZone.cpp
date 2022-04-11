@@ -14,7 +14,7 @@ AIceZone::AIceZone()
 	RootComponent = m_CylinderMesh;
 	auto mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder")).Object;
 	m_CylinderMesh->SetStaticMesh(mesh);
-	m_CylinderMesh->SetCollisionProfileName(TEXT("NoCollision"));	
+
 }
 
 void AIceZone::SetBurnParams(bool applyBurns, float tickDamage, float tickInterval, float duration)
@@ -89,8 +89,6 @@ void AIceZone::Destroy()
 // Called when the game starts or when spawned
 void AIceZone::BeginPlay()
 {
-	InitialLifeSpan = m_Lifetime;
-
 	m_Damage = 0.f;
 	if (m_ApplyBurn)
 	{
@@ -98,6 +96,8 @@ void AIceZone::BeginPlay()
 	}
 	m_StatusEffects.Add(FStatusEffect(Type::Slow, -1.f, m_SlowAmount, m_EffectLingerDuration, this));
 	m_CylinderMesh->SetRelativeScale3D(FVector(m_CircleScale, m_CircleScale, 1.f));
+
+	m_CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
 	Super::BeginPlay();
 

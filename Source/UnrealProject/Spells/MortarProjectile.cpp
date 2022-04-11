@@ -40,6 +40,7 @@ void AMortarProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActor* Other
 {
 	if (OtherComp->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic)
 	{
+		m_CollisionComponent->SetCollisionProfileName("NoCollision");
 		SpawnExplosion(GetActorLocation());
 		Destroy();
 	}

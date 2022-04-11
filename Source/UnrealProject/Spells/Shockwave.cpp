@@ -29,7 +29,6 @@ void AShockwave::Tick(float deltaTime)
 void AShockwave::BeginPlay()
 {
 	m_Damage = m_InitialDamage;
-	InitialLifeSpan = m_Lifetime;
 	Super::BeginPlay();
 
 }

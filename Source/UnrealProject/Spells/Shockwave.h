@@ -30,8 +30,6 @@ private:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* m_StaticMeshComponent;
 	UPROPERTY(EditAnywhere)
-	float m_Lifetime = 1.f;
-	UPROPERTY(EditAnywhere)
 	float m_InitialDamage = 5.f;
 	UPROPERTY(EditAnywhere)
 	float m_ScaleGrowth = 0.5f;

@@ -26,7 +26,5 @@ private:
 	UStaticMeshComponent* m_Mesh = nullptr;
 
 	UPROPERTY(EditAnywhere)
-	float m_Lifetime = 5.f;
-	UPROPERTY(EditAnywhere)
 	float m_WallWidth = 5.f;
 };

@@ -11,11 +11,16 @@ ABaseSpell::ABaseSpell()
 
 }
 
+void ABaseSpell::Destroy()
+{
+	AActor::Destroy();
+}
+
 // Called when the game starts or when spawned
 void ABaseSpell::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	GetWorld()->GetTimerManager().SetTimer(m_LifeTimer, this, &ABaseSpell::Destroy, m_LifeSpan);
 }
 
 // Called every frame

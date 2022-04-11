@@ -51,9 +51,6 @@ private:
 	int m_SlowAmount = 50;
 
 	UPROPERTY(EditAnywhere)
-	float m_Lifetime = 4.f;
-
-	UPROPERTY(EditAnywhere)
 	float m_CircleScale = 7.f;
 
 	UPROPERTY(EditAnywhere)
