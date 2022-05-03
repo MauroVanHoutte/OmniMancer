@@ -259,6 +259,11 @@ int AWizardCharacter::GetBounces()
 	return m_Bounces;
 }
 
+TArray<FStatusEffect>& AWizardCharacter::GetBaseAttackEffectsRef()
+{
+	return m_BaseAttackEffects;
+}
+
 void AWizardCharacter::MoveUp(float value)
 {
 	AddMovementInput(FVector(1.f, 0.f, 0.f), value);
@@ -347,22 +352,7 @@ void AWizardCharacter::Fire(float input)
 	auto actor = GetWorld()->SpawnActor<AActor>(m_BaseProjectile.Get(), spawnParams);
 	auto projectile = Cast<ABaseProjectile>(actor);
 
-	if (actor)
-	{
-		projectile->SetDamageMultiplier(m_BaseDamageMultiplier);
-		projectile->SetActorScale3D(FVector(0.75f, 0.75f, 0.75f));
-		projectile->SetActorLocationAndRotation(GetActorLocation(), direction.Rotation());
-		projectile->SetBounces(m_Bounces);
-		projectile->FireInDirection(direction);
-
-		projectile->SetInstigator(GetInstigator());
-		projectile->SetOwner(this);
-
-		if (m_ExplosiveBaseAttack)
-		{
-			projectile->SetExplosion(m_ExplosionRadius, m_ExplosionDamage);
-		}
-	}
+	InitProjectile(projectile, direction);
 
 	for (size_t i = 0; i < m_Spread; i++)
 	{
@@ -372,36 +362,38 @@ void AWizardCharacter::Fire(float input)
 		auto projectileCW = Cast<ABaseProjectile>(actorCW);
 		auto projectileCCW = Cast<ABaseProjectile>(actorCCW);
 
-		projectileCW->SetInstigator(GetInstigator());
-		projectileCW->SetOwner(this);
-
-		projectileCCW->SetInstigator(GetInstigator());
-		projectileCCW->SetOwner(this);
-
-		projectileCW->SetActorScale3D(FVector(0.75f, 0.75f, 0.75f));
-		projectileCCW->SetActorScale3D(FVector(0.75f, 0.75f, 0.75f));
-
-		projectileCW->SetDamageMultiplier(m_BaseDamageMultiplier);
-		projectileCCW->SetDamageMultiplier(m_BaseDamageMultiplier);
-		projectileCW->SetBounces(m_Bounces);
-		projectileCCW->SetBounces(m_Bounces);
-
 		auto rotation = direction.Rotation();
 		auto rotationCW = rotation;
 		rotationCW.Yaw += angleOffset;
 		auto rotationCCW = rotation;
 		rotationCCW.Yaw -= angleOffset;
 
-		projectileCW->SetActorLocationAndRotation(GetActorLocation(), rotationCW);
-		projectileCW->FireInDirection(rotationCW.Vector());
+		InitProjectile(projectileCW, rotationCW.Vector());
+		InitProjectile(projectileCCW, rotationCCW.Vector());
+	}
+}
 
-		projectileCCW->SetActorLocationAndRotation(GetActorLocation(), rotationCCW);
-		projectileCCW->FireInDirection(rotationCCW.Vector());
+void AWizardCharacter::InitProjectile(ABaseProjectile* projectile, const FVector& direction)
+{
+	if (projectile)
+	{
+		projectile->SetDamageMultiplier(m_BaseDamageMultiplier);
+		projectile->SetActorScale3D(FVector(0.75f, 0.75f, 0.75f));
+		projectile->SetActorLocationAndRotation(GetActorLocation(), direction.Rotation());
+		projectile->SetBounces(m_Bounces);
+		projectile->FireInDirection(direction);
+
+		for (const auto& effect : m_BaseAttackEffects)
+		{
+			projectile->AddStatusEffect(effect);
+		}
+
+		projectile->SetInstigator(GetInstigator());
+		projectile->SetOwner(this);
 
 		if (m_ExplosiveBaseAttack)
 		{
-			projectileCW->SetExplosion(m_ExplosionRadius, m_ExplosionDamage);
-			projectileCCW->SetExplosion(m_ExplosionRadius, m_ExplosionDamage);
+			projectile->SetExplosion(m_ExplosionRadius, m_ExplosionDamage);
 		}
 	}
 }
@@ -468,7 +460,12 @@ void AWizardCharacter::CastSpell()
 
 void AWizardCharacter::Dash()
 {
-	Cast<UCharacterMovementComponent>(GetMovementComponent())->AddImpulse(GetMovementComponent()->Velocity.GetSafeNormal() * m_DashForce, true);
+	if (m_CanDash)
+	{
+		Cast<UCharacterMovementComponent>(GetMovementComponent())->AddImpulse(GetMovementComponent()->Velocity.GetSafeNormal() * m_DashForce, true);
+		GetWorld()->GetTimerManager().SetTimer(m_DashCooldownTimer, this, &AWizardCharacter::SetCanDashTrue, m_DashCooldown);
+		m_CanDash = false;
+	}
 }
 
 void AWizardCharacter::UpdatePowerups(float deltaTime)
@@ -484,6 +481,11 @@ void AWizardCharacter::UpdatePowerups(float deltaTime)
 			i--;
 		}
 	}
+}
+
+void AWizardCharacter::SetCanDashTrue()
+{
+	m_CanDash = true;
 }
 
 void AWizardCharacter::CastFlameColumn(const FVector& worldPos)

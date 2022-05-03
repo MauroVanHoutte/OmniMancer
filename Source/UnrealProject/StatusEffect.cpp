@@ -3,7 +3,7 @@
 
 #include "StatusEffect.h"
 
-FStatusEffect::FStatusEffect(Type type, float interval, float value, float duration, AActor* cause)
+FStatusEffect::FStatusEffect(Type type, float interval, float value, float duration, UObject* cause)
 	: EffectType{type}
 	, Interval{interval}
 	, Value{value}

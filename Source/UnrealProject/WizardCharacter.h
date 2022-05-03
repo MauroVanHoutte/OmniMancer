@@ -75,11 +75,13 @@ public:
 	float GetSpeed();
 	void SetBounces(int bounces);
 	int GetBounces();
+	TArray<FStatusEffect>& GetBaseAttackEffectsRef();
 
 private:
 	void MoveUp(float value);
 	void MoveRight(float value);
 	void Fire(float input); //Base Projectile
+	void InitProjectile(ABaseProjectile* projectile, const FVector& direction);
 	void CastSpell();
 
 	void Dash();
@@ -88,6 +90,11 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float m_DashForce = 10000.f;
+	UPROPERTY(EditDefaultsOnly)
+	float m_DashCooldown = 5.f;
+	void SetCanDashTrue();
+	bool m_CanDash = true;
+	FTimerHandle m_DashCooldownTimer;
 
 	void CastFlameColumn(const FVector& worldPos);
 	void CastIceZone(const FVector& worldPos);
@@ -163,6 +170,8 @@ private:
 	//Powerups
 	UPROPERTY(VisibleAnywhere)
 	TArray<UPowerUpEffect*> m_PowerUpEffects;
+
+	TArray<FStatusEffect> m_BaseAttackEffects;
 
 	int m_Spread = 0;
 

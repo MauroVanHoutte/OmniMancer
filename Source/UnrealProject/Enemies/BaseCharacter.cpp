@@ -154,7 +154,7 @@ void ABaseCharacter::SpawnPowerup()
 	FVector direction{ FMath::Sin(FMath::DegreesToRadians(angle)), FMath::Cos(FMath::DegreesToRadians(angle)), 1 };
 	auto powerup = Cast<APowerUp>(actor);
 	powerup->SetRandomEffect();
-	powerup->LaunchInDirection(direction.GetSafeNormal(), 200);
+	powerup->LaunchInDirection(direction.GetSafeNormal(), 300);
 }
 
 void ABaseCharacter::UpdateStatusEffects(float deltaTime)

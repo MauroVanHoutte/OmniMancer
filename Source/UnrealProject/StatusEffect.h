@@ -22,7 +22,7 @@ struct FStatusEffect
 	GENERATED_BODY()
 
 	FStatusEffect() = default;
-	FStatusEffect(Type type, float interval, float value, float duration, AActor* cause);
+	FStatusEffect(Type type, float interval, float value, float duration, UObject* cause);
 	~FStatusEffect();
 
 	bool operator==(const FStatusEffect& other)
@@ -40,5 +40,7 @@ struct FStatusEffect
 	float Value{};
 	float Duration{};
 	float Timer{};
-	AActor* Cause{};
+	UObject* Cause{};
 };
+
+

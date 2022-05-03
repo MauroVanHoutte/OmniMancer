@@ -16,6 +16,16 @@ void ABaseSpell::Destroy()
 	AActor::Destroy();
 }
 
+void ABaseSpell::AddStatusEffect(const FStatusEffect& effect)
+{
+	m_StatusEffects.Add(effect);
+}
+
+void ABaseSpell::SetDamage(float damage)
+{
+	m_Damage = damage;
+}
+
 // Called when the game starts or when spawned
 void ABaseSpell::BeginPlay()
 {

@@ -18,6 +18,8 @@ public:
 
 	void Destroy();
 
+	void AddStatusEffect(const FStatusEffect& effect);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -38,6 +40,8 @@ public:
 
 	virtual float GetDamage() const;
 	virtual const TArray<FStatusEffect>& GetStatusEffects() const;
+	UFUNCTION(BlueprintCallable)
+	void SetDamage(float damage);
 	virtual void SetDamageMultiplier(int damageMultiplier);
 
 	void AddHitActor( AActor* actor);
