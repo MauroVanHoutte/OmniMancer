@@ -9,40 +9,40 @@ ASpellIndicator::ASpellIndicator()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	m_Root = CreateDefaultSubobject<USceneComponent>(FName("Root"));
+	Root = CreateDefaultSubobject<USceneComponent>(FName("Root"));
 
-	RootComponent = m_Root;
+	RootComponent = Root;
 
-	m_CylinderMesh = CreateDefaultSubobject<UStaticMeshComponent>("CylinderMesh");
+	CylinderMesh = CreateDefaultSubobject<UStaticMeshComponent>("CylinderMesh");
 	UStaticMesh* cylinderMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cylinder.Cylinder'")).Object;
-	m_CylinderMesh->SetStaticMesh(cylinderMesh);
-	m_CylinderMesh->SetCollisionProfileName(FName("NoCollision"));
-	m_CylinderMesh->SetCanEverAffectNavigation(false);
-	m_CylinderMesh->bHiddenInGame = true;
+	CylinderMesh->SetStaticMesh(cylinderMesh);
+	CylinderMesh->SetCollisionProfileName(FName("NoCollision"));
+	CylinderMesh->SetCanEverAffectNavigation(false);
+	CylinderMesh->bHiddenInGame = true;
 
-	m_CylinderProgressMesh = CreateDefaultSubobject<UStaticMeshComponent>("CylinderProgressMesh");
-	m_CylinderProgressMesh->SetStaticMesh(cylinderMesh);
-	m_CylinderProgressMesh->SetCollisionProfileName(FName("NoCollision"));
-	m_CylinderProgressMesh->SetCanEverAffectNavigation(false);
-	m_CylinderProgressMesh->bHiddenInGame = true;
+	CylinderProgressMesh = CreateDefaultSubobject<UStaticMeshComponent>("CylinderProgressMesh");
+	CylinderProgressMesh->SetStaticMesh(cylinderMesh);
+	CylinderProgressMesh->SetCollisionProfileName(FName("NoCollision"));
+	CylinderProgressMesh->SetCanEverAffectNavigation(false);
+	CylinderProgressMesh->bHiddenInGame = true;
 	
-	m_BoxMesh = CreateDefaultSubobject<UStaticMeshComponent>("BoxMesh");
+	/*BoxMesh = CreateDefaultSubobject<UStaticMeshComponent>("BoxMesh");
 	UStaticMesh* cubeMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")).Object;
-	m_BoxMesh->SetStaticMesh(cubeMesh);
-	m_BoxMesh->SetCollisionProfileName(FName("NoCollision"));
-	m_BoxMesh->SetCanEverAffectNavigation(false);
-	m_BoxMesh->bHiddenInGame = true;
+	BoxMesh->SetStaticMesh(cubeMesh);
+	BoxMesh->SetCollisionProfileName(FName("NoCollision"));
+	BoxMesh->SetCanEverAffectNavigation(false);
+	BoxMesh->bHiddenInGame = true;
 
-	m_BoxProgressMesh = CreateDefaultSubobject<UStaticMeshComponent>("BoxProgressMesh");
-	m_BoxProgressMesh->SetStaticMesh(cubeMesh);
-	m_BoxProgressMesh->SetCollisionProfileName(FName("NoCollision"));
-	m_BoxProgressMesh->SetCanEverAffectNavigation(false);
-	m_BoxProgressMesh->bHiddenInGame = true;
+	BoxProgressMesh = CreateDefaultSubobject<UStaticMeshComponent>("BoxProgressMesh");
+	BoxProgressMesh->SetStaticMesh(cubeMesh);
+	BoxProgressMesh->SetCollisionProfileName(FName("NoCollision"));
+	BoxProgressMesh->SetCanEverAffectNavigation(false);
+	BoxProgressMesh->bHiddenInGame = true;*/
 
-	m_CylinderMesh->SetupAttachment(m_Root);
-	m_CylinderProgressMesh->SetupAttachment(m_Root);
-	m_BoxMesh->SetupAttachment(m_Root);
-	m_BoxProgressMesh->SetupAttachment(m_Root);
+	CylinderMesh->SetupAttachment(Root);
+	CylinderProgressMesh->SetupAttachment(Root);
+	/*BoxMesh->SetupAttachment(Root);
+	BoxProgressMesh->SetupAttachment(Root);*/
 }
 
 // Called when the game starts or when spawned
@@ -56,12 +56,12 @@ void ASpellIndicator::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (m_Active)
+	if (Active)
 	{
-		m_Timer += DeltaTime;
-		FVector newScale = FMath::VInterpTo(FVector(0.1, 0.1, 0.1), m_Scale, m_Timer, 1/m_Duration); //inner cylinder will grow to the size of the constant cylinder to display when spells will hit
-		m_CylinderProgressMesh->SetRelativeScale3D(newScale);
-		if (m_Timer > m_Duration)
+		Timer += DeltaTime;
+		FVector newScale = FMath::VInterpTo(FVector(0.1, 0.1, 0.1), Scale, Timer, 1/Duration); //inner cylinder will grow to the size of the constant cylinder to display when spells will hit
+		CylinderProgressMesh->SetRelativeScale3D(newScale);
+		if (Timer > Duration)
 		{
 			Destroy();
 		}
@@ -71,14 +71,14 @@ void ASpellIndicator::Tick(float DeltaTime)
 
 void ASpellIndicator::StartCircleIndicator(const FVector& scale, float lifetime)
 {
-	m_Active = true;
-	m_CylinderMesh->SetRelativeScale3D(scale);
-	m_CylinderProgressMesh->SetRelativeScale3D(FVector(0.1, 0.1, scale.Z));
-	m_Duration = lifetime;
-	m_Timer = 0.f;
-	m_Scale = scale;
+	Active = true;
+	CylinderMesh->SetRelativeScale3D(scale);
+	CylinderProgressMesh->SetRelativeScale3D(FVector(0.1, 0.1, scale.Z));
+	Duration = lifetime;
+	Timer = 0.f;
+	Scale = scale;
 
-	m_CylinderMesh->bHiddenInGame = false;
-	m_CylinderProgressMesh->bHiddenInGame = false;
+	CylinderMesh->bHiddenInGame = false;
+	CylinderProgressMesh->bHiddenInGame = false;
 }
 

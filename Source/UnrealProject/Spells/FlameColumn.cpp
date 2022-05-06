@@ -9,28 +9,28 @@ AFlameColumn::AFlameColumn()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	m_CylinderMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shape"));
-	RootComponent = m_CylinderMesh;
+	CylinderMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shape"));
+	RootComponent = CylinderMesh;
 	auto mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder")).Object;
-	m_CylinderMesh->SetStaticMesh(mesh);
+	CylinderMesh->SetStaticMesh(mesh);
 	
 }
 
 // Called when the game starts or when spawned
 void AFlameColumn::BeginPlay()
 {
-	m_LifeSpan = m_ImpactDelay + m_VisualLinger;
+	LifeSpan = ImpactDelay + VisualLinger;
 
 	Super::BeginPlay();
-	m_CylinderMesh->SetRelativeScale3D(FVector(m_CircleScale, m_CircleScale, 1.f));
-	m_CylinderMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	CylinderMesh->SetRelativeScale3D(FVector(CircleScale, CircleScale, 1.f));
+	CylinderMesh->SetCollisionProfileName(TEXT("NoCollision"));
 
 
 
-	m_Damage = m_InitialDamage;
-	if (m_ApplyBurn)
+	Damage = InitialDamage;
+	if (ApplyBurn)
 	{
-		m_StatusEffects.Add(FStatusEffect(Type::Damage, m_BurnInterval, m_BurnDamage, m_BurnDuration, this));
+		StatusEffects.Add(FStatusEffect(Type::Damage, BurnInterval, BurnDamage, BurnDuration, this));
 	}
 }
 
@@ -39,11 +39,11 @@ void AFlameColumn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	m_ImpactDelay -= DeltaTime;
-	if (m_ImpactDelay < 0)
+	ImpactDelay -= DeltaTime;
+	if (ImpactDelay < 0)
 	{
-		m_CylinderMesh->SetRelativeScale3D(FVector(m_CircleScale, m_CircleScale, 100.f));
-		m_CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+		CylinderMesh->SetRelativeScale3D(FVector(CircleScale, CircleScale, 100.f));
+		CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	}
 }
 

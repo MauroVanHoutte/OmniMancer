@@ -15,19 +15,16 @@ class UNREALPROJECT_API ATestDummy : public ABaseCharacter
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	ATestDummy();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void TakeSpellDamage(float damage) override;
 	void TakeTickDamage(float damage) override;
+
+protected:
+	virtual void BeginPlay() override;
+
 private:
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* m_Mesh;
+	UStaticMeshComponent* DummyMesh;
 };

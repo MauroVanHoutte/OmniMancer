@@ -3,15 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include <Components/SphereComponent.h>
-#include <GameFramework/ProjectileMovementComponent.h>
 #include "BaseSpell.h"
 
 #include "MortarProjectile.generated.h"
 
-/**
- * 
- */
+class USphereComponent;
+class UProjectileMovementComponent;
+
 UCLASS()
 class UNREALPROJECT_API AMortarProjectile : public AActor
 {
@@ -32,20 +30,18 @@ protected:
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	
-
 private:
 	UPROPERTY(EditAnywhere)
-	USphereComponent* m_CollisionComponent;
+	USphereComponent* CollisionComponent;
 	UPROPERTY(EditAnywhere)
-	UProjectileMovementComponent* m_ProjectileMovement;
+	UProjectileMovementComponent* ProjectileMovement;
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* m_Mesh;
+	UStaticMeshComponent* Mesh;
 
 	
 	UPROPERTY(EditAnywhere)
-	float m_ProjectileRadius = 50.f;
+	float ProjectileRadius = 50.f;
 	UPROPERTY(EditAnywhere)
-	float m_ProjectileSpeedZ = 1000.f;
+	float ProjectileSpeedZ = 1000.f;
 
 };

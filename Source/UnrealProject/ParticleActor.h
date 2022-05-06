@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
 #include "ParticleActor.generated.h"
+
+class UNiagaraComponent;
+class UNiagaraSystem;
 
 UCLASS()
 class UNREALPROJECT_API AParticleActor : public AActor
@@ -14,18 +15,16 @@ class UNREALPROJECT_API AParticleActor : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AParticleActor();
 
 	void SetSystem(UNiagaraSystem* system, float lifetime);
 
 	void Destroy();
 protected:
-	// Called when the game starts or when spawned
 
 
 	UPROPERTY(EditDefaultsOnly)
-	UNiagaraComponent* m_NiagaraComponent;
+	UNiagaraComponent* NiagaraComponent;
 
-	FTimerHandle m_LifetimeTimer;
+	FTimerHandle LifetimeTimer;
 };

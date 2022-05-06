@@ -7,6 +7,10 @@
 #include <GameFramework/CharacterMovementComponent.h>
 #include <AIController.h>
 #include "../Powerups/PowerUp.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "../FloatingTextActor.h"
+
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -26,36 +30,36 @@ ABaseCharacter::ABaseCharacter()
 	GetComponents(characterMovementComps);
 	if (characterMovementComps.Num() > 0)
 	{
-		m_CharacterMovement = characterMovementComps[0];
+		CharacterMovement = characterMovementComps[0];
 	}
 
-	m_NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("ParticleSystem");
-	m_NiagaraComponent->SetupAttachment(RootComponent);
+	NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("ParticleSystem");
+	NiagaraComponent->SetupAttachment(RootComponent);
 }
 
 bool ABaseCharacter::GetStunned()
 {
-	return m_Stunned;
+	return Stunned;
 }
 
 float ABaseCharacter::GetHealth()
 {
-	return m_Health;
+	return Health;
 }
 
 float ABaseCharacter::GetStartHealth()
 {
-	return m_StartHealth;
+	return StartHealth;
 }
 
 void ABaseCharacter::Heal(float hp)
 {
-	m_Health += hp;
-	if (m_Health > m_StartHealth)
-		m_Health = m_StartHealth;
-	if (m_FloatingTextClass == nullptr)
+	Health += hp;
+	if (Health > StartHealth)
+		Health = StartHealth;
+	if (FloatingTextClass == nullptr)
 		return;
-	auto text = GetWorld()->SpawnActor(m_FloatingTextClass);
+	auto text = GetWorld()->SpawnActor(FloatingTextClass);
 	Cast<AFloatingTextActor>(text)->Initialize(FText::FromString(FString::SanitizeFloat(hp)), FColor::Green);
 	text->SetActorLocation(GetActorLocation());
 }
@@ -64,14 +68,14 @@ void ABaseCharacter::Heal(float hp)
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	m_StartHealth = m_Health;
+	StartHealth = Health;
 }
 
 void ABaseCharacter::CheckDeath()
 {
-	if (m_Health <= 0)
+	if (Health <= 0)
 	{
-		if (m_SpawnPowerupOnDeath)
+		if (SpawnPowerupOnDeath)
 		{
 			SpawnPowerup();
 		}
@@ -97,14 +101,14 @@ void ABaseCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 
 void ABaseCharacter::TakeSpellDamage(float damage)
 {
-	m_Health -= damage;
+	Health -= damage;
 	SpawnDamageText(damage);
 	CheckDeath();
 }
 
 void ABaseCharacter::TakeTickDamage(float damage)
 {
-	m_Health -= damage;
+	Health -= damage;
 	SpawnDamageText(damage);
 	CheckDeath();
 }
@@ -115,41 +119,41 @@ void ABaseCharacter::AddStatusEffects(const TArray<FStatusEffect>& statusEffects
 	{
 		if (effect.EffectType == Type::Stun)
 		{
-			m_Stunned = true;
+			Stunned = true;
 			OnStunned();
-			if (m_NiagaraComponent != nullptr)
-				m_NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 1.f);
+			if (NiagaraComponent != nullptr)
+				NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 1.f);
 		}
 		if (effect.EffectType == Type::Damage)
 		{
-			if (m_NiagaraComponent != nullptr)
-				m_NiagaraComponent->SetVariableFloat(TEXT("Burning"), 1.f);
+			if (NiagaraComponent != nullptr)
+				NiagaraComponent->SetVariableFloat(TEXT("Burning"), 1.f);
 		}
 		if (effect.EffectType == Type::Slow)
 		{
-			m_SlowAmount += effect.Value;
-			m_CharacterMovement->MaxWalkSpeed *= (1 - effect.Value/100.f);
+			SlowAmount += effect.Value;
+			CharacterMovement->MaxWalkSpeed *= (1 - effect.Value/100.f);
 		}
-		m_CurrentStatusEffects.Add(effect);
+		CurrentStatusEffects.Add(effect);
 	}
 }
 
 void ABaseCharacter::SpawnDamageText(float damage)
 {
-	if (m_FloatingTextClass == nullptr || FMath::IsNearlyEqual(damage, 0.f))
+	if (FloatingTextClass == nullptr || FMath::IsNearlyEqual(damage, 0.f))
 		return;
-	auto text = GetWorld()->SpawnActor(m_FloatingTextClass);
-	Cast<AFloatingTextActor>(text)->Initialize(FText::FromString(FString::SanitizeFloat(damage)), m_DamageTextColor);
+	auto text = GetWorld()->SpawnActor(FloatingTextClass);
+	Cast<AFloatingTextActor>(text)->Initialize(FText::FromString(FString::SanitizeFloat(damage)), DamageTextColor);
 	text->SetActorLocation(GetActorLocation());
 }
 
 void ABaseCharacter::SpawnPowerup()
 {
-	if (FMath::RandRange(0.f, 100.f) > m_PowerupSpawnChance)
+	if (FMath::RandRange(0.f, 100.f) > PowerupSpawnChance)
 		return;
 	
 	auto location = GetActorLocation();
-	auto actor = GetWorld()->SpawnActor(m_Powerup.Get(), &location);
+	auto actor = GetWorld()->SpawnActor(Powerup.Get(), &location);
 	float angle = FMath::FRandRange(0.f, 360.f);
 	FVector direction{ FMath::Sin(FMath::DegreesToRadians(angle)), FMath::Cos(FMath::DegreesToRadians(angle)), 1 };
 	auto powerup = Cast<APowerUp>(actor);
@@ -159,24 +163,24 @@ void ABaseCharacter::SpawnPowerup()
 
 void ABaseCharacter::UpdateStatusEffects(float deltaTime)
 {
-	for (size_t i = 0; i < m_CurrentStatusEffects.Num(); i++)
+	for (int32 i = 0; i < CurrentStatusEffects.Num(); i++)
 	{
-		if (m_CurrentStatusEffects[i].EffectType == Type::Damage)
+		if (CurrentStatusEffects[i].EffectType == Type::Damage)
 		{
-			m_CurrentStatusEffects[i].Timer += deltaTime;
-			if (m_CurrentStatusEffects[i].Timer > m_CurrentStatusEffects[i].Interval)
+			CurrentStatusEffects[i].Timer += deltaTime;
+			if (CurrentStatusEffects[i].Timer > CurrentStatusEffects[i].Interval)
 			{
-				m_CurrentStatusEffects[i].Timer -= m_CurrentStatusEffects[i].Interval;
-				TakeTickDamage(m_CurrentStatusEffects[i].Value);
-				m_CurrentStatusEffects[i].Duration -= m_CurrentStatusEffects[i].Interval;
-				if (m_CurrentStatusEffects[i].Duration < m_CurrentStatusEffects[i].Interval)
+				CurrentStatusEffects[i].Timer -= CurrentStatusEffects[i].Interval;
+				TakeTickDamage(CurrentStatusEffects[i].Value);
+				CurrentStatusEffects[i].Duration -= CurrentStatusEffects[i].Interval;
+				if (CurrentStatusEffects[i].Duration < CurrentStatusEffects[i].Interval)
 				{
-					m_CurrentStatusEffects.RemoveAt(i);
+					CurrentStatusEffects.RemoveAt(i);
 					i--;
 
-					auto otherBurnEffect = m_CurrentStatusEffects.FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Damage; });
-					if (otherBurnEffect == nullptr && m_NiagaraComponent != nullptr)
-						m_NiagaraComponent->SetVariableFloat(TEXT("Burning"), 0.f);
+					auto otherBurnEffect = CurrentStatusEffects.FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Damage; });
+					if (otherBurnEffect == nullptr && NiagaraComponent != nullptr)
+						NiagaraComponent->SetVariableFloat(TEXT("Burning"), 0.f);
 
 					continue;
 				}
@@ -184,24 +188,24 @@ void ABaseCharacter::UpdateStatusEffects(float deltaTime)
 		}
 		else
 		{
-			m_CurrentStatusEffects[i].Timer += deltaTime;
-			if (m_CurrentStatusEffects[i].Timer > m_CurrentStatusEffects[i].Duration)
+			CurrentStatusEffects[i].Timer += deltaTime;
+			if (CurrentStatusEffects[i].Timer > CurrentStatusEffects[i].Duration)
 			{
-				FStatusEffect effect = m_CurrentStatusEffects[i];
-				m_CurrentStatusEffects.RemoveAt(i);
+				FStatusEffect effect = CurrentStatusEffects[i];
+				CurrentStatusEffects.RemoveAt(i);
 				if (effect.EffectType == Type::Slow)
 				{
-					m_SlowAmount -= effect.Value;
-					m_CharacterMovement->MaxWalkSpeed /= (1 - effect.Value / 100.f);
+					SlowAmount -= effect.Value;
+					CharacterMovement->MaxWalkSpeed /= (1 - effect.Value / 100.f);
 				}
 				if (effect.EffectType == Type::Stun)
 				{
-					auto otherStunEffect = m_CurrentStatusEffects.FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Stun; });
+					auto otherStunEffect = CurrentStatusEffects.FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Stun; });
 					if (otherStunEffect == nullptr)
 					{
-						m_Stunned = false;
-						if (m_NiagaraComponent != nullptr)
-							m_NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 0.f);
+						Stunned = false;
+						if (NiagaraComponent != nullptr)
+							NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 0.f);
 					}
 				}
 				i--;
@@ -240,7 +244,7 @@ void ABaseCharacter::ReapplyStatusEffects(const TArray<FStatusEffect>& statusEff
 	for (const auto& effect : statusEffects)
 	{
 		bool doContinue{ false };
-		for (auto& currEffect : m_CurrentStatusEffects)
+		for (auto& currEffect : CurrentStatusEffects)
 		{
 			if (effect.EffectType == currEffect.EffectType && effect.Cause == currEffect.Cause)
 			{
@@ -265,22 +269,22 @@ void ABaseCharacter::ReapplyStatusEffects(const TArray<FStatusEffect>& statusEff
 
 		if (effect.EffectType == Type::Stun)
 		{
-			m_Stunned = true;
+			Stunned = true;
 			OnStunned();
-			if (m_NiagaraComponent != nullptr)
-				m_NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 1.f);
+			if (NiagaraComponent != nullptr)
+				NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 1.f);
 		}
 		if (effect.EffectType == Type::Damage)
 		{
-			if (m_NiagaraComponent != nullptr)
-				m_NiagaraComponent->SetVariableFloat(TEXT("Burning"), 1.f);
+			if (NiagaraComponent != nullptr)
+				NiagaraComponent->SetVariableFloat(TEXT("Burning"), 1.f);
 		}
 		if (effect.EffectType == Type::Slow)
 		{
-			m_SlowAmount += effect.Value;
-			m_CharacterMovement->MaxWalkSpeed *= (1 - effect.Value / 100.f);
+			SlowAmount += effect.Value;
+			CharacterMovement->MaxWalkSpeed *= (1 - effect.Value / 100.f);
 		}
-		m_CurrentStatusEffects.Add(effect);
+		CurrentStatusEffects.Add(effect);
 	}
 }
 

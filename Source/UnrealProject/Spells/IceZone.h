@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 #include "BaseSpell.h"
 
 #include "IceZone.generated.h"
@@ -14,8 +13,9 @@ class UNREALPROJECT_API AIceZone : public ABaseSpell
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AIceZone();
+
+	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
 	void SetBurnParams(bool applyBurns, float tickDamage, float tickInterval, float duration);
@@ -30,33 +30,29 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(BlueprintReadWrite)
-	UStaticMeshComponent* m_CylinderMesh;
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* CylinderMesh;
 
+	UPROPERTY(EditAnywhere)
+	bool ApplyBurn = true;
+	UPROPERTY(EditAnywhere)
+	float BurnDamage = 1.f;
+	UPROPERTY(EditAnywhere)
+	float BurnInterval = 0.5f;
+	UPROPERTY(EditAnywhere)
+	float EffectLingerDuration = 2.f;
+	UPROPERTY(EditAnywhere)
+	int SlowAmount = 50;
+
+	UPROPERTY(EditAnywhere)
+	float CircleScale = 7.f;
+
+	UPROPERTY(EditAnywhere)
+	float ApplicationInterval = 0.2f;
 
 private:
 
-	UPROPERTY(EditAnywhere)
-	bool m_ApplyBurn = true;
-	UPROPERTY(EditAnywhere)
-	float m_BurnDamage = 1.f;
-	UPROPERTY(EditAnywhere)
-	float m_BurnInterval = 0.5f;
-	UPROPERTY(EditAnywhere)
-	float m_EffectLingerDuration = 2.f;
-	UPROPERTY(EditAnywhere)
-	int m_SlowAmount = 50;
+	float ApplicationTimer = 0.f;
 
-	UPROPERTY(EditAnywhere)
-	float m_CircleScale = 7.f;
-
-	UPROPERTY(EditAnywhere)
-	float m_ApplicationInterval = 0.2f;
-
-	float m_ApplicationTimer = 0.f;
-
-	FTimerHandle m_LifetimeHandle;
+	FTimerHandle LifetimeHandle;
 };

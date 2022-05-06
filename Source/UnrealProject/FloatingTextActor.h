@@ -12,21 +12,18 @@ class UNREALPROJECT_API AFloatingTextActor : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AFloatingTextActor();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void Initialize(const FText& text, FColor color);
 
-	inline const FVector& GetAnchorLocation() const { return m_AnchorLocation; };
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	inline const FVector& GetAnchorLocation() const { return AnchorLocation; };
 
-public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+protected:
+	virtual void BeginPlay() override;
+
 private:
-	FVector m_AnchorLocation;
+	FVector AnchorLocation;
 };

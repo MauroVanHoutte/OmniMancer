@@ -14,13 +14,13 @@ AChainLightning::AChainLightning()
 void AChainLightning::BeginPlay()
 {
 	Super::BeginPlay();
-	m_Damage = m_InitialDamage;
-	if (m_Stuns)
+	Damage = InitialDamage;
+	if (Stuns)
 	{
-		m_StatusEffects.Add(FStatusEffect(Type::Stun, -1.f, -1.f, m_StunDuration, this));
+		StatusEffects.Add(FStatusEffect(Type::Stun, -1.f, -1.f, StunDuration, this));
 	}
 
-	m_ProjectileMovement->MaxSpeed = m_MaxSpeed;
-	m_ProjectileMovement->InitialSpeed = m_MaxSpeed;
+	ProjectileMovement->MaxSpeed = MaxSpeed;
+	ProjectileMovement->InitialSpeed = MaxSpeed;
 }
 

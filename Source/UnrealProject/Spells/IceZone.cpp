@@ -10,16 +10,16 @@ AIceZone::AIceZone()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	m_CylinderMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shape"));
-	RootComponent = m_CylinderMesh;
+	CylinderMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shape"));
+	RootComponent = CylinderMesh;
 	auto mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder")).Object;
-	m_CylinderMesh->SetStaticMesh(mesh);
+	CylinderMesh->SetStaticMesh(mesh);
 
 }
 
 void AIceZone::SetBurnParams(bool applyBurns, float tickDamage, float tickInterval, float duration)
 {
-	auto effect = m_StatusEffects.FindByPredicate([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Damage; });
+	auto effect = StatusEffects.FindByPredicate([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Damage; });
 
 	if (applyBurns)
 	{
@@ -31,21 +31,21 @@ void AIceZone::SetBurnParams(bool applyBurns, float tickDamage, float tickInterv
 		}
 		else
 		{
-			m_StatusEffects.Add(FStatusEffect(Type::Slow, tickInterval, tickDamage, duration, this));
+			StatusEffects.Add(FStatusEffect(Type::Slow, tickInterval, tickDamage, duration, this));
 		}
 	}
 	else
 	{
 		if (effect != nullptr)
 		{
-			m_StatusEffects.RemoveAll([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Damage; });
+			StatusEffects.RemoveAll([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Damage; });
 		}
 	}
 }
 
 void AIceZone::SetSlowParams(bool applySlow, float value, float duration)
 {
-	auto effect = m_StatusEffects.FindByPredicate([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Slow; });
+	auto effect = StatusEffects.FindByPredicate([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Slow; });
 
 	if (applySlow)
 	{
@@ -56,29 +56,29 @@ void AIceZone::SetSlowParams(bool applySlow, float value, float duration)
 		}
 		else
 		{
-			m_StatusEffects.Add(FStatusEffect(Type::Slow, -1, value, duration, this));
+			StatusEffects.Add(FStatusEffect(Type::Slow, -1, value, duration, this));
 		}
 	}
 	else
 	{
 		if (effect != nullptr)
 		{
-			m_StatusEffects.RemoveAll([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Slow; });
+			StatusEffects.RemoveAll([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Slow; });
 		}
 	}
 }
 
 void AIceZone::SetRadius(float radius)
 {
-	auto scale = m_CylinderMesh->GetRelativeScale3D();
+	auto scale = CylinderMesh->GetRelativeScale3D();
 	scale.X = radius;
 	scale.Y = radius;
-	m_CylinderMesh->SetRelativeScale3D(scale);
+	CylinderMesh->SetRelativeScale3D(scale);
 }
 
 void AIceZone::SetLifetime(float lifetime)
 {
-	GetWorld()->GetTimerManager().SetTimer(m_LifetimeHandle, this, &AIceZone::Destroy, lifetime);
+	GetWorld()->GetTimerManager().SetTimer(LifetimeHandle, this, &AIceZone::Destroy, lifetime);
 }
 
 void AIceZone::Destroy()
@@ -89,15 +89,15 @@ void AIceZone::Destroy()
 // Called when the game starts or when spawned
 void AIceZone::BeginPlay()
 {
-	m_Damage = 0.f;
-	if (m_ApplyBurn)
+	Damage = 0.f;
+	if (ApplyBurn)
 	{
-		m_StatusEffects.Add(FStatusEffect(Type::Damage, m_BurnInterval, m_BurnDamage, m_EffectLingerDuration, this));
+		StatusEffects.Add(FStatusEffect(Type::Damage, BurnInterval, BurnDamage, EffectLingerDuration, this));
 	}
-	m_StatusEffects.Add(FStatusEffect(Type::Slow, -1.f, m_SlowAmount, m_EffectLingerDuration, this));
-	m_CylinderMesh->SetRelativeScale3D(FVector(m_CircleScale, m_CircleScale, 1.f));
+	StatusEffects.Add(FStatusEffect(Type::Slow, -1.f, SlowAmount, EffectLingerDuration, this));
+	CylinderMesh->SetRelativeScale3D(FVector(CircleScale, CircleScale, 1.f));
 
-	m_CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
 	Super::BeginPlay();
 
@@ -108,10 +108,10 @@ void AIceZone::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	m_ApplicationTimer += DeltaTime;
-	if (m_ApplicationTimer > m_ApplicationInterval)
+	ApplicationTimer += DeltaTime;
+	if (ApplicationTimer > ApplicationInterval)
 	{
-		m_ApplicationTimer -= m_ApplicationInterval;
+		ApplicationTimer -= ApplicationInterval;
 
 		TArray<AActor*> overlappingActors{};
 		GetOverlappingActors(overlappingActors);
@@ -124,7 +124,7 @@ void AIceZone::Tick(float DeltaTime)
 				return;
 			auto actorController = Cast<APlayerController>(baseEnemy->GetController());
 			if (baseEnemy &&  instigatorController != actorController)
-				baseEnemy->ReapplyStatusEffects(m_StatusEffects);
+				baseEnemy->ReapplyStatusEffects(StatusEffects);
 		}
 	}
 

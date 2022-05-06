@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "BaseSpell.h"
-#include <Components/SphereComponent.h>
-#include <GameFramework/ProjectileMovementComponent.h>
-#include <Components/StaticMeshComponent.h>
-#include <GameplayTagContainer.h>
-#include "../ParticleActor.h"
 
 #include "BaseProjectile.generated.h"
+
+class USphereComponent;
+class UProjectileMovementComponent;
+class AParticleActor;
+class UNiagaraSystem;
 
 UCLASS()
 class UNREALPROJECT_API ABaseProjectile : public ABaseSpell
@@ -21,48 +21,46 @@ public:
 	// Sets default values for this actor's properties
 	ABaseProjectile();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	void Explode();
-
-public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
-	void FireInDirection(const FVector& direction);
+		void FireInDirection(const FVector& direction);
 
 	void OnHit(AActor* hitActor) override;
 
 	UFUNCTION()
-	virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	void SetExplosion(float radius, float damage);
 
 	void SetBounces(int bounces);
 
 protected:
-	USphereComponent* m_CollisionComponent;
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	void Explode();	
+
+	USphereComponent* CollisionComponent;
 	UPROPERTY(EditAnywhere)
-	UProjectileMovementComponent* m_ProjectileMovement;
+	UProjectileMovementComponent* ProjectileMovement;
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* m_Mesh;
+	UStaticMeshComponent* Mesh;
 
 	//Amount of times the projectile will bounce to nearby enemies
 	UPROPERTY(EditDefaultsOnly)
-	int m_TotalBounces = 0;
-	int m_BouceCount = 0;
+	int TotalBounces = 0;
+	int BouceCount = 0;
 	//Maximum distance between enemies while still able to bounce
 	UPROPERTY(EditDefaultsOnly)
-	float m_BounceRange = 700.f;
+	float BounceRange = 700.f;
 
-	bool m_Explosive = false;
-	float m_ExplosionRadius = 0;
-	float m_ExplosionDamage = 0;
+	bool Explosive = false;
+	float ExplosionRadius = 0;
+	float ExplosionDamage = 0;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AParticleActor> m_ParticleActorClass;
+	TSubclassOf<AParticleActor> ParticleActorClass;
 	UPROPERTY(EditDefaultsOnly)
-	UNiagaraSystem* m_ExplosionSystem;
+	UNiagaraSystem* ExplosionSystem;
 };

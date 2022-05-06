@@ -3,32 +3,34 @@
 
 #include "MortarProjectile.h"
 #include "../WizardCharacter.h"
+#include <GameFramework/ProjectileMovementComponent.h>
+#include <Components/SphereComponent.h>
 
 AMortarProjectile::AMortarProjectile()
 {
-	m_CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComp"));
-	m_CollisionComponent->InitSphereRadius(m_ProjectileRadius);
-	m_CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMortarProjectile::OnHit);
-	m_CollisionComponent->SetCollisionProfileName("OverlapAll");
-	RootComponent = m_CollisionComponent;
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionComp"));
+	CollisionComponent->InitSphereRadius(ProjectileRadius);
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMortarProjectile::OnHit);
+	CollisionComponent->SetCollisionProfileName("OverlapAll");
+	RootComponent = CollisionComponent;
 
-	m_ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
-	m_ProjectileMovement->SetUpdatedComponent(m_CollisionComponent);
-	m_ProjectileMovement->bShouldBounce = false;
-	m_ProjectileMovement->ProjectileGravityScale = 1.f;
-	m_ProjectileMovement->InitialSpeed = m_ProjectileSpeedZ;
-	m_ProjectileMovement->MaxSpeed = m_ProjectileSpeedZ * 2;
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
+	ProjectileMovement->SetUpdatedComponent(CollisionComponent);
+	ProjectileMovement->bShouldBounce = false;
+	ProjectileMovement->ProjectileGravityScale = 1.f;
+	ProjectileMovement->InitialSpeed = ProjectileSpeedZ;
+	ProjectileMovement->MaxSpeed = ProjectileSpeedZ * 2;
 
-	m_Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
 	auto mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'")).Object;
-	m_Mesh->SetStaticMesh(mesh);
-	m_Mesh->SetupAttachment(RootComponent);
-	m_Mesh->SetCollisionProfileName("NoCollision");
+	Mesh->SetStaticMesh(mesh);
+	Mesh->SetupAttachment(RootComponent);
+	Mesh->SetCollisionProfileName("NoCollision");
 }
 
 UProjectileMovementComponent* AMortarProjectile::GetProjectileMovementComp()
 {
-	return m_ProjectileMovement;
+	return ProjectileMovement;
 }
 
 void AMortarProjectile::BeginPlay()
@@ -40,7 +42,7 @@ void AMortarProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActor* Other
 {
 	if (OtherComp->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic)
 	{
-		m_CollisionComponent->SetCollisionProfileName("NoCollision");
+		CollisionComponent->SetCollisionProfileName("NoCollision"); //will collide multiple times before actually being destroyed
 		SpawnExplosion(GetActorLocation());
 		Destroy();
 	}

@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "BaseSpell.h"
-#include <Components/StaticMeshComponent.h>
 
 #include "Shockwave.generated.h"
 
@@ -28,11 +27,11 @@ protected:
 private:
 
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* m_StaticMeshComponent;
+	UStaticMeshComponent* StaticMeshComponent;
 	UPROPERTY(EditAnywhere)
-	float m_InitialDamage = 5.f;
+	float InitialDamage = 5.f;
 	UPROPERTY(EditAnywhere)
-	float m_ScaleGrowth = 0.5f;
+	float ScaleGrowth = 0.5f;
 	UPROPERTY(EditAnywhere)
-	float m_KnockbackAmount = 100.f;
+	float KnockbackAmount = 100.f;
 };

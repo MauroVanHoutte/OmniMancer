@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "BaseSpell.h"
-#include <Components/StaticMeshComponent.h>
 #include "IceWall.generated.h"
 
 /**
@@ -23,8 +22,8 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* m_Mesh = nullptr;
+	UStaticMeshComponent* Mesh = nullptr;
 
 	UPROPERTY(EditAnywhere)
-	float m_WallWidth = 5.f;
+	float WallWidth = 5.f;
 };

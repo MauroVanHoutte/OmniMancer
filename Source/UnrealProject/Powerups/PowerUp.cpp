@@ -3,7 +3,6 @@
 
 #include "PowerUp.h"
 #include "../WizardCharacter.h"
-#include <Kismet2/KismetEditorUtilities.h>
 
 TArray<TSubclassOf<UPowerUpEffect>> APowerUp::AllEffects{};
 bool APowerUp::EffectsInitialized{ false };

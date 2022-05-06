@@ -11,11 +11,11 @@ ATestDummy::ATestDummy()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	m_Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
+	DummyMesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
 	auto mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")).Object;
-	m_Mesh->SetStaticMesh(mesh);
-	m_Mesh->SetupAttachment(RootComponent);
-	m_Mesh->SetCanEverAffectNavigation(false);
+	DummyMesh->SetStaticMesh(mesh);
+	DummyMesh->SetupAttachment(RootComponent);
+	DummyMesh->SetCanEverAffectNavigation(false);
 }
 
 // Called when the game starts or when spawned

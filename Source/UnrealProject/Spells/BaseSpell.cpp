@@ -18,19 +18,19 @@ void ABaseSpell::Destroy()
 
 void ABaseSpell::AddStatusEffect(const FStatusEffect& effect)
 {
-	m_StatusEffects.Add(effect);
+	StatusEffects.Add(effect);
 }
 
 void ABaseSpell::SetDamage(float damage)
 {
-	m_Damage = damage;
+	Damage = damage;
 }
 
 // Called when the game starts or when spawned
 void ABaseSpell::BeginPlay()
 {
 	Super::BeginPlay();
-	GetWorld()->GetTimerManager().SetTimer(m_LifeTimer, this, &ABaseSpell::Destroy, m_LifeSpan);
+	GetWorld()->GetTimerManager().SetTimer(LifeTimer, this, &ABaseSpell::Destroy, LifeSpan);
 }
 
 // Called every frame
@@ -42,28 +42,28 @@ void ABaseSpell::Tick(float DeltaTime)
 
 float ABaseSpell::GetDamage() const
 {
-	return m_Damage*(1+(m_DamageMultiplier/100.f));
+	return Damage*(1+(DamageMultiplier/100.f));
 }
 
 const TArray<FStatusEffect>& ABaseSpell::GetStatusEffects() const
 {
-	return m_StatusEffects;
+	return StatusEffects;
 }
 
 void ABaseSpell::SetDamageMultiplier(int damageMultiplier)
 {
-	m_DamageMultiplier = damageMultiplier;
+	DamageMultiplier = damageMultiplier;
 }
 
 void ABaseSpell::AddHitActor( AActor* actor)
 {
-	m_HitActors.Add(actor);
+	HitActors.Add(actor);
 }
 
 bool ABaseSpell::WasActorHit(AActor* actor) const
 {
 	int32 idx;
-	return m_HitActors.Find(actor, idx);
+	return HitActors.Find(actor, idx);
 }
 
 void ABaseSpell::OnHit(AActor* hitActor)

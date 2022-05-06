@@ -13,29 +13,12 @@ class UNREALPROJECT_API ABaseSpell : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	ABaseSpell();
 
 	void Destroy();
 
 	void AddStatusEffect(const FStatusEffect& effect);
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	float m_Damage = 0;
-
-	UPROPERTY(EditAnywhere)
-	TArray<FStatusEffect> m_StatusEffects{};
-
-	UPROPERTY(EditDefaultsOnly)
-	float m_LifeSpan = 5;
-
-	TArray<AActor*> m_HitActors{};
-
-public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	virtual float GetDamage() const;
@@ -44,14 +27,27 @@ public:
 	void SetDamage(float damage);
 	virtual void SetDamageMultiplier(int damageMultiplier);
 
-	void AddHitActor( AActor* actor);
-	bool WasActorHit( AActor* actor) const;
+	void AddHitActor(AActor* actor);
+	bool WasActorHit(AActor* actor) const;
 
 	virtual void OnHit(AActor* hitActor);
 
+protected:
+	virtual void BeginPlay() override;
+
+	float Damage = 0;
+
+	UPROPERTY(EditAnywhere)
+	TArray<FStatusEffect> StatusEffects{}; //status effectss get applied to entities hit
+
+	UPROPERTY(EditDefaultsOnly)
+	float LifeSpan = 5;
+
+	TArray<AActor*> HitActors{};	
+
 private:
 	UPROPERTY(VisibleAnywhere)
-	int m_DamageMultiplier = 0;
+	int DamageMultiplier = 0;
 
-	FTimerHandle m_LifeTimer{};
+	FTimerHandle LifeTimer{};
 };

@@ -3,24 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include <GameFramework/SpringArmComponent.h>
-#include <Camera/CameraComponent.h>
-#include "Spells/FlameColumn.h"
-#include "Spells/IceZone.h"
-#include "Spells/IceWall.h"
-#include "Spells/Tornado.h"
-#include "Spells/ChainLightning.h"
-#include "Spells/Shockwave.h"
-#include "Spells/BaseProjectile.h"
-#include <Components/BillboardComponent.h>
-#include "FloatingTextActor.h"
 #include "Enemies/BaseCharacter.h"
 
 #include "WizardCharacter.generated.h"
 
-UENUM()
-enum class WizardElement
+UENUM(BlueprintType)
+enum class WizardElement : uint8
 {
 	Fire = 0,
 	Frost = 1,
@@ -28,6 +16,16 @@ enum class WizardElement
 };
 
 class UPowerUpEffect;
+class UBillboardComponent;
+class UCameraComponent;
+class USpringArmComponent;
+class AFlameColumn;
+class AIceZone;
+class AIceWall;
+class ATornado;
+class AChainLightning;
+class AShockwave;
+class ABaseProjectile;
 
 UCLASS()
 class UNREALPROJECT_API AWizardCharacter : public ABaseCharacter
@@ -35,33 +33,29 @@ class UNREALPROJECT_API AWizardCharacter : public ABaseCharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AWizardCharacter();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	void TakeSpellDamage(float damage) override;
 	void TakeTickDamage(float damage) override;
 
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnAddElement();
 
 	UFUNCTION(BlueprintCallable)
-	TArray<int> GetCurrentElements();
+	const TArray<WizardElement>& GetCurrentElements();
 
 	UFUNCTION(BlueprintCallable)
 	TMap<int, float>& GetCooldowns();
 	UFUNCTION(BlueprintCallable)
-	TMap<int, float>& GetCooldownCounters();
+	TMap<int, FTimerHandle>& GetCooldownTimers();
 
 	void AddPowerUpEffect( UPowerUpEffect* effect);
 
@@ -92,8 +86,6 @@ private:
 	float m_DashForce = 10000.f;
 	UPROPERTY(EditDefaultsOnly)
 	float m_DashCooldown = 5.f;
-	void SetCanDashTrue();
-	bool m_CanDash = true;
 	FTimerHandle m_DashCooldownTimer;
 
 	void CastFlameColumn(const FVector& worldPos);
@@ -108,77 +100,76 @@ private:
 
 
 	UPROPERTY(EditAnywhere)
-	USpringArmComponent* m_SpringArm;
+	USpringArmComponent* SpringArm;
 	UPROPERTY(EditAnywhere)
-	UCameraComponent* m_Camera;
+	UCameraComponent* Camera;
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* m_Mesh;
+	UStaticMeshComponent* WizardMesh;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<WizardElement> m_CurrentElements{};
-	int m_MaxElements = 2;
+	TArray<WizardElement> CurrentElements{};
+	int MaxElements = 2;
 	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<AFlameColumn> m_FlameColumnClass = nullptr;
+	TSubclassOf<AFlameColumn> FlameColumnClass = nullptr;
 	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<AIceZone> m_IceZoneClass = nullptr;
+	TSubclassOf<AIceZone> IceZoneClass = nullptr;
 	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<AIceWall> m_IceWallClass = nullptr;
+	TSubclassOf<AIceWall> IceWallClass = nullptr;
 	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<ATornado> m_TornadoClass = nullptr;
+	TSubclassOf<ATornado> TornadoClass = nullptr;
 	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<AChainLightning> m_ChainLighningClass = nullptr;
+	TSubclassOf<AChainLightning> ChainLighningClass = nullptr;
 	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<AShockwave> m_ShockwaveClass = nullptr;
+	TSubclassOf<AShockwave> ShockwaveClass = nullptr;
 	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<ABaseProjectile> m_BaseProjectile = nullptr;
+	TSubclassOf<ABaseProjectile> BaseProjectile = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
-	int m_SpeedPerWind = 10;
+	int SpeedPerWind = 10;
 	UPROPERTY(EditDefaultsOnly)
-	int m_DamagePerFire = 10;
+	int DamagePerFire = 10;
 	UPROPERTY(EditDefaultsOnly)
-	int m_DamageReductionPerFrost = 10;
+	int DamageReductionPerFrost = 10;
 	UPROPERTY(EditDefaultsOnly)
-	int m_BaseDamageMultiplier = 20;
+	int BaseDamageMultiplier = 20;
 	UPROPERTY(EditDefaultsOnly)
-	int m_DamageTakenMultiplier = 0;
+	int DamageTakenMultiplier = 0;
 
 	UPROPERTY(EditDefaultsOnly)
-	UBillboardComponent* m_FirstElementBillboard = nullptr; 
+	UBillboardComponent* FirstElementBillboard = nullptr; 
 	UPROPERTY(EditDefaultsOnly)
-	UBillboardComponent* m_SecondElementBillboard = nullptr;
+	UBillboardComponent* SecondElementBillboard = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
-	UTexture2D* m_FireElementTexture = nullptr;
+	UTexture2D* FireElementTexture = nullptr;
 	UPROPERTY(EditDefaultsOnly)
-	UTexture2D* m_FrostElementTexture = nullptr;
+	UTexture2D* FrostElementTexture = nullptr;
 	UPROPERTY(EditDefaultsOnly)
-	UTexture2D* m_WindElementTexture = nullptr;
+	UTexture2D* WindElementTexture = nullptr;
 
 	// Cooldowns
 	UPROPERTY(EditAnywhere)
-	TMap<int, float> m_Cooldowns{};
+	TMap<int, float> Cooldowns{};
 	UPROPERTY(VisibleAnywhere)
-	TMap<int, float> m_CooldownCounter{};
+	TMap<int, FTimerHandle> CooldownTimers{};
 
 	
 	UPROPERTY(EditDefaultsOnly)
-	float m_BasicAttackCooldown = 0.5f;
-	UPROPERTY(VisibleAnywhere)
-	float m_BasicAttackTimer = m_BasicAttackCooldown;
+	float BasicAttackCooldown = 0.5f;
+	FTimerHandle BasicAttackTimer;
 
 	//Powerups
 	UPROPERTY(VisibleAnywhere)
-	TArray<UPowerUpEffect*> m_PowerUpEffects;
+	TArray<UPowerUpEffect*> PowerUpEffects;
 
-	TArray<FStatusEffect> m_BaseAttackEffects;
+	TArray<FStatusEffect> BaseAttackEffects;
 
-	int m_Spread = 0;
+	int Spread = 0;
 
-	int m_Bounces = 0;
+	int Bounces = 0;
 
-	bool m_ExplosiveBaseAttack = false;
-	float m_ExplosionRadius = 0;
-	float m_ExplosionDamage = 0;
+	bool ExplosiveBaseAttack = false;
+	float ExplosionRadius = 0;
+	float ExplosionDamage = 0;
 
 };

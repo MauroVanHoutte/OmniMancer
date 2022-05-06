@@ -4,14 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "BaseSpell.h"
-#include <Components/SphereComponent.h>
-#include <GameFramework/ProjectileMovementComponent.h>
 
 #include "Tornado.generated.h"
 
-/**
- * 
- */
+class UProjectileMovementComponent;
+
 UCLASS()
 class UNREALPROJECT_API ATornado : public ABaseSpell
 {
@@ -30,17 +27,17 @@ protected:
 
 private:
 	UPROPERTY(EditAnywhere)
-	UProjectileMovementComponent* m_ProjectileMovement;
+	UProjectileMovementComponent* ProjectileMovement;
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* m_Mesh;
+	UStaticMeshComponent* Mesh;
 	UPROPERTY(EditAnywhere)
-	float m_TornadoDamage = 5.f;
+	float TornadoDamage = 5.f;
 	UPROPERTY(EditAnywhere)
-	float m_ScaleGrowth = 1.3f;
+	float ScaleGrowth = 1.3f;
 	UPROPERTY(EditAnywhere)
-	float m_StartScale = 1.f;
+	float StartScale = 1.f;
 	UPROPERTY(EditAnywhere)
-	float m_StunDuration = 2.f;
+	float StunDuration = 2.f;
 	UPROPERTY(EditAnywhere)
-	float m_Speed = 1000.f;
+	float Speed = 1000.f;
 };

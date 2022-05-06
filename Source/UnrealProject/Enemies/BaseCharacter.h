@@ -5,14 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "../StatusEffect.h"
-#include "../FloatingTextActor.h"
-#include <Components/WidgetComponent.h>
-#include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
 
 #include "BaseCharacter.generated.h"
 
 class APowerUp;
+class UNiagaraComponent;
+class AFloatingTextActor;
 
 UCLASS(Abstract)
 class UNREALPROJECT_API ABaseCharacter : public ACharacter
@@ -25,6 +23,10 @@ public:
 	virtual void ReapplyStatusEffects(const TArray<FStatusEffect>& statusEffects);
 	virtual void Knockup();
 	virtual void Push(const FVector& force);
+
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnStunned();
@@ -50,7 +52,6 @@ protected:
 
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
 	
 	virtual void TakeTickDamage(float damage);
 	virtual void AddStatusEffects(const TArray<FStatusEffect>& statusEffects);
@@ -61,42 +62,35 @@ protected:
 	void UpdateStatusEffects(float deltaTime);
 
 	UPROPERTY(VisibleAnywhere)
-	TArray<FStatusEffect> m_CurrentStatusEffects{};
+	TArray<FStatusEffect> CurrentStatusEffects{};
+
+	UPROPERTY(EditAnywhere)
+	float Health;
+	UPROPERTY(VisibleAnywhere)
+	float StartHealth;
 
 	UPROPERTY(VisibleAnywhere)
-	float m_Health;
-	UPROPERTY(EditDefaultsOnly)
-	float m_StartHealth;
+	float SlowAmount = 0;
 
 	UPROPERTY(VisibleAnywhere)
-	float m_SlowAmount = 0;
-
-	UPROPERTY(VisibleAnywhere)
-	bool m_Stunned = false;
+	bool Stunned = false;
 
 	UPROPERTY(EditDefaultsOnly)
-	UNiagaraComponent* m_NiagaraComponent = nullptr;
+	UNiagaraComponent* NiagaraComponent = nullptr;
 
-	UCharacterMovementComponent* m_CharacterMovement;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AFloatingTextActor> m_FloatingTextClass = nullptr;
+	UCharacterMovementComponent* CharacterMovement;
 
 	UPROPERTY(EditDefaultsOnly)
-	FColor m_DamageTextColor = FColor::White;
+	TSubclassOf<AFloatingTextActor> FloatingTextClass = nullptr;
 
 	UPROPERTY(EditDefaultsOnly)
-	bool m_SpawnPowerupOnDeath = true;
-	UPROPERTY(EditDefaultsOnly)
-	float m_PowerupSpawnChance = 10;
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<APowerUp> m_Powerup;
+	FColor DamageTextColor = FColor::White;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UPROPERTY(EditDefaultsOnly)
+	bool SpawnPowerupOnDeath = true;
+	UPROPERTY(EditDefaultsOnly)
+	float PowerupSpawnChance = 10;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<APowerUp> Powerup;
 
 };

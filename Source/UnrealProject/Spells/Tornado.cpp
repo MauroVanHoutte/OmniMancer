@@ -2,49 +2,50 @@
 
 
 #include "Tornado.h"
+#include <GameFramework/ProjectileMovementComponent.h>
 #include "../Enemies/BaseCharacter.h"
 
 ATornado::ATornado()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	m_Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
 	auto cylinderMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cylinder.Cylinder'")).Object;
-	m_Mesh->SetStaticMesh(cylinderMesh);
-	m_Mesh->SetCollisionProfileName("OverlapAll");
-	m_Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-	m_Mesh->OnComponentBeginOverlap.AddDynamic(this, &ATornado::OnHit);
-	RootComponent = m_Mesh;
+	Mesh->SetStaticMesh(cylinderMesh);
+	Mesh->SetCollisionProfileName("OverlapAll");
+	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	Mesh->OnComponentBeginOverlap.AddDynamic(this, &ATornado::OnHit);
+	RootComponent = Mesh;
 
-	m_ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
-	m_ProjectileMovement->SetUpdatedComponent(RootComponent);
-	m_ProjectileMovement->bShouldBounce = false;
-	m_ProjectileMovement->ProjectileGravityScale = 0.f;
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
+	ProjectileMovement->SetUpdatedComponent(RootComponent);
+	ProjectileMovement->bShouldBounce = false;
+	ProjectileMovement->ProjectileGravityScale = 0.f;
 
 }
 
 void ATornado::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	auto scale = m_Mesh->GetRelativeScale3D();
-	float newScale = scale.X + m_ScaleGrowth * DeltaTime;
-	m_Mesh->SetWorldScale3D(FVector(newScale, newScale, m_StartScale));
+	auto scale = Mesh->GetRelativeScale3D();
+	float newScale = scale.X + ScaleGrowth * DeltaTime;
+	Mesh->SetWorldScale3D(FVector(newScale, newScale, StartScale));
 }
 
 void ATornado::FireInDirection(const FVector& direction)
 {
-	m_ProjectileMovement->Velocity = direction * m_ProjectileMovement->InitialSpeed;
+	ProjectileMovement->Velocity = direction * ProjectileMovement->InitialSpeed;
 }
 
 void ATornado::BeginPlay()
 {
-	m_Damage = m_TornadoDamage;
+	Damage = TornadoDamage;
 	Super::BeginPlay();
-	m_ProjectileMovement->InitialSpeed = m_Speed;
-	m_ProjectileMovement->MaxSpeed = m_Speed;
-	m_Mesh->SetWorldScale3D(FVector(m_StartScale, m_StartScale, m_StartScale));
+	ProjectileMovement->InitialSpeed = Speed;
+	ProjectileMovement->MaxSpeed = Speed;
+	Mesh->SetWorldScale3D(FVector(StartScale, StartScale, StartScale));
 
-	m_StatusEffects.Add(FStatusEffect(Type::Stun, -1.f, -1.f, m_StunDuration, this));
+	StatusEffects.Add(FStatusEffect(Type::Stun, -1.f, -1.f, StunDuration, this));
 }
 
 void ATornado::OnHit(AActor* hitActor)

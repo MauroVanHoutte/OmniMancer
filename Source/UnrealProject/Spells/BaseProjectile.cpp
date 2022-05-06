@@ -6,6 +6,9 @@
 #include "../Enemies/BaseCharacter.h"
 #include <Kismet/GameplayStatics.h>
 #include "../WizardCharacter.h"
+#include <Components/SphereComponent.h>
+#include "../ParticleActor.h"
+#include <GameFramework/ProjectileMovementComponent.h>
 
 // Sets default values
 ABaseProjectile::ABaseProjectile()
@@ -13,27 +16,27 @@ ABaseProjectile::ABaseProjectile()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	m_CollisionComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
-	m_CollisionComponent->InitSphereRadius(30.f);
-	m_CollisionComponent->SetGenerateOverlapEvents(true);
-	m_CollisionComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-	m_CollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
-	m_CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ABaseProjectile::OnHit);
-	RootComponent = m_CollisionComponent;
+	CollisionComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
+	CollisionComponent->InitSphereRadius(30.f);
+	CollisionComponent->SetGenerateOverlapEvents(true);
+	CollisionComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	CollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Overlap);
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ABaseProjectile::OnHit);
+	RootComponent = CollisionComponent;
 
-	m_ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
-	m_ProjectileMovement->SetUpdatedComponent(m_CollisionComponent);
-	m_ProjectileMovement->InitialSpeed = 1000.f;
-	m_ProjectileMovement->MaxSpeed = 1000.f;
-	m_ProjectileMovement->bShouldBounce = false;
-	m_ProjectileMovement->ProjectileGravityScale = 0.f;
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
+	ProjectileMovement->SetUpdatedComponent(CollisionComponent);
+	ProjectileMovement->InitialSpeed = 1000.f;
+	ProjectileMovement->MaxSpeed = 1000.f;
+	ProjectileMovement->bShouldBounce = false;
+	ProjectileMovement->ProjectileGravityScale = 0.f;
 
-	m_Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
 	auto sphereMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'")).Object;
-	m_Mesh->SetStaticMesh(sphereMesh);
-	m_Mesh->SetWorldScale3D(FVector(1.5f, 0.5f, 0.5f));
-	m_Mesh->SetupAttachment(m_CollisionComponent);
-	m_Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Mesh->SetStaticMesh(sphereMesh);
+	Mesh->SetWorldScale3D(FVector(1.5f, 0.5f, 0.5f));
+	Mesh->SetupAttachment(CollisionComponent);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 }
 
@@ -42,20 +45,20 @@ void ABaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	m_Damage = 5;
+	Damage = 5;
 }
 
 void ABaseProjectile::Explode()
 {
-	auto particleActor = GetWorld()->SpawnActor<AParticleActor>(m_ParticleActorClass);
-	particleActor->SetSystem(m_ExplosionSystem, 0.5f);
-	particleActor->SetActorScale3D(FVector(m_ExplosionRadius));
+	auto particleActor = GetWorld()->SpawnActor<AParticleActor>(ParticleActorClass);
+	particleActor->SetSystem(ExplosionSystem, 0.5f);
+	particleActor->SetActorScale3D(FVector(ExplosionRadius));
 	particleActor->SetActorLocation(GetActorLocation());
 	TArray<AActor*> outActors{};
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), m_ExplosionRadius * 100, TArray<TEnumAsByte<EObjectTypeQuery>>{}, ABaseCharacter::StaticClass(), TArray<AActor*>{GetOwner()}, outActors);
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), ExplosionRadius * 100, TArray<TEnumAsByte<EObjectTypeQuery>>{}, ABaseCharacter::StaticClass(), TArray<AActor*>{GetOwner()}, outActors);
 	for (AActor* actor : outActors)
 	{
-		Cast<ABaseCharacter>(actor)->TakeSpellDamage(m_ExplosionDamage);
+		Cast<ABaseCharacter>(actor)->TakeSpellDamage(ExplosionDamage);
 	}
 }
 
@@ -68,18 +71,18 @@ void ABaseProjectile::Tick(float DeltaTime)
 
 void ABaseProjectile::FireInDirection(const FVector& direction)
 {
-	m_ProjectileMovement->Velocity = direction * m_ProjectileMovement->InitialSpeed;
+	ProjectileMovement->Velocity = direction * ProjectileMovement->InitialSpeed;
 	SetActorRotation(direction.Rotation());
 }
 
 void ABaseProjectile::OnHit(AActor* hitActor)
 {
-	if (m_Explosive)
+	if (Explosive)
 	{
 		Explode();
 	}
 
-	if (m_BouceCount < m_TotalBounces)
+	if (BouceCount < TotalBounces)
 	{
 		TArray<AActor*> actors;
 		UGameplayStatics::GetAllActorsOfClass(GetWorld(), TSubclassOf<ABaseCharacter>(ABaseCharacter::StaticClass()), actors);
@@ -89,7 +92,7 @@ void ABaseProjectile::OnHit(AActor* hitActor)
 			if (Cast<AWizardCharacter>(actor) != nullptr)
 				continue;
 
-			if (!WasActorHit(actor) && FVector::DistSquared(actor->GetActorLocation(), GetActorLocation()) < m_BounceRange * m_BounceRange)
+			if (!WasActorHit(actor) && FVector::DistSquared(actor->GetActorLocation(), GetActorLocation()) < BounceRange * BounceRange)
 			{
 				FireInDirection((actor->GetActorLocation() - GetActorLocation()).GetSafeNormal());
 				return;
@@ -103,7 +106,7 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 {
 	if (OtherComp->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic)
 	{
-		if(m_Explosive)
+		if(Explosive)
 			Explode();
 		Destroy();
 	}
@@ -111,14 +114,14 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 
 void ABaseProjectile::SetExplosion(float radius, float damage)
 {
-	m_Explosive = true;
-	m_ExplosionDamage = damage;
-	m_ExplosionRadius = radius;
+	Explosive = true;
+	ExplosionDamage = damage;
+	ExplosionRadius = radius;
 }
 
 void ABaseProjectile::SetBounces(int bounces)
 {
-	m_TotalBounces = bounces;
+	TotalBounces = bounces;
 }
 
 
