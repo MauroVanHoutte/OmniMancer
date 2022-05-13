@@ -18,6 +18,14 @@ public:
 	void Destroy();
 
 	void AddStatusEffect(const FStatusEffect& effect);
+	UFUNCTION(BlueprintCallable)
+	void SetBurnParams(bool applyBurns, float tickDamage, float tickInterval, float duration);
+	UFUNCTION(BlueprintCallable)
+	void SetSlowParams(bool applySlow, float value, float duration);
+	UFUNCTION(BlueprintCallable)
+	void SetStunParams(bool applyStun, float duration);
+
+	virtual void InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel);
 
 	virtual void Tick(float DeltaTime) override;
 
@@ -34,6 +42,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetLifespan(float lifespan);
 
 	float Damage = 0;
 

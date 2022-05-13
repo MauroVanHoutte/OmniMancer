@@ -17,12 +17,9 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable)
-	void SetBurnParams(bool applyBurns, float tickDamage, float tickInterval, float duration);
-	UFUNCTION(BlueprintCallable)
-	void SetSlowParams(bool applySlow, float value, float duration);
+	virtual void InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel) override;
+
 	void SetRadius(float radius);
-	void SetLifetime(float lifetime);
 
 	void Destroy();
 
@@ -30,29 +27,36 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(BlueprintReadWrite)
 	UStaticMeshComponent* CylinderMesh;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	bool ApplyBurn = true;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float BurnDamage = 1.f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float BurnInterval = 0.5f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float EffectLingerDuration = 2.f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	int SlowAmount = 50;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float CircleScale = 7.f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float ApplicationInterval = 0.2f;
+
+
+	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
+	float DamagePerFireLevel = 0.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
+	float SlowPerFrostLevel = 0.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
+	float DurationPerFrostLevel = 0.f;
 
 private:
 
 	float ApplicationTimer = 0.f;
 
-	FTimerHandle LifetimeHandle;
 };

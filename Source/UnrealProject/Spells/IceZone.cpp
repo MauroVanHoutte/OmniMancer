@@ -17,68 +17,12 @@ AIceZone::AIceZone()
 
 }
 
-void AIceZone::SetBurnParams(bool applyBurns, float tickDamage, float tickInterval, float duration)
-{
-	auto effect = StatusEffects.FindByPredicate([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Damage; });
-
-	if (applyBurns)
-	{
-		if (effect != nullptr)
-		{
-			effect->Value = tickDamage;
-			effect->Interval = tickInterval;
-			effect->Duration = duration;
-		}
-		else
-		{
-			StatusEffects.Add(FStatusEffect(Type::Slow, tickInterval, tickDamage, duration, this));
-		}
-	}
-	else
-	{
-		if (effect != nullptr)
-		{
-			StatusEffects.RemoveAll([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Damage; });
-		}
-	}
-}
-
-void AIceZone::SetSlowParams(bool applySlow, float value, float duration)
-{
-	auto effect = StatusEffects.FindByPredicate([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Slow; });
-
-	if (applySlow)
-	{
-		if (effect != nullptr)
-		{
-			effect->Value = value;
-			effect->Duration = duration;
-		}
-		else
-		{
-			StatusEffects.Add(FStatusEffect(Type::Slow, -1, value, duration, this));
-		}
-	}
-	else
-	{
-		if (effect != nullptr)
-		{
-			StatusEffects.RemoveAll([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Slow; });
-		}
-	}
-}
-
 void AIceZone::SetRadius(float radius)
 {
 	auto scale = CylinderMesh->GetRelativeScale3D();
 	scale.X = radius;
 	scale.Y = radius;
 	CylinderMesh->SetRelativeScale3D(scale);
-}
-
-void AIceZone::SetLifetime(float lifetime)
-{
-	GetWorld()->GetTimerManager().SetTimer(LifetimeHandle, this, &AIceZone::Destroy, lifetime);
 }
 
 void AIceZone::Destroy()
@@ -90,11 +34,6 @@ void AIceZone::Destroy()
 void AIceZone::BeginPlay()
 {
 	Damage = 0.f;
-	if (ApplyBurn)
-	{
-		StatusEffects.Add(FStatusEffect(Type::Damage, BurnInterval, BurnDamage, EffectLingerDuration, this));
-	}
-	StatusEffects.Add(FStatusEffect(Type::Slow, -1.f, SlowAmount, EffectLingerDuration, this));
 	CylinderMesh->SetRelativeScale3D(FVector(CircleScale, CircleScale, 1.f));
 
 	CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
@@ -128,5 +67,15 @@ void AIceZone::Tick(float DeltaTime)
 		}
 	}
 
+}
+
+void AIceZone::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
+{
+	SetOwner(owner);
+	SetInstigator(instigator);
+	SetActorLocation(targetLocation);
+	SetBurnParams(ApplyBurn, BurnDamage + DamagePerFireLevel * fireLevel, BurnInterval, EffectLingerDuration + DurationPerFrostLevel * frostLevel);
+	SetSlowParams(true, SlowAmount + SlowPerFrostLevel * frostLevel, EffectLingerDuration);
+	SetRadius(7.f);
 }
 

@@ -18,6 +18,9 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 	void FireInDirection(const FVector& direction);
+
+	virtual void InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel) override;
+
 protected:
 	virtual void BeginPlay() override;
 	void OnHit(AActor* hitActor) override;
@@ -26,18 +29,25 @@ protected:
 	virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	UProjectileMovementComponent* ProjectileMovement;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* Mesh;
-	UPROPERTY(EditAnywhere)
-	float TornadoDamage = 5.f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category="Base Parameters")
+	float BaseDamage = 5.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float ScaleGrowth = 1.3f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float StartScale = 1.f;
-	UPROPERTY(EditAnywhere)
-	float StunDuration = 2.f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
+	float StunDuration = 1.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float Speed = 1000.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
+	float DamagePerFireLevel = 1.5f;
+	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
+	float ScaleGrowthPerWindLevel = .2f;
+	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
+	float StunDurationPerFrostLevel = 0.5f;
 };

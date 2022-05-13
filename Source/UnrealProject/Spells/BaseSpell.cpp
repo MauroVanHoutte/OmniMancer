@@ -21,6 +21,86 @@ void ABaseSpell::AddStatusEffect(const FStatusEffect& effect)
 	StatusEffects.Add(effect);
 }
 
+void ABaseSpell::SetBurnParams(bool applyBurns, float tickDamage, float tickInterval, float duration)
+{
+	auto effect = StatusEffects.FindByPredicate([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Damage; });
+
+	if (applyBurns)
+	{
+		if (effect != nullptr)
+		{
+			effect->Value = tickDamage;
+			effect->Interval = tickInterval;
+			effect->Duration = duration;
+		}
+		else
+		{
+			StatusEffects.Add(FStatusEffect(Type::Slow, tickInterval, tickDamage, duration, this));
+		}
+	}
+	else
+	{
+		if (effect != nullptr)
+		{
+			StatusEffects.RemoveAll([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Damage; });
+		}
+	}
+}
+
+void ABaseSpell::SetSlowParams(bool applySlow, float value, float duration)
+{
+	auto effect = StatusEffects.FindByPredicate([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Slow; });
+
+	if (applySlow)
+	{
+		if (effect != nullptr)
+		{
+			effect->Value = value;
+			effect->Duration = duration;
+		}
+		else
+		{
+			StatusEffects.Add(FStatusEffect(Type::Slow, -1, value, duration, this));
+		}
+	}
+	else
+	{
+		if (effect != nullptr)
+		{
+			StatusEffects.RemoveAll([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Slow; });
+		}
+	}
+}
+
+void ABaseSpell::SetStunParams(bool applyStun, float duration)
+{
+	auto effect = StatusEffects.FindByPredicate([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Stun; });
+
+	if (applyStun)
+	{
+		if (effect != nullptr)
+		{
+			effect->Duration = duration;
+		}
+		else
+		{
+			StatusEffects.Add(FStatusEffect(Type::Slow, -1, -1, duration, this));
+		}
+	}
+	else
+	{
+		if (effect != nullptr)
+		{
+			StatusEffects.RemoveAll([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Stun; });
+		}
+	}
+
+}
+
+void ABaseSpell::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
+{
+}
+
 void ABaseSpell::SetDamage(float damage)
 {
 	Damage = damage;
@@ -31,6 +111,11 @@ void ABaseSpell::BeginPlay()
 {
 	Super::BeginPlay();
 	GetWorld()->GetTimerManager().SetTimer(LifeTimer, this, &ABaseSpell::Destroy, LifeSpan);
+}
+
+void ABaseSpell::SetLifespan(float lifespan)
+{
+	GetWorld()->GetTimerManager().SetTimer(LifeTimer, this, &ABaseSpell::Destroy, lifespan);
 }
 
 // Called every frame

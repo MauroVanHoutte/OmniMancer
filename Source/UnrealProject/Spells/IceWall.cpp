@@ -19,3 +19,11 @@ void AIceWall::BeginPlay()
 	Super::BeginPlay();
 	Mesh->SetRelativeScale3D(FVector(1.f, WallWidth, 3.f));
 }
+
+void AIceWall::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
+{
+	SetOwner(owner);
+	SetInstigator(instigator);
+	SetActorLocation(targetLocation);
+	SetActorRotation((targetLocation - casterLocation).Rotation());
+}

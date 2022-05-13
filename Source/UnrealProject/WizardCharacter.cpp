@@ -54,20 +54,6 @@ AWizardCharacter::AWizardCharacter()
 	SecondElementBillboard->SetupAttachment(RootComponent);
 	SecondElementBillboard->SetRelativeLocation(FVector(0, 50, 100));
 	SecondElementBillboard->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
-
-	if (FlameColumnClass == nullptr)
-		UE_LOG(LogTemp, Warning, TEXT("FlameColumn not set on Wizard"));
-	if (IceZoneClass == nullptr)
-		UE_LOG(LogTemp, Warning, TEXT("IceZone not set on Wizard"));
-	if (IceWallClass == nullptr)
-		UE_LOG(LogTemp, Warning, TEXT("IceWall not set on Wizard"));
-	if (TornadoClass == nullptr)
-		UE_LOG(LogTemp, Warning, TEXT("Tornado not set on Wizard"));
-	if (ChainLighningClass == nullptr)
-		UE_LOG(LogTemp, Warning, TEXT("Chainlightning not set on Wizard"));
-	if (ShockwaveClass == nullptr)
-		UE_LOG(LogTemp, Warning, TEXT("Shockwave not set on Wizard"));
-
 }
 
 // Called when the game starts or when spawned
@@ -379,31 +365,12 @@ void AWizardCharacter::CastSpell()
 
 	GetWorld()->GetTimerManager().SetTimer(CooldownTimers[spellID], Cooldowns[spellID], false);
 
-	switch (spellID)
-	{
-	case 0:
-		CastFlameColumn(hit.Location);
-		break;
-	case 1:
-		CastIceZone(hit.Location);
-		break;
-	case 2:
-		CastIceWall(hit.Location);
-		break;
-	case 3:
-		CastTornado(projectileDirection);
-		break;
-	case 4:
-		CastChainLightning(projectileDirection);
-		break;
-	case 6:
-		CastShockwave();
-		break;
-	default:
-		break;
-	}
+	auto spellType = Spells.Find(spellID);
+	if (spellType == nullptr)
+		return;
 
-	
+	 auto spell = GetWorld()->SpawnActor<ABaseSpell>(*spellType);
+	 spell->InitSpell(GetActorLocation(), hit.Location, projectileDirection, this, GetInstigator(), FireLevel, FrostLevel, WindLevel);
 }
 
 void AWizardCharacter::Dash()
@@ -428,61 +395,5 @@ void AWizardCharacter::UpdatePowerups(float deltaTime)
 			i--;
 		}
 	}
-}
-
-void AWizardCharacter::CastFlameColumn(const FVector& worldPos)
-{
-	auto spell = GetWorld()->SpawnActor(FlameColumnClass);
-	spell->SetOwner(this);
-	spell->SetInstigator(GetInstigator());
-	spell->SetActorLocation(worldPos);
-}
-
-void AWizardCharacter::CastIceZone(const FVector& worldPos)
-{
-	auto spell = GetWorld()->SpawnActor(IceZoneClass);
-	spell->SetOwner(this);
-	spell->SetInstigator(GetInstigator());
-	spell->SetActorLocation(worldPos);
-	auto icezone = Cast<AIceZone>(spell);
-	icezone->SetBurnParams(true, 1.f, 0.2f, 2.f);
-	icezone->SetSlowParams(true, 50, 2.f);
-	icezone->SetRadius(7.f);
-	icezone->SetLifetime(2.f);
-}
-
-void AWizardCharacter::CastIceWall(const FVector& worldPos)
-{
-	auto spell = GetWorld()->SpawnActor(IceWallClass);
-	spell->SetOwner(this);
-	spell->SetInstigator(GetInstigator());
-	spell->SetActorLocation(worldPos);
-	spell->SetActorRotation( (worldPos - GetActorLocation()).Rotation() );
-}
-
-void AWizardCharacter::CastTornado(const FVector& direction)
-{
-	auto spell = GetWorld()->SpawnActor(TornadoClass);
-	spell->SetOwner(this);
-	spell->SetInstigator(GetInstigator());
-	spell->SetActorLocation(GetActorLocation());
-	Cast<ATornado>(spell)->FireInDirection(direction);
-}
-
-void AWizardCharacter::CastChainLightning(const FVector& direction)
-{
-	auto spell = GetWorld()->SpawnActor(ChainLighningClass);
-	spell->SetOwner(this);
-	spell->SetInstigator(GetInstigator());
-	spell->SetActorLocation(GetActorLocation());
-	Cast<AChainLightning>(spell)->FireInDirection(direction);
-}
-
-void AWizardCharacter::CastShockwave()
-{
-	auto spell = GetWorld()->SpawnActor(ShockwaveClass);
-	spell->SetOwner(this);
-	spell->SetInstigator(GetInstigator());
-	spell->SetActorLocation(GetActorLocation());
 }
 

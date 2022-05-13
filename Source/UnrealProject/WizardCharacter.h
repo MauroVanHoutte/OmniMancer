@@ -26,6 +26,7 @@ class ATornado;
 class AChainLightning;
 class AShockwave;
 class ABaseProjectile;
+class ABaseSpell;
 
 UCLASS()
 class UNREALPROJECT_API AWizardCharacter : public ABaseCharacter
@@ -35,13 +36,6 @@ class UNREALPROJECT_API AWizardCharacter : public ABaseCharacter
 public:
 	AWizardCharacter();
 
-protected:
-	virtual void BeginPlay() override;
-
-	void TakeSpellDamage(float damage) override;
-	void TakeTickDamage(float damage) override;
-
-public:	
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -71,6 +65,19 @@ public:
 	int GetBounces();
 	TArray<FStatusEffect>& GetBaseAttackEffectsRef();
 
+protected:
+	virtual void BeginPlay() override;
+
+	void TakeSpellDamage(float damage) override;
+	void TakeTickDamage(float damage) override;
+
+	UPROPERTY(EditDefaultsOnly)
+	int FireLevel = 1;
+	UPROPERTY(EditDefaultsOnly)
+	int FrostLevel = 1;
+	UPROPERTY(EditDefaultsOnly)
+	int WindLevel = 1;
+
 private:
 	void MoveUp(float value);
 	void MoveRight(float value);
@@ -88,13 +95,6 @@ private:
 	float m_DashCooldown = 5.f;
 	FTimerHandle m_DashCooldownTimer;
 
-	void CastFlameColumn(const FVector& worldPos);
-	void CastIceZone(const FVector& worldPos);
-	void CastIceWall(const FVector& worldPos);
-	void CastTornado(const FVector& direction);
-	void CastChainLightning(const FVector& direction);
-	void CastShockwave();
-
 	void AddElement(WizardElement element);
 	DECLARE_DELEGATE_OneParam(FAddElementDelegate, WizardElement);
 
@@ -109,20 +109,11 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<WizardElement> CurrentElements{};
 	int MaxElements = 2;
-	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<AFlameColumn> FlameColumnClass = nullptr;
-	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<AIceZone> IceZoneClass = nullptr;
-	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<AIceWall> IceWallClass = nullptr;
-	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<ATornado> TornadoClass = nullptr;
-	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<AChainLightning> ChainLighningClass = nullptr;
-	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
-	TSubclassOf<AShockwave> ShockwaveClass = nullptr;
+	
 	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
 	TSubclassOf<ABaseProjectile> BaseProjectile = nullptr;
+	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
+	TMap<int, TSubclassOf<ABaseSpell>> Spells;
 
 	UPROPERTY(EditDefaultsOnly)
 	int SpeedPerWind = 10;

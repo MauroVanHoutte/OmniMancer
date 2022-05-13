@@ -26,11 +26,19 @@ void AShockwave::Tick(float deltaTime)
 	StaticMeshComponent->SetRelativeScale3D(scale);
 }
 
+void AShockwave::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
+{
+	SetOwner(owner);
+	SetInstigator(instigator);
+	SetActorLocation(casterLocation);
+	SetStunParams(true, StunDuration + StunDurationPerFrostLevel * frostLevel);
+	Damage = InitialDamage + DamagePerWindLevel * windLevel;
+	KnockbackAmount += KnockbackPerWindLevel * windLevel;
+}
+
 void AShockwave::BeginPlay()
 {
-	Damage = InitialDamage;
 	Super::BeginPlay();
-
 }
 
 void AShockwave::OnHit(AActor* hitActor)

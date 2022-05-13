@@ -25,13 +25,6 @@ void AFlameColumn::BeginPlay()
 	CylinderMesh->SetRelativeScale3D(FVector(CircleScale, CircleScale, 1.f));
 	CylinderMesh->SetCollisionProfileName(TEXT("NoCollision"));
 
-
-
-	Damage = InitialDamage;
-	if (ApplyBurn)
-	{
-		StatusEffects.Add(FStatusEffect(Type::Damage, BurnInterval, BurnDamage, BurnDuration, this));
-	}
 }
 
 // Called every frame
@@ -45,6 +38,16 @@ void AFlameColumn::Tick(float DeltaTime)
 		CylinderMesh->SetRelativeScale3D(FVector(CircleScale, CircleScale, 100.f));
 		CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	}
+}
+
+void AFlameColumn::InitSpell(const FVector& , const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
+{
+	Damage = InitialDamage + DamagePerFireLevel * fireLevel;
+	SetOwner(owner);
+	SetInstigator(instigator);
+	SetActorLocation(targetLocation);
+	SetBurnParams(ApplyBurn, BurnDamage + BurnDamagePerFireLevel * fireLevel, BurnInterval, BurnDuration + DurationPerFrostLevel * frostLevel);
+	CylinderMesh->SetRelativeScale3D(FVector(CircleScale + ScalePerWindLevel*windLevel, CircleScale + ScalePerWindLevel*windLevel, 1.f));
 }
 
 

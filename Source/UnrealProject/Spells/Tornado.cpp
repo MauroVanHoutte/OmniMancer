@@ -37,15 +37,25 @@ void ATornado::FireInDirection(const FVector& direction)
 	ProjectileMovement->Velocity = direction * ProjectileMovement->InitialSpeed;
 }
 
+void ATornado::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
+{
+	SetOwner(owner);
+	SetInstigator(instigator);
+	SetActorLocation(casterLocation);
+	FireInDirection(projectileDirection);
+
+	Damage += DamagePerFireLevel * fireLevel;
+	ScaleGrowth += ScaleGrowthPerWindLevel * windLevel;
+	SetStunParams(true, StunDuration + (StunDurationPerFrostLevel * frostLevel));
+}
+
 void ATornado::BeginPlay()
 {
-	Damage = TornadoDamage;
+	Damage = BaseDamage;
 	Super::BeginPlay();
 	ProjectileMovement->InitialSpeed = Speed;
 	ProjectileMovement->MaxSpeed = Speed;
 	Mesh->SetWorldScale3D(FVector(StartScale, StartScale, StartScale));
-
-	StatusEffects.Add(FStatusEffect(Type::Stun, -1.f, -1.f, StunDuration, this));
 }
 
 void ATornado::OnHit(AActor* hitActor)
