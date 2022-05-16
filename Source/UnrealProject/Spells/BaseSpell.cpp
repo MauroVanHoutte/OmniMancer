@@ -35,7 +35,7 @@ void ABaseSpell::SetBurnParams(bool applyBurns, float tickDamage, float tickInte
 		}
 		else
 		{
-			StatusEffects.Add(FStatusEffect(Type::Slow, tickInterval, tickDamage, duration, this));
+			StatusEffects.Add(FStatusEffect(Type::Damage, tickInterval, tickDamage, duration, this));
 		}
 	}
 	else
@@ -84,7 +84,7 @@ void ABaseSpell::SetStunParams(bool applyStun, float duration)
 		}
 		else
 		{
-			StatusEffects.Add(FStatusEffect(Type::Slow, -1, -1, duration, this));
+			StatusEffects.Add(FStatusEffect(Type::Stun, -1, -1, duration, this));
 		}
 	}
 	else

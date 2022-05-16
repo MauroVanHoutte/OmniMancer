@@ -214,6 +214,8 @@ void AWizardCharacter::MoveRight(float value)
 
 void AWizardCharacter::AddElement(WizardElement element)
 {
+
+
 	switch (CurrentElements[1]) // passive effect of to be removed element removed
 	{
 	case WizardElement::Fire:

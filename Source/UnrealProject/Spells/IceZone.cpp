@@ -60,7 +60,7 @@ void AIceZone::Tick(float DeltaTime)
 			auto instigatorController = Cast<APlayerController>(GetInstigatorController());
 			auto baseEnemy = Cast<ABaseCharacter>(actor);
 			if (!baseEnemy)
-				return;
+				continue;
 			auto actorController = Cast<APlayerController>(baseEnemy->GetController());
 			if (baseEnemy &&  instigatorController != actorController)
 				baseEnemy->ReapplyStatusEffects(StatusEffects);
