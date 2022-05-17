@@ -146,6 +146,20 @@ void AWizardCharacter::LevelUpElement(WizardElement element)
 	}
 }
 
+int AWizardCharacter::GetCurrentElementLevel(WizardElement element)
+{
+	switch (element)
+	{
+	case WizardElement::Fire:
+		return FireLevel;
+	case WizardElement::Frost:
+		return FrostLevel;
+	case WizardElement::Wind:
+		return WindLevel;
+	}
+	return 0;
+}
+
 TMap<int, float>& AWizardCharacter::GetCooldowns()
 {
 	return Cooldowns;

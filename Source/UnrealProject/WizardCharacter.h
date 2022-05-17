@@ -50,6 +50,9 @@ public:
 	void LevelUpElement(WizardElement element);
 
 	UFUNCTION(BlueprintCallable)
+	int GetCurrentElementLevel(WizardElement element);
+
+	UFUNCTION(BlueprintCallable)
 	TMap<int, float>& GetCooldowns();
 	UFUNCTION(BlueprintCallable)
 	TMap<int, FTimerHandle>& GetCooldownTimers();
