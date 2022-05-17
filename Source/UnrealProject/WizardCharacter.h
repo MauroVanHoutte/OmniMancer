@@ -47,6 +47,9 @@ public:
 	const TArray<WizardElement>& GetCurrentElements();
 
 	UFUNCTION(BlueprintCallable)
+	void LevelUpElement(WizardElement element);
+
+	UFUNCTION(BlueprintCallable)
 	TMap<int, float>& GetCooldowns();
 	UFUNCTION(BlueprintCallable)
 	TMap<int, FTimerHandle>& GetCooldownTimers();

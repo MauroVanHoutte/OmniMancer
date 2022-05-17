@@ -128,6 +128,24 @@ const TArray<WizardElement>& AWizardCharacter::GetCurrentElements()
 	return CurrentElements;
 }
 
+void AWizardCharacter::LevelUpElement(WizardElement element)
+{
+	switch (element)
+	{
+	case WizardElement::Fire:
+		FireLevel++;
+		break;
+	case WizardElement::Frost:
+		FrostLevel++;
+		break;
+	case WizardElement::Wind:
+		WindLevel++;
+		break;
+	default:
+		break;
+	}
+}
+
 TMap<int, float>& AWizardCharacter::GetCooldowns()
 {
 	return Cooldowns;
@@ -214,7 +232,23 @@ void AWizardCharacter::MoveRight(float value)
 
 void AWizardCharacter::AddElement(WizardElement element)
 {
-
+	switch (element) //check if allowed to add element
+	{
+	case WizardElement::Fire:
+		if (FireLevel < 1)
+			return;
+		break;
+	case WizardElement::Frost:
+		if (FrostLevel < 1)
+			return;
+		break;
+	case WizardElement::Wind:
+		if (WindLevel < 1)
+			return;
+		break;
+	default:
+		break;
+	}
 
 	switch (CurrentElements[1]) // passive effect of to be removed element removed
 	{
