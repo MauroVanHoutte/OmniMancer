@@ -99,6 +99,11 @@ void ABaseSpell::SetStunParams(bool applyStun, float duration)
 
 void ABaseSpell::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
 {
+	SetOwner(owner);
+	SetInstigator(instigator);
+	FireLevel = fireLevel;
+	FrostLevel = frostLevel;
+	WindLevel = windLevel;
 }
 
 void ABaseSpell::SetDamage(float damage)

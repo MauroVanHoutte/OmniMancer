@@ -22,8 +22,8 @@ void AIceWall::BeginPlay()
 
 void AIceWall::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
 {
-	SetOwner(owner);
-	SetInstigator(instigator);
+	Super::InitSpell(casterLocation, targetLocation, projectileDirection, owner, instigator, fireLevel, frostLevel, windLevel);
+
 	SetActorLocation(targetLocation);
 	SetActorRotation((targetLocation - casterLocation).Rotation());
 }

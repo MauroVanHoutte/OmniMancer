@@ -4,6 +4,7 @@
 #include "Tornado.h"
 #include <GameFramework/ProjectileMovementComponent.h>
 #include "../Enemies/BaseCharacter.h"
+#include "ChainLightning.h"
 
 ATornado::ATornado()
 {
@@ -39,8 +40,8 @@ void ATornado::FireInDirection(const FVector& direction)
 
 void ATornado::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
 {
-	SetOwner(owner);
-	SetInstigator(instigator);
+	Super::InitSpell(casterLocation, targetLocation, projectileDirection, owner, instigator, fireLevel, frostLevel, windLevel);
+
 	SetActorLocation(casterLocation);
 	FireInDirection(projectileDirection);
 
@@ -63,6 +64,20 @@ void ATornado::OnHit(AActor* hitActor)
 	auto enemy = Cast<ABaseCharacter>(hitActor);
 	if (enemy != nullptr)
 		enemy->Knockup();
+
+	//Wind level 4 effect
+	if (WindLevel >= 4)
+		ShootLightning(hitActor);
+}
+
+void ATornado::ShootLightning(AActor* targetActor)
+{
+	if (Lightning == nullptr)
+		return;
+	auto lightning = GetWorld()->SpawnActor<AChainLightning>(Lightning);
+	FVector caster = GetActorLocation();
+	caster.Z += 100.f;
+	lightning->InitSpell(caster, targetActor->GetActorLocation(), (targetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal(), GetOwner(), GetInstigator(), 1, 1, WindLevel / 2); //lowered levels
 }
 
 void ATornado::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

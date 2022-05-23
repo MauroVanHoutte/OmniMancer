@@ -82,18 +82,19 @@ void ABaseProjectile::OnHit(AActor* hitActor)
 		Explode();
 	}
 
-	if (BouceCount < TotalBounces)
+	if (BounceCount < TotalBounces)
 	{
 		TArray<AActor*> actors;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), TSubclassOf<ABaseCharacter>(ABaseCharacter::StaticClass()), actors);
+		UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), BounceRange, TArray<TEnumAsByte<EObjectTypeQuery>>(), ABaseCharacter::StaticClass(), TArray<AActor*>(), actors);
 
 		for (AActor* actor : actors)
 		{
 			if (Cast<AWizardCharacter>(actor) != nullptr)
 				continue;
 
-			if (!WasActorHit(actor) && FVector::DistSquared(actor->GetActorLocation(), GetActorLocation()) < BounceRange * BounceRange)
+			if (!WasActorHit(actor))
 			{
+				BounceCount++;
 				FireInDirection((actor->GetActorLocation() - GetActorLocation()).GetSafeNormal());
 				return;
 			}

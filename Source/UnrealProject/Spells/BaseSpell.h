@@ -54,6 +54,12 @@ protected:
 
 	TArray<AActor*> HitActors{};	
 
+	UPROPERTY(VisibleAnywhere)
+	int FireLevel = -1;
+	UPROPERTY(VisibleAnywhere)
+	int FrostLevel = -1;
+	UPROPERTY(VisibleAnywhere)
+	int WindLevel = -1;
 private:
 	UPROPERTY(VisibleAnywhere)
 	int DamageMultiplier = 0;

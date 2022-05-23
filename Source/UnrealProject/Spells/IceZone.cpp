@@ -71,8 +71,8 @@ void AIceZone::Tick(float DeltaTime)
 
 void AIceZone::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
 {
-	SetOwner(owner);
-	SetInstigator(instigator);
+	Super::InitSpell(casterLocation, targetLocation, projectileDirection, owner, instigator, fireLevel, frostLevel, windLevel);
+
 	SetActorLocation(targetLocation);
 	SetBurnParams(ApplyBurn, BurnDamage + DamagePerFireLevel * fireLevel, BurnInterval, EffectLingerDuration + DurationPerFrostLevel * frostLevel);
 	SetSlowParams(true, SlowAmount + SlowPerFrostLevel * frostLevel, EffectLingerDuration);

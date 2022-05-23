@@ -8,6 +8,7 @@
 #include "Tornado.generated.h"
 
 class UProjectileMovementComponent;
+class AChainLightning;
 
 UCLASS()
 class UNREALPROJECT_API ATornado : public ABaseSpell
@@ -24,6 +25,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	void OnHit(AActor* hitActor) override;
+
+	void ShootLightning(AActor* targetActor);
 
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -50,4 +53,7 @@ private:
 	float ScaleGrowthPerWindLevel = .2f;
 	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
 	float StunDurationPerFrostLevel = 0.5f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
+	TSubclassOf<AChainLightning> Lightning;
 };
