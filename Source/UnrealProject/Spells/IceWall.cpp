@@ -12,18 +12,40 @@ AIceWall::AIceWall()
 	Mesh->SetCollisionProfileName(FName("BlockAll"));
 	Mesh->SetCanEverAffectNavigation(true);
 	
+	Trigger = CreateDefaultSubobject<UBoxComponent>("Trigger");
+	Trigger->SetupAttachment(Mesh);
 }
 
 void AIceWall::BeginPlay()
 {
 	Super::BeginPlay();
-	Mesh->SetRelativeScale3D(FVector(1.f, WallWidth, 3.f));
+	SetActorScale3D(FVector(WallThickness, WallWidth, WallHeight));
+}
+
+void AIceWall::Tick(float deltaTime)
+{
+	Super::Tick(deltaTime);
+	
+	if (RiseTimer < RiseTime)
+	{
+		RiseTimer += deltaTime;
+		SetActorLocation(FMath::Lerp(StartLocation, TargetLocation, RiseTimer / RiseTime));
+	}
 }
 
 void AIceWall::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
 {
 	Super::InitSpell(casterLocation, targetLocation, projectileDirection, owner, instigator, fireLevel, frostLevel, windLevel);
+	SetSlowParams(true, 50, 3);
 
-	SetActorLocation(targetLocation);
-	SetActorRotation((targetLocation - casterLocation).Rotation());
+	if (FrostLevel > 3)
+		SetCurseParams(true, 15, 500, 5);
+
+	FVector startLocation = targetLocation;
+	startLocation.Z -= (WallHeight*100)/2; //lower wall into floor
+
+	TargetLocation = targetLocation;
+	StartLocation = startLocation;
+	SetActorLocation(startLocation);
+	SetActorRotation(FRotator(0, (targetLocation - casterLocation).Rotation().Yaw, 0));
 }

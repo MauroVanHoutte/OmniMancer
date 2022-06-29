@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseSpell.h"
+#include <Components/BoxComponent.h>
 #include "IceWall.generated.h"
 
 /**
@@ -20,12 +21,25 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float deltaTime) override;
+
 	virtual void InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel) override;
 
 private:
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* Mesh = nullptr;
+	UPROPERTY(EditDefaultsOnly)
+	UBoxComponent* Trigger = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, Category="Base Parameters")
 	float WallWidth = 5.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
+	float WallThickness = 3.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
+	float WallHeight = 2.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
+	float RiseTime = 0.5f;
+	FVector StartLocation;
+	FVector TargetLocation;
+	float RiseTimer = 0.f;
 };
