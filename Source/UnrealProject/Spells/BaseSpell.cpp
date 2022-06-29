@@ -13,7 +13,12 @@ ABaseSpell::ABaseSpell()
 
 void ABaseSpell::Destroy()
 {
+	OnDeath();
 	AActor::Destroy();
+}
+
+void ABaseSpell::OnDeath()
+{
 }
 
 void ABaseSpell::AddStatusEffect(const FStatusEffect& effect)
@@ -97,6 +102,32 @@ void ABaseSpell::SetStunParams(bool applyStun, float duration)
 
 }
 
+void ABaseSpell::SetCurseParams(bool applyCurse, float damage, float range, float duration)
+{
+	auto effect = StatusEffects.FindByPredicate([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Curse; });
+
+	if (applyCurse)
+	{
+		if (effect != nullptr)
+		{
+			effect->Duration = duration;
+			effect->Value = damage;
+			effect->Interval = range;
+		}
+		else
+		{
+			StatusEffects.Add(FStatusEffect(Type::Curse, range, damage, duration, this));
+		}
+	}
+	else
+	{
+		if (effect != nullptr)
+		{
+			StatusEffects.RemoveAll([](const FStatusEffect& thisEffect) {return thisEffect.EffectType == Type::Curse; });
+		}
+	}
+}
+
 void ABaseSpell::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
 {
 	SetOwner(owner);
@@ -118,7 +149,7 @@ void ABaseSpell::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(LifeTimer, this, &ABaseSpell::Destroy, LifeSpan);
 }
 
-void ABaseSpell::SetLifespan(float lifespan)
+void ABaseSpell::SetLifeTime(float lifespan)
 {
 	GetWorld()->GetTimerManager().SetTimer(LifeTimer, this, &ABaseSpell::Destroy, lifespan);
 }

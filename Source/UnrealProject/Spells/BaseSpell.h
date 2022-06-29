@@ -15,7 +15,7 @@ class UNREALPROJECT_API ABaseSpell : public AActor
 public:	
 	ABaseSpell();
 
-	void Destroy();
+	virtual void Destroy();
 
 	void AddStatusEffect(const FStatusEffect& effect);
 	UFUNCTION(BlueprintCallable)
@@ -24,6 +24,8 @@ public:
 	void SetSlowParams(bool applySlow, float value, float duration);
 	UFUNCTION(BlueprintCallable)
 	void SetStunParams(bool applyStun, float duration);
+	UFUNCTION(BlueprintCallable)
+	void SetCurseParams(bool applyCurse, float damage, float range, float duration);
 
 	virtual void InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel);
 
@@ -42,8 +44,10 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void SetLifespan(float lifespan);
+	virtual void SetLifeTime(float lifespan);
+	virtual void OnDeath();
 
+	UPROPERTY(EditDefaultsOnly)
 	float Damage = 0;
 
 	UPROPERTY(EditAnywhere)
