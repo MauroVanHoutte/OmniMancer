@@ -36,6 +36,7 @@ void AChainLightning::OnHit(AActor* hitActor)
 {
 	Super::OnHit(hitActor);
 
+	//frost level 4+ effect
 	if (FrostLevel < 4)
 		return;
 
