@@ -93,4 +93,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<APowerUp> Powerup;
 
+private:
+	void SpreadCurse(const FStatusEffect& curseEffect);
+
 };

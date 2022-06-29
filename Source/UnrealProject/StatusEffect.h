@@ -10,7 +10,8 @@ enum class Type
 {
 	Damage,
 	Slow,
-	Stun
+	Stun,
+	Curse
 };
 
 /**
@@ -36,7 +37,7 @@ struct FStatusEffect
 	};
 
 	Type EffectType{};
-	float Interval{};
+	float Interval{}; //used for curse range
 	float Value{};
 	float Duration{};
 	float Timer{};

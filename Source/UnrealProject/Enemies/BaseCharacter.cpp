@@ -10,6 +10,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "../FloatingTextActor.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 
 // Sets default values
@@ -134,6 +135,11 @@ void ABaseCharacter::AddStatusEffects(const TArray<FStatusEffect>& statusEffects
 			SlowAmount += effect.Value;
 			CharacterMovement->MaxWalkSpeed *= (1 - effect.Value/100.f);
 		}
+		if (effect.EffectType == Type::Curse)
+		{
+			if (NiagaraComponent != nullptr)
+				NiagaraComponent->SetVariableFloat(TEXT("Cursed"), 1.f);
+		}
 		CurrentStatusEffects.Add(effect);
 	}
 }
@@ -165,9 +171,9 @@ void ABaseCharacter::UpdateStatusEffects(float deltaTime)
 {
 	for (int32 i = 0; i < CurrentStatusEffects.Num(); i++)
 	{
+		CurrentStatusEffects[i].Timer += deltaTime;
 		if (CurrentStatusEffects[i].EffectType == Type::Damage)
 		{
-			CurrentStatusEffects[i].Timer += deltaTime;
 			if (CurrentStatusEffects[i].Timer > CurrentStatusEffects[i].Interval)
 			{
 				CurrentStatusEffects[i].Timer -= CurrentStatusEffects[i].Interval;
@@ -188,17 +194,14 @@ void ABaseCharacter::UpdateStatusEffects(float deltaTime)
 		}
 		else
 		{
-			CurrentStatusEffects[i].Timer += deltaTime;
 			if (CurrentStatusEffects[i].Timer > CurrentStatusEffects[i].Duration)
 			{
-				FStatusEffect effect = CurrentStatusEffects[i];
-				CurrentStatusEffects.RemoveAt(i);
-				if (effect.EffectType == Type::Slow)
+				if (CurrentStatusEffects[i].EffectType == Type::Slow)
 				{
-					SlowAmount -= effect.Value;
-					CharacterMovement->MaxWalkSpeed /= (1 - effect.Value / 100.f);
+					SlowAmount -= CurrentStatusEffects[i].Value;
+					CharacterMovement->MaxWalkSpeed /= (1 - CurrentStatusEffects[i].Value / 100.f);
 				}
-				if (effect.EffectType == Type::Stun)
+				if (CurrentStatusEffects[i].EffectType == Type::Stun)
 				{
 					auto otherStunEffect = CurrentStatusEffects.FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Stun; });
 					if (otherStunEffect == nullptr)
@@ -208,9 +211,40 @@ void ABaseCharacter::UpdateStatusEffects(float deltaTime)
 							NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 0.f);
 					}
 				}
+				if (CurrentStatusEffects[i].EffectType == Type::Curse)
+				{
+					TakeTickDamage(CurrentStatusEffects[i].Value);
+					if (IsPendingKillPending())
+					{
+						SpreadCurse(CurrentStatusEffects[i]);
+					}
+
+					if (NiagaraComponent != nullptr)
+						NiagaraComponent->SetVariableFloat(TEXT("Cursed"), 0.f);
+				}
+				CurrentStatusEffects.RemoveAt(i);
 				i--;
 				continue;
 			}
+		}
+	}
+}
+
+void ABaseCharacter::SpreadCurse(const FStatusEffect& curseEffect)
+{
+	TArray<AActor*>ignoreActors{this};
+	TArray<AActor*>outActors{};
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), curseEffect.Interval, TArray<TEnumAsByte<EObjectTypeQuery>>(), StaticClass(), ignoreActors, outActors); //range is stored in interval
+
+	for (AActor* actor : outActors)
+	{
+		if (!actor->IsA<AWizardCharacter>())
+		{
+			FStatusEffect curse = curseEffect;
+			curse.Timer = 0;
+			TArray<FStatusEffect> effects{curse};
+			Cast<ABaseCharacter>(actor)->AddStatusEffects(effects);
+			return;
 		}
 	}
 }
