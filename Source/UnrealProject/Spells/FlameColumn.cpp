@@ -19,12 +19,18 @@ AFlameColumn::AFlameColumn()
 // Called when the game starts or when spawned
 void AFlameColumn::BeginPlay()
 {
-	LifeSpan = ImpactDelay + VisualLinger;
-
 	Super::BeginPlay();
-	CylinderMesh->SetRelativeScale3D(FVector(CircleScale, CircleScale, 1.f));
 	CylinderMesh->SetCollisionProfileName(TEXT("NoCollision"));
 
+}
+
+void AFlameColumn::OnDeath()
+{
+	if (FireLevel > 3)
+	{
+		auto spell = GetWorld()->SpawnActor<AFlameColumn>(GetClass());
+		spell->InitSpell(FVector(), GetActorLocation(), FVector(), GetOwner(), GetInstigator(), 3, FrostLevel, WindLevel * 2); //bigger radius less damage
+	}
 }
 
 // Called every frame
@@ -35,7 +41,7 @@ void AFlameColumn::Tick(float DeltaTime)
 	ImpactDelay -= DeltaTime;
 	if (ImpactDelay < 0)
 	{
-		CylinderMesh->SetRelativeScale3D(FVector(CircleScale, CircleScale, 100.f));
+		CylinderMesh->SetRelativeScale3D(FVector(CircleScale + ScalePerWindLevel * WindLevel, CircleScale + ScalePerWindLevel * WindLevel, 100.f));
 		CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	}
 }
@@ -48,6 +54,7 @@ void AFlameColumn::InitSpell(const FVector& casterLocation, const FVector& targe
 	SetActorLocation(targetLocation);
 	SetBurnParams(ApplyBurn, BurnDamage + BurnDamagePerFireLevel * fireLevel, BurnInterval, BurnDuration + DurationPerFrostLevel * frostLevel);
 	CylinderMesh->SetRelativeScale3D(FVector(CircleScale + ScalePerWindLevel*windLevel, CircleScale + ScalePerWindLevel*windLevel, 1.f));
+	SetLifeTime(ImpactDelay + VisualLinger);
 }
 
 
