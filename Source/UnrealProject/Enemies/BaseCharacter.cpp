@@ -93,14 +93,26 @@ void ABaseCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 		if (spell != nullptr && !spell->WasActorHit(this))
 		{
 			spell->AddHitActor(this);
-			TakeSpellDamage(spell->GetDamage());
+			TakeSpellDamage(spell);
 			AddStatusEffects(spell->GetStatusEffects());
 			spell->OnHit(this);
 		}
 	}
 }
 
-void ABaseCharacter::TakeSpellDamage(float damage)
+void ABaseCharacter::OnTakeHit(AActor* cause)
+{
+}
+
+void ABaseCharacter::TakeSpellDamage(ABaseSpell* spell)
+{
+	Health -= spell->GetDamage();
+	OnTakeHit(spell->GetInstigator());
+	SpawnDamageText(spell->GetDamage());
+	CheckDeath();
+}
+
+void ABaseCharacter::TakeSpellDamageFloat(float damage, AActor* cause)
 {
 	Health -= damage;
 	SpawnDamageText(damage);
@@ -118,29 +130,7 @@ void ABaseCharacter::AddStatusEffects(const TArray<FStatusEffect>& statusEffects
 {
 	for (const auto& effect : statusEffects)
 	{
-		if (effect.EffectType == Type::Stun)
-		{
-			Stunned = true;
-			OnStunned();
-			if (NiagaraComponent != nullptr)
-				NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 1.f);
-		}
-		if (effect.EffectType == Type::Damage)
-		{
-			if (NiagaraComponent != nullptr)
-				NiagaraComponent->SetVariableFloat(TEXT("Burning"), 1.f);
-		}
-		if (effect.EffectType == Type::Slow)
-		{
-			SlowAmount += effect.Value;
-			CharacterMovement->MaxWalkSpeed *= (1 - effect.Value/100.f);
-		}
-		if (effect.EffectType == Type::Curse)
-		{
-			if (NiagaraComponent != nullptr)
-				NiagaraComponent->SetVariableFloat(TEXT("Cursed"), 1.f);
-		}
-		CurrentStatusEffects.Add(effect);
+		AddStatusEffect(effect);
 	}
 }
 
@@ -203,8 +193,8 @@ void ABaseCharacter::UpdateStatusEffects(float deltaTime)
 				}
 				if (CurrentStatusEffects[i].EffectType == Type::Stun)
 				{
-					auto otherStunEffect = CurrentStatusEffects.FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Stun; });
-					if (otherStunEffect == nullptr)
+					auto otherStunEffect = CurrentStatusEffects.FilterByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Stun; });
+					if (otherStunEffect.Num() < 2)
 					{
 						Stunned = false;
 						if (NiagaraComponent != nullptr)
@@ -320,6 +310,33 @@ void ABaseCharacter::ReapplyStatusEffects(const TArray<FStatusEffect>& statusEff
 		}
 		CurrentStatusEffects.Add(effect);
 	}
+}
+
+void ABaseCharacter::AddStatusEffect(const FStatusEffect& effect)
+{
+	if (effect.EffectType == Type::Stun)
+	{
+		Stunned = true;
+		OnStunned();
+		if (NiagaraComponent != nullptr)
+			NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 1.f);
+	}
+	if (effect.EffectType == Type::Damage)
+	{
+		if (NiagaraComponent != nullptr)
+			NiagaraComponent->SetVariableFloat(TEXT("Burning"), 1.f);
+	}
+	if (effect.EffectType == Type::Slow)
+	{
+		SlowAmount += effect.Value;
+		CharacterMovement->MaxWalkSpeed *= (1 - effect.Value / 100.f);
+	}
+	if (effect.EffectType == Type::Curse)
+	{
+		if (NiagaraComponent != nullptr)
+			NiagaraComponent->SetVariableFloat(TEXT("Cursed"), 1.f);
+	}
+	CurrentStatusEffects.Add(effect);
 }
 
 // Called every frame

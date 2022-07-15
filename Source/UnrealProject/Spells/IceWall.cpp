@@ -14,6 +14,7 @@ AIceWall::AIceWall()
 	
 	Trigger = CreateDefaultSubobject<UBoxComponent>("Trigger");
 	Trigger->SetupAttachment(Mesh);
+	Trigger->SetBoxExtent(FVector(55));
 }
 
 void AIceWall::BeginPlay()

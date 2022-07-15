@@ -28,7 +28,7 @@ void APowerUp::OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 {
 	auto player = Cast<AWizardCharacter>(OtherActor);
 
-	if (player != nullptr)
+	if (player != nullptr && player->IsValidLowLevel())
 	{
 		player->AddPowerUpEffect(NewObject<UPowerUpEffect>(this, Effect.Get()));
 		Destroy();

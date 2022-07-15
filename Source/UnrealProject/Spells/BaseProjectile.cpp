@@ -55,10 +55,10 @@ void ABaseProjectile::Explode()
 	particleActor->SetActorScale3D(FVector(ExplosionRadius));
 	particleActor->SetActorLocation(GetActorLocation());
 	TArray<AActor*> outActors{};
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), ExplosionRadius * 100, TArray<TEnumAsByte<EObjectTypeQuery>>{}, ABaseCharacter::StaticClass(), TArray<AActor*>{GetOwner()}, outActors);
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), ExplosionRadius * 100, TArray<TEnumAsByte<EObjectTypeQuery>>{}, ABaseCharacter::StaticClass(), TArray<AActor*>{GetInstigator()}, outActors);
 	for (AActor* actor : outActors)
 	{
-		Cast<ABaseCharacter>(actor)->TakeSpellDamage(ExplosionDamage);
+		Cast<ABaseCharacter>(actor)->TakeSpellDamageFloat(ExplosionDamage, GetInstigator());
 	}
 }
 
@@ -77,6 +77,12 @@ void ABaseProjectile::FireInDirection(const FVector& direction)
 
 void ABaseProjectile::OnHit(AActor* hitActor)
 {
+	auto caster = Cast<AWizardCharacter>(GetOwner());
+	if (ApplyWizardOnHitEffects && caster != nullptr && caster->IsValidLowLevel())
+	{
+		caster->OnBaseProjectileHitEnemy(hitActor);
+	}
+
 	if (Explosive)
 	{
 		Explode();

@@ -19,6 +19,8 @@
 #include "Spells/ChainLightning.h"
 #include "Spells/Shockwave.h"
 #include "Spells/BaseProjectile.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "TriggerEffects.h"
 
 // Sets default values
 AWizardCharacter::AWizardCharacter()
@@ -56,28 +58,54 @@ AWizardCharacter::AWizardCharacter()
 	SecondElementBillboard->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
 }
 
+AWizardCharacter::AWizardCharacter(FVTableHelper& Helper)
+	: AWizardCharacter()
+{
+
+}
+
+
 // Called when the game starts or when spawned
 void AWizardCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	FirstElementBillboard->SetSprite(FireElementTexture);
-	SecondElementBillboard->SetSprite(FireElementTexture);
+
+	switch (MainElement)
+	{
+	case WizardElement::Fire:
+		FirstElementBillboard->SetSprite(FireElementTexture);
+		SecondElementBillboard->SetSprite(FireElementTexture);
+		break;
+	case WizardElement::Frost:
+		FirstElementBillboard->SetSprite(FrostElementTexture);
+		SecondElementBillboard->SetSprite(FrostElementTexture);
+		break;
+	case WizardElement::Wind:
+		FirstElementBillboard->SetSprite(WindElementTexture);
+		SecondElementBillboard->SetSprite(WindElementTexture);
+		break;
+	default:
+		break;
+	}
 
 	for (auto& pair : Cooldowns)
 	{
 		FTimerHandle handle;
-		CooldownTimers.Add(pair.Key, handle);
+		CooldownTimers.Add(pair.Key, handle); //setup cooldown timer handles
 	}
 
 	APlayerController* controller = GetController<APlayerController>();
 	if (controller != nullptr)
 		controller->SetShowMouseCursor(true);
+
+	SetupMainElementPassive();
 }
 
-void AWizardCharacter::TakeSpellDamage(float damage)
+void AWizardCharacter::TakeSpellDamage(ABaseSpell* spell)
 {
-	Health -= damage * (1 + DamageTakenMultiplier/100.f);
-	SpawnDamageText(damage * (1 + DamageTakenMultiplier / 100.f));
+	Health -= spell->GetDamage() * (1 + DamageTakenMultiplier / 100.f);
+	SpawnDamageText(spell->GetDamage() * (1 + DamageTakenMultiplier / 100.f));
+	OnTakeHit(spell->GetInstigator());
 	CheckDeath();
 }
 
@@ -87,6 +115,15 @@ void AWizardCharacter::TakeTickDamage(float damage)
 	SpawnDamageText(damage * (1 + DamageTakenMultiplier / 100.f));
 	CheckDeath();
 }
+
+void AWizardCharacter::OnTakeHit(AActor* cause)
+{
+	auto caster = Cast<ABaseCharacter>(cause);
+	if (caster->IsValidLowLevel())
+		caster->AddStatusEffects(ReflectEffects);
+}
+
+AWizardCharacter::~AWizardCharacter() = default;
 
 // Called every frame
 void AWizardCharacter::Tick(float DeltaTime)
@@ -108,6 +145,14 @@ void AWizardCharacter::Tick(float DeltaTime)
 	WizardMesh->SetRelativeRotation((mousePosWorld - GetActorLocation()).Rotation()); //character looks towards cursor
 }
 
+void AWizardCharacter::TakeSpellDamageFloat(float damage, AActor* cause)
+{
+	Health -= damage * (1 + DamageTakenMultiplier / 100.f);
+	SpawnDamageText(damage * (1 + DamageTakenMultiplier / 100.f));
+	OnTakeHit(cause);
+	CheckDeath();
+}
+
 // Called to bind functionality to input
 void AWizardCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -121,6 +166,14 @@ void AWizardCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction<FAddElementDelegate>("FireElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Fire);
 	PlayerInputComponent->BindAction<FAddElementDelegate>("FrostElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Frost);
 	PlayerInputComponent->BindAction<FAddElementDelegate>("WindElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Wind);
+}
+
+void AWizardCharacter::OnBaseProjectileHitEnemy(AActor* enemy)
+{
+	for (auto& trigger : OnHitTriggers)
+	{
+		trigger->OnTrigger(this, enemy);
+	}
 }
 
 const TArray<WizardElement>& AWizardCharacter::GetCurrentElements()
@@ -232,6 +285,26 @@ int AWizardCharacter::GetBounces()
 TArray<FStatusEffect>& AWizardCharacter::GetBaseAttackEffectsRef()
 {
 	return BaseAttackEffects;
+}
+
+void AWizardCharacter::LowerCooldowns(float amount)
+{
+	for (auto cooldownPair : CooldownTimers)
+	{
+		auto& timerManager = GetWorld()->GetTimerManager();
+		if (GetWorld()->GetTimerManager().IsTimerActive(cooldownPair.Value))
+		{
+			float remaining = timerManager.GetTimerRemaining(cooldownPair.Value);
+			if (remaining < amount)
+			{
+				timerManager.PauseTimer(cooldownPair.Value);
+			}
+			else
+			{
+				timerManager.SetTimer(cooldownPair.Value, remaining - amount, false);
+			}
+		}
+	}
 }
 
 void AWizardCharacter::MoveUp(float value)
@@ -421,6 +494,11 @@ void AWizardCharacter::CastSpell()
 
 	 auto spell = GetWorld()->SpawnActor<ABaseSpell>(*spellType);
 	 spell->InitSpell(GetActorLocation(), hit.Location, projectileDirection, this, GetInstigator(), FireLevel, FrostLevel, WindLevel);
+
+	 for (auto& trigger : OnCastTriggers)
+	 {
+		 trigger->OnTrigger(this, nullptr);
+	 }
 }
 
 void AWizardCharacter::Dash()
@@ -445,5 +523,35 @@ void AWizardCharacter::UpdatePowerups(float deltaTime)
 			i--;
 		}
 	}
+}
+
+void AWizardCharacter::SetupMainElementPassive()
+{
+	switch (MainElement)
+	{
+	case WizardElement::Fire:
+		ReflectEffects.Add(FStatusEffect{Type::Damage, 1, 1, 5, this});
+		break;
+	case WizardElement::Frost:
+	{
+		auto slowTrigger = new TriggerEffects::AoeSlowTrigger();
+		slowTrigger->SetVars(600, 20, 3);
+		OnCastTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(slowTrigger));
+	}
+		break;
+	case WizardElement::Wind:
+	{
+		auto speedBuffTrigger = new TriggerEffects::SpeedBuffTrigger();
+		speedBuffTrigger->SetVars(20, 3);
+		OnCastTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(speedBuffTrigger));
+	}
+		break;
+	default:
+		break;
+	}
+
+	auto lowerCooldownTrigger = new TriggerEffects::LowerCooldownTrigger();
+	lowerCooldownTrigger->SetVars(30, 1);
+	OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(lowerCooldownTrigger));
 }
 

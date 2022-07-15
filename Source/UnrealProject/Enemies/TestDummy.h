@@ -18,7 +18,7 @@ public:
 	ATestDummy();
 
 	virtual void Tick(float DeltaTime) override;
-	void TakeSpellDamage(float damage) override;
+	void TakeSpellDamage(ABaseSpell* spell) override;
 	void TakeTickDamage(float damage) override;
 
 protected:

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Enemies/BaseCharacter.h"
+#include "GenericPlatform/GenericPlatformMisc.h" 
 
 #include "WizardCharacter.generated.h"
 
@@ -28,6 +29,11 @@ class AShockwave;
 class ABaseProjectile;
 class ABaseSpell;
 
+namespace TriggerEffects
+{
+	class BaseTriggerEffect;
+}
+
 UCLASS()
 class UNREALPROJECT_API AWizardCharacter : public ABaseCharacter
 {
@@ -35,10 +41,17 @@ class UNREALPROJECT_API AWizardCharacter : public ABaseCharacter
 
 public:
 	AWizardCharacter();
+	AWizardCharacter(FVTableHelper& Helper);
+	~AWizardCharacter();
 
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void TakeSpellDamage(ABaseSpell* spell);
+	virtual void TakeSpellDamageFloat(float damage, AActor* cause);
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void OnBaseProjectileHitEnemy(AActor* enemy);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnAddElement();
@@ -71,17 +84,20 @@ public:
 	int GetBounces();
 	TArray<FStatusEffect>& GetBaseAttackEffectsRef();
 
+	void LowerCooldowns(float amount);
+
 protected:
 	virtual void BeginPlay() override;
 
-	void TakeSpellDamage(float damage) override;
 	void TakeTickDamage(float damage) override;
 
-	UPROPERTY(EditDefaultsOnly)
+	virtual void OnTakeHit(AActor* actor);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	int FireLevel = 1;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	int FrostLevel = 1;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	int WindLevel = 1;
 
 private:
@@ -94,6 +110,8 @@ private:
 	void Dash();
 
 	void UpdatePowerups(float deltaTime);
+
+	void SetupMainElementPassive();
 
 	UPROPERTY(EditDefaultsOnly)
 	float m_DashForce = 10000.f;
@@ -112,42 +130,44 @@ private:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* WizardMesh;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	TArray<WizardElement> CurrentElements{};
 	int MaxElements = 2;
 	
-	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
+	UPROPERTY(EditDefaultsOnly, Category = "Spells")
 	TSubclassOf<ABaseProjectile> BaseProjectile = nullptr;
-	UPROPERTY(EditDefaultsOnly, AdvancedDisplay)
+	UPROPERTY(EditDefaultsOnly, Category = "Spells")
 	TMap<int, TSubclassOf<ABaseSpell>> Spells;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Elements")
+	WizardElement MainElement = WizardElement::Fire;
+	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	int SpeedPerWind = 10;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	int DamagePerFire = 10;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	int DamageReductionPerFrost = 10;
 	UPROPERTY(EditDefaultsOnly)
 	int BaseDamageMultiplier = 20;
 	UPROPERTY(EditDefaultsOnly)
 	int DamageTakenMultiplier = 0;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
 	UBillboardComponent* FirstElementBillboard = nullptr; 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
 	UBillboardComponent* SecondElementBillboard = nullptr;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
 	UTexture2D* FireElementTexture = nullptr;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
 	UTexture2D* FrostElementTexture = nullptr;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
 	UTexture2D* WindElementTexture = nullptr;
 
 	// Cooldowns
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Spells")
 	TMap<int, float> Cooldowns{};
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Spells")
 	TMap<int, FTimerHandle> CooldownTimers{};
 
 	
@@ -156,10 +176,18 @@ private:
 	FTimerHandle BasicAttackTimer;
 
 	//Powerups
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Active")
 	TArray<UPowerUpEffect*> PowerUpEffects;
 
+	UPROPERTY(VisibleAnywhere, Category = "Active")
 	TArray<FStatusEffect> BaseAttackEffects;
+
+	//effects that are applied to attacker when wizard takes damage
+	UPROPERTY(VisibleAnywhere, Category = "Active")
+	TArray<FStatusEffect> ReflectEffects;
+	TArray<TUniquePtr<TriggerEffects::BaseTriggerEffect>> OnCastTriggers;
+	TArray<TUniquePtr<TriggerEffects::BaseTriggerEffect>> OnHitTriggers;
+
 
 	int Spread = 0;
 

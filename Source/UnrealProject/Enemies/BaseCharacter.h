@@ -11,6 +11,7 @@
 class APowerUp;
 class UNiagaraComponent;
 class AFloatingTextActor;
+class ABaseSpell;
 
 UCLASS(Abstract)
 class UNREALPROJECT_API ABaseCharacter : public ACharacter
@@ -21,6 +22,9 @@ public:
 	// Sets default values for this character's properties
 	ABaseCharacter();
 	virtual void ReapplyStatusEffects(const TArray<FStatusEffect>& statusEffects);
+	virtual void AddStatusEffect(const FStatusEffect& effect);
+	virtual void AddStatusEffects(const TArray<FStatusEffect>& statusEffects);
+
 	virtual void Knockup();
 	virtual void Push(const FVector& force);
 
@@ -43,7 +47,10 @@ public:
 	void Heal(float hp);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void TakeSpellDamage(float damage);
+	virtual void TakeSpellDamage(ABaseSpell* spell);
+	//no on hit effects can be applied
+	UFUNCTION(BlueprintCallable)
+	virtual void TakeSpellDamageFloat(float damage, AActor* cause);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -53,8 +60,9 @@ protected:
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
+	virtual void OnTakeHit(AActor* cause);
+
 	virtual void TakeTickDamage(float damage);
-	virtual void AddStatusEffects(const TArray<FStatusEffect>& statusEffects);
 	void SpawnDamageText(float damage);
 
 	void SpawnPowerup();

@@ -1,0 +1,79 @@
+{
+  "Types": [
+    {
+      "Type": "Fire",
+      "Skills": [
+        {
+          "Name": "Burning Confidence",
+          "Tooltip": "Hitting enemies with basic attacks has a chance to lower the cooldown of your spells",
+          "Cost": 2
+        },
+        {
+          "Name": "Fuel the Flames",
+          "Tooltip": "Kills grant a temporary stack of damage increase",
+          "Cost": 4
+        },
+        {
+          "Name": "Incessant Kindling",
+          "Tooltip": "All your burn effects last longer",
+          "Cost": 5
+        },
+        {
+          "Name": "Trail Blazing",
+          "Tooltip": "Leave behind a fiery trail burning your enemies",
+          "Cost": 7
+        }
+      ]
+    },
+    {
+      "Type": "Frost",
+      "Skills": [
+        {
+          "Name": "Freezing Touch",
+          "Tooltip": "Basic attacks apply slowing effect",
+          "Cost": 2
+        },
+        {
+          "Name": "Reinforcing Frost",
+          "Tooltip": "Taking damage grants a stack of temporary damage reduction",
+          "Cost": 4
+        },
+        {
+          "Name": "Perma Frost",
+          "Tooltip": "All your slowing effects last longer",
+          "Cost": 5
+        },
+        {
+          "Name": "Blizzard",
+          "Tooltip": "As long as you have 4 or more slows on enemies a blizzard will slow and damage all nearby enemies",
+          "Cost": 7
+        }
+      ]
+    },
+    {
+      "Type": "Wind",
+      "Skills": [
+        {
+          "Name": "Agile Spirit",
+          "Tooltip": "Dash further",
+          "Cost": 2
+        },
+        {
+          "Name": "Streamlined Firing",
+          "Tooltip": "Succesive Basic attack hits increase your fire rate",
+          "Cost": 4
+        },
+        {
+          "Name": "Disabling Flow",
+          "Tooltip": "All your stun effects last longer",
+          "Cost": 5
+        },
+        {
+          "Name": "Spontaneous Vortex",
+          "Tooltip": "Chance to conjure a tornado on kill that sucks in and damages enemies",
+          "Cost": 7
+        }
+      ]
+    }
+  ]
+}
