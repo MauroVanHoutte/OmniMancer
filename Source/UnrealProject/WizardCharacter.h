@@ -51,7 +51,7 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void OnBaseProjectileHitEnemy(AActor* enemy);
+	void OnSpellHitEnemy( ABaseSpell* spell, AActor* enemy);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnAddElement();
@@ -114,10 +114,10 @@ private:
 	void SetupMainElementPassive();
 
 	UPROPERTY(EditDefaultsOnly)
-	float m_DashForce = 10000.f;
+	float DashForce = 10000.f;
 	UPROPERTY(EditDefaultsOnly)
-	float m_DashCooldown = 5.f;
-	FTimerHandle m_DashCooldownTimer;
+	float DashCooldown = 5.f;
+	FTimerHandle DashCooldownTimer;
 
 	void AddElement(WizardElement element);
 	DECLARE_DELEGATE_OneParam(FAddElementDelegate, WizardElement);

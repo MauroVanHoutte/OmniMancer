@@ -56,9 +56,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float BounceRange = 700.f;
 
-	UPROPERTY(EditDefaultsOnly)
-	bool ApplyWizardOnHitEffects = true;
-
 	bool Explosive = false;
 	float ExplosionRadius = 0;
 	float ExplosionDamage = 0;

@@ -77,11 +77,7 @@ void ABaseProjectile::FireInDirection(const FVector& direction)
 
 void ABaseProjectile::OnHit(AActor* hitActor)
 {
-	auto caster = Cast<AWizardCharacter>(GetOwner());
-	if (ApplyWizardOnHitEffects && caster != nullptr && caster->IsValidLowLevel())
-	{
-		caster->OnBaseProjectileHitEnemy(hitActor);
-	}
+	Super::OnHit(hitActor);
 
 	if (Explosive)
 	{

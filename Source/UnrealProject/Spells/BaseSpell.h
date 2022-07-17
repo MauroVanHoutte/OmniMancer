@@ -48,6 +48,9 @@ protected:
 	virtual void OnDeath();
 
 	UPROPERTY(EditDefaultsOnly)
+	bool ApplyWizardOnHitEffects = true;
+
+	UPROPERTY(EditDefaultsOnly)
 	float Damage = 0;
 
 	UPROPERTY(EditAnywhere)

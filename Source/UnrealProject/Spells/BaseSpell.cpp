@@ -2,6 +2,7 @@
 
 
 #include "BaseSpell.h"
+#include "../WizardCharacter.h"
 
 // Sets default values
 ABaseSpell::ABaseSpell()
@@ -189,6 +190,11 @@ bool ABaseSpell::WasActorHit(AActor* actor) const
 
 void ABaseSpell::OnHit(AActor* hitActor)
 {
+	auto caster = Cast<AWizardCharacter>(GetOwner());
+	if (ApplyWizardOnHitEffects && caster != nullptr && caster->IsValidLowLevel())
+	{
+		caster->OnSpellHitEnemy(this, hitActor);
+	}
 }
 
 

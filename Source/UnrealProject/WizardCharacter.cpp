@@ -21,6 +21,7 @@
 #include "Spells/BaseProjectile.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "TriggerEffects.h"
+#include "OmnimancerGameInstance.h"
 
 // Sets default values
 AWizardCharacter::AWizardCharacter()
@@ -168,11 +169,11 @@ void AWizardCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction<FAddElementDelegate>("WindElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Wind);
 }
 
-void AWizardCharacter::OnBaseProjectileHitEnemy(AActor* enemy)
+void AWizardCharacter::OnSpellHitEnemy( ABaseSpell* spell, AActor* enemy)
 {
 	for (auto& trigger : OnHitTriggers)
 	{
-		trigger->OnTrigger(this, enemy);
+		trigger->OnTrigger(this, spell, enemy);
 	}
 }
 
@@ -497,16 +498,16 @@ void AWizardCharacter::CastSpell()
 
 	 for (auto& trigger : OnCastTriggers)
 	 {
-		 trigger->OnTrigger(this, nullptr);
+		 trigger->OnTrigger(this, nullptr, nullptr);
 	 }
 }
 
 void AWizardCharacter::Dash()
 {
-	if (!GetWorld()->GetTimerManager().IsTimerActive(m_DashCooldownTimer))
+	if (!GetWorld()->GetTimerManager().IsTimerActive(DashCooldownTimer))
 	{
-		Cast<UCharacterMovementComponent>(GetMovementComponent())->AddImpulse(GetMovementComponent()->Velocity.GetSafeNormal() * m_DashForce, true);
-		GetWorld()->GetTimerManager().SetTimer(m_DashCooldownTimer, m_DashCooldown, false);
+		Cast<UCharacterMovementComponent>(GetMovementComponent())->AddImpulse(GetMovementComponent()->Velocity.GetSafeNormal() * DashForce, true);
+		GetWorld()->GetTimerManager().SetTimer(DashCooldownTimer, DashCooldown, false);
 	}
 }
 
@@ -527,31 +528,92 @@ void AWizardCharacter::UpdatePowerups(float deltaTime)
 
 void AWizardCharacter::SetupMainElementPassive()
 {
+	auto gameInstance = GetGameInstance<UOmnimancerGameInstance>();
 	switch (MainElement)
 	{
 	case WizardElement::Fire:
-		ReflectEffects.Add(FStatusEffect{Type::Damage, 1, 1, 5, this});
-		break;
+	{
+		//Always active
+		ReflectEffects.Add(FStatusEffect{ Type::Damage, 1, 1, 5, this });
+
+
+		int upgrades = gameInstance->GetFireUpgrades();
+		//Unlocked through the upgrade menu
+		switch (upgrades)
+		{
+		case 4:
+
+		case 3:
+
+		case 2:
+
+		case 1:
+		{
+			auto lowerCooldownTrigger = new TriggerEffects::BaseAttackLowerCooldownTrigger();
+			lowerCooldownTrigger->SetVars(30, 1);
+			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(lowerCooldownTrigger));
+		}
+		default:
+			break;
+		}
+	}
+	break;
 	case WizardElement::Frost:
 	{
+		//Always active
 		auto slowTrigger = new TriggerEffects::AoeSlowTrigger();
 		slowTrigger->SetVars(600, 20, 3);
 		OnCastTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(slowTrigger));
+
+
+		int upgrades = gameInstance->GetFrostUpgrades();
+		//Unlocked through the upgrade menu
+		switch (upgrades)
+		{
+		case 4:
+
+		case 3:
+
+		case 2:
+
+		case 1:
+			BaseAttackEffects.Add(FStatusEffect(Type::Slow, -1, 20, 3, this));
+		default:
+			break;
+		}
 	}
 		break;
 	case WizardElement::Wind:
 	{
+		//Always active
 		auto speedBuffTrigger = new TriggerEffects::SpeedBuffTrigger();
 		speedBuffTrigger->SetVars(20, 3);
 		OnCastTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(speedBuffTrigger));
+
+
+		int upgrades = gameInstance->GetWindUpgrades();
+		//Unlocked through the upgrade menu
+		switch (upgrades)
+		{
+		case 4:
+
+		case 3:
+
+		case 2:
+		{
+			auto tempFirerateTrigger = new TriggerEffects::BaseAttackTempFireRateTrigger();
+			tempFirerateTrigger->SetVars(1.15f, 1.5f);
+			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(tempFirerateTrigger));
+		}
+		case 1:
+			DashForce *= 1.1;
+		default:
+			break;
+		}
 	}
 		break;
 	default:
 		break;
 	}
-
-	auto lowerCooldownTrigger = new TriggerEffects::LowerCooldownTrigger();
-	lowerCooldownTrigger->SetVars(30, 1);
-	OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(lowerCooldownTrigger));
 }
 

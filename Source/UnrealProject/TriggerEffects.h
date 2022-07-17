@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 class AWizardCharacter;
+class ABaseSpell;
 
 namespace TriggerEffects
 {
@@ -12,14 +13,14 @@ namespace TriggerEffects
 	{
 	public:
 
-		virtual void OnTrigger(AWizardCharacter* caster, AActor* target) {};
+		virtual void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) {};
 	};
 
 	//Slow enemies in radius around caster
 	class AoeSlowTrigger : public BaseTriggerEffect
 	{
 	public:
-		void OnTrigger(AWizardCharacter* caster, AActor* target) override
+		void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
 		{
 			TArray<AActor*> ignore{ caster };
 			TArray<AActor*> outActors;
@@ -49,7 +50,7 @@ namespace TriggerEffects
 	class SpeedBuffTrigger : public BaseTriggerEffect
 	{
 	public:
-		void OnTrigger(AWizardCharacter* caster, AActor* target) override
+		void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
 		{
 			caster->AddStatusEffect(FStatusEffect{ Type::Slow, -1, -Speed, Duration, caster });
 		};
@@ -66,11 +67,16 @@ namespace TriggerEffects
 	};
 
 	//Chance to lower Cooldowns
-	class LowerCooldownTrigger : public BaseTriggerEffect
+	class BaseAttackLowerCooldownTrigger : public BaseTriggerEffect
 	{
 	public:
-		void OnTrigger(AWizardCharacter* caster, AActor* target) override
+		void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
 		{
+			//only execute if base projectile
+			auto baseProjectile = Cast<ABaseProjectile>(spell);
+			if (baseProjectile == nullptr)
+				return;
+
 			int rand = FMath::RandRange(0, 100);
 			if (rand < Chance)
 				caster->LowerCooldowns(Amount);
@@ -85,6 +91,41 @@ namespace TriggerEffects
 	private:
 		int Chance = 30;
 		float Amount = 1;
+	};
+
+	//Temp Fire Rate
+	class BaseAttackTempFireRateTrigger : public BaseTriggerEffect
+	{
+	public:
+		void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
+		{
+			//only execute if base projectile
+			auto baseProjectile = Cast<ABaseProjectile>(spell);
+			if (baseProjectile == nullptr)
+				return;
+
+			float currentCooldown = caster->GetBasicAttackCooldown();
+			caster->SetBasicAttackCooldown(currentCooldown / FireRateMultiplier);
+
+			//undo buff after duration
+			FTimerHandle handle;
+			caster->GetWorld()->GetTimerManager().SetTimer(handle, [caster, this]() 
+				{
+					float currentCooldown = caster->GetBasicAttackCooldown();
+					caster->SetBasicAttackCooldown(currentCooldown * FireRateMultiplier);
+				}, Duration, false);
+		};
+
+		void SetVars(float fireRateMultiplier, float duration)
+		{
+			FireRateMultiplier = fireRateMultiplier;
+			Duration = duration;
+		};
+
+	private:
+		float FireRateMultiplier = 1.1f;
+		float Duration = 3.f;
+
 	};
 }
 
