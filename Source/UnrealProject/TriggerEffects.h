@@ -14,6 +14,14 @@ namespace TriggerEffects
 	public:
 
 		virtual void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) {};
+
+	protected:
+		bool TargetKilled(AActor* actor)
+		{
+			if (actor == nullptr || actor->IsActorBeingDestroyed())
+				return true;
+			return false;
+		}
 	};
 
 	//Slow enemies in radius around caster
@@ -126,6 +134,94 @@ namespace TriggerEffects
 		float FireRateMultiplier = 1.1f;
 		float Duration = 3.f;
 
+	};
+
+	//Temp Spell Damage on Kill
+	class SpellDamageOnKillTrigger : public BaseTriggerEffect
+	{
+	public:
+		void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
+		{
+			//only execute if target died
+			if (target == nullptr || !target->IsActorBeingDestroyed())
+				return;
+
+			float currentSpellDamageMultiplier = caster->GetSpellDamageMultiplier();
+			caster->SetSpellDamageMultiplier(currentSpellDamageMultiplier * (1+SpellDamageBoost));
+
+			//undo buff after duration
+			FTimerHandle handle;
+			caster->GetWorld()->GetTimerManager().SetTimer(handle, [caster, this]()
+				{
+					float currentSpellDamageMultiplier = caster->GetSpellDamageMultiplier();
+					caster->SetSpellDamageMultiplier(currentSpellDamageMultiplier / (1+SpellDamageBoost));
+				}, Duration, false);
+		};
+
+		void SetVars(float spellDamageBoost, float duration)
+		{
+			SpellDamageBoost = spellDamageBoost;
+			Duration = duration;
+		};
+
+	private:
+		float SpellDamageBoost = 0.15f;
+		float Duration = 7.f;
+	};
+
+	//Blizzard Trigger Effect
+	class BlizzardOnSlowTrigger : public BaseTriggerEffect
+	{
+	public:
+		void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
+		{
+			if (spell == nullptr)
+				return;
+
+			auto slowEffect = spell->GetStatusEffects().FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Slow; });
+			if (slowEffect != nullptr)
+			{
+				CurrentSlowsActive++;
+				UE_LOG(LogTemp, Warning, TEXT("slow added"));
+				if (CurrentSlowsActive >= SlowsNeeded)
+				{
+					//implement blizzard
+					UE_LOG(LogTemp, Warning, TEXT("Blizzard Activated"));	
+				}
+
+				FTimerHandle handle;
+				caster->GetWorld()->GetTimerManager().SetTimer(handle, [caster, this](){
+					CurrentSlowsActive--;
+					UE_LOG(LogTemp, Warning, TEXT("slow removed"));
+					if (CurrentSlowsActive < SlowsNeeded)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Blizzard Deactivated"));
+					}}, slowEffect->Duration, false);
+			}
+		};
+
+	private:
+		int CurrentSlowsActive = 0;
+		int SlowsNeeded = 4;
+	};
+
+	//Damage Reduction Trigger
+	class DamageReductionTrigger : public BaseTriggerEffect
+	{
+	public:
+		void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
+		{
+			caster->SetDamageTakenMultiplier(caster->GetDamageTakenMultiplier() * (1 - Amount));
+			
+			FTimerHandle handle;
+			caster->GetWorld()->GetTimerManager().SetTimer(handle, [caster, this]() {
+				caster->SetDamageTakenMultiplier(caster->GetDamageTakenMultiplier() / (1 - Amount));
+				}, Duration, false);
+		};
+
+	private:
+		float Duration = 3.f;
+		float Amount = 0.15f;
 	};
 }
 
