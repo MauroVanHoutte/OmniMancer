@@ -30,6 +30,13 @@ void APowerUp::OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 
 	if (player != nullptr && player->IsValidLowLevel())
 	{
+		if (Effect == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Effect is nullptr"));
+			UE_LOG(LogTemp, Warning, TEXT("Effects Initialized? : %s"), (EffectsInitialized ? TEXT("true") : TEXT("false")));
+			return;
+		}
+
 		player->AddPowerUpEffect(NewObject<UPowerUpEffect>(this, Effect.Get()));
 		Destroy();
 	}
