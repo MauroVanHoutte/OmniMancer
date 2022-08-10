@@ -55,6 +55,9 @@ protected:
 	//Maximum distance between enemies while still able to bounce
 	UPROPERTY(EditDefaultsOnly)
 	float BounceRange = 700.f;
+	//Pushback applied by projectile
+	UPROPERTY(EditDefaultsOnly)
+	float PushbackForce = 1500.f;
 
 	bool Explosive = false;
 	float ExplosionRadius = 0;

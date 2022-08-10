@@ -46,6 +46,7 @@ void ABaseProjectile::BeginPlay()
 	Super::BeginPlay();
 	
 	Damage = 5;
+	SetStunParams(true, 0.1f);
 }
 
 void ABaseProjectile::Explode()
@@ -79,6 +80,8 @@ void ABaseProjectile::OnHit(AActor* hitActor)
 {
 	Super::OnHit(hitActor);
 
+	Cast<ABaseCharacter>(hitActor)->Push(ProjectileMovement->Velocity.GetSafeNormal() * PushbackForce);
+
 	if (Explosive)
 	{
 		Explode();
@@ -87,20 +90,25 @@ void ABaseProjectile::OnHit(AActor* hitActor)
 	if (BounceCount < TotalBounces)
 	{
 		TArray<AActor*> actors;
-		UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), BounceRange, TArray<TEnumAsByte<EObjectTypeQuery>>(), ABaseCharacter::StaticClass(), TArray<AActor*>(), actors);
+		TArray<AActor*> ignore{ Cast<AActor>(GetWorld()->GetFirstPlayerController()->GetPawn()) };
+		UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), BounceRange, TArray<TEnumAsByte<EObjectTypeQuery>>(), ABaseCharacter::StaticClass(), ignore, actors);
 
-		for (AActor* actor : actors)
+		if (actors.Num() > 0)
 		{
-			if (Cast<AWizardCharacter>(actor) != nullptr)
-				continue;
-
-			if (!WasActorHit(actor))
+			//sort near to far
+			actors.Sort([this]( const AActor& A, const AActor& B) { return FVector::DistSquared(A.GetActorLocation(), GetActorLocation()) < FVector::DistSquared(B.GetActorLocation(), GetActorLocation()); });
+			for (AActor* actor : actors)
 			{
-				BounceCount++;
-				FireInDirection((actor->GetActorLocation() - GetActorLocation()).GetSafeNormal());
-				return;
+				FHitResult hit{};
+				if (!WasActorHit(actor) && !GetWorld()->LineTraceSingleByObjectType(hit, GetActorLocation(), actor->GetActorLocation(), ECollisionChannel::ECC_WorldStatic))
+				{
+					BounceCount++;
+					FireInDirection((actor->GetActorLocation() - GetActorLocation()).GetSafeNormal());
+					return;
+				}
 			}
 		}
+		return;
 	}
 	Destroy();
 }
