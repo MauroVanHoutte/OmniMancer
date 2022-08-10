@@ -21,7 +21,7 @@ void UOmnimancerGameInstance::Init()
 		loadedSave = Cast<UOmnimancerSaveGame>(UGameplayStatics::CreateSaveGameObject(UOmnimancerSaveGame::StaticClass()));
 	}
 
-	Currency = 500;
+	Currency = loadedSave->Currency;
 	FireUpgrades = loadedSave->FireUpgrades;
 	FrostUpgrades = loadedSave->FrostUpgrades;
 	WindUpgrades = loadedSave->WindUpgrades;

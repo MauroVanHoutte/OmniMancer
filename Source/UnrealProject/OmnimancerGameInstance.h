@@ -62,7 +62,7 @@ public:
 	const TArray<FSkillData>& GetWindSkills();
 
 private:
-	int Currency = 50;
+	int Currency = 0;
 	int FireUpgrades = 0;
 	int FrostUpgrades = 0;
 	int WindUpgrades = 0;
