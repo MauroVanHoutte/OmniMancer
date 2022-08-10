@@ -17,6 +17,9 @@ class UNREALPROJECT_API AOmnimancerGameMode : public AGameModeBase
 public:
 	void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable)
+	void NextRoom();
+
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AWizardCharacter> FireWizardBlueprint;
@@ -24,4 +27,8 @@ private:
 	TSubclassOf<AWizardCharacter> FrostWizardBlueprint;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AWizardCharacter> WindWizardBlueprint;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AActor> RoomSpawnPointBlueprint;
+	TArray<AActor*> RoomSpawnPoints;
 };

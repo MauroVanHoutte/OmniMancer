@@ -46,4 +46,16 @@ void AOmnimancerGameMode::BeginPlay()
 			GetWorld()->GetFirstPlayerController()->Possess(player);
 		}
 	}
+
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), RoomSpawnPointBlueprint, RoomSpawnPoints);
+}
+
+void AOmnimancerGameMode::NextRoom()
+{
+	if (RoomSpawnPoints.Num() > 0)
+	{
+		int32 idx = FMath::RandRange(0, RoomSpawnPoints.Num() - 1);
+		auto player = GetWorld()->GetFirstPlayerController()->GetPawn();
+		player->SetActorLocation(RoomSpawnPoints[idx]->GetActorLocation());
+	}
 }
