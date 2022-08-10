@@ -20,8 +20,10 @@
 #include "Spells/Shockwave.h"
 #include "Spells/BaseProjectile.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "TriggerEffects.h"
 #include "OmnimancerGameInstance.h"
+#include <Blueprint/UserWidget.h>
 
 // Sets default values
 AWizardCharacter::AWizardCharacter()
@@ -76,14 +78,20 @@ void AWizardCharacter::BeginPlay()
 	case WizardElement::Fire:
 		FirstElementBillboard->SetSprite(FireElementTexture);
 		SecondElementBillboard->SetSprite(FireElementTexture);
+		BaseDamageMultiplier *= 1+DamagePerFire;
+		BaseDamageMultiplier *= 1+DamagePerFire;
 		break;
 	case WizardElement::Frost:
 		FirstElementBillboard->SetSprite(FrostElementTexture);
 		SecondElementBillboard->SetSprite(FrostElementTexture);
+		DamageTakenMultiplier *= 1-DamageReductionPerFrost;
+		DamageTakenMultiplier *= 1-DamageReductionPerFrost;
 		break;
 	case WizardElement::Wind:
 		FirstElementBillboard->SetSprite(WindElementTexture);
 		SecondElementBillboard->SetSprite(WindElementTexture);
+		GetCharacterMovement()->MaxWalkSpeed *= 1 + SpeedPerWind;
+		GetCharacterMovement()->MaxWalkSpeed *= 1 + SpeedPerWind;
 		break;
 	default:
 		break;
@@ -104,16 +112,16 @@ void AWizardCharacter::BeginPlay()
 
 void AWizardCharacter::TakeSpellDamage(ABaseSpell* spell)
 {
-	Health -= spell->GetDamage() * (1 + DamageTakenMultiplier / 100.f);
-	SpawnDamageText(spell->GetDamage() * (1 + DamageTakenMultiplier / 100.f));
+	Health -= spell->GetDamage() * DamageTakenMultiplier;
+	SpawnDamageText(spell->GetDamage() * DamageTakenMultiplier);
 	OnTakeHit(spell->GetInstigator());
 	CheckDeath();
 }
 
 void AWizardCharacter::TakeTickDamage(float damage)
 {
-	Health -= damage * (1 + DamageTakenMultiplier / 100.f);
-	SpawnDamageText(damage * (1 + DamageTakenMultiplier / 100.f));
+	Health -= damage * DamageTakenMultiplier;
+	SpawnDamageText(damage * DamageTakenMultiplier);
 	CheckDeath();
 }
 
@@ -122,6 +130,11 @@ void AWizardCharacter::OnTakeHit(AActor* cause)
 	auto caster = Cast<ABaseCharacter>(cause);
 	if (caster->IsValidLowLevel())
 		caster->AddStatusEffects(ReflectEffects);
+
+	for (auto& trigger : OnTakeHitTriggers)
+	{
+		trigger->OnTrigger(this, nullptr, cause);
+	}
 }
 
 AWizardCharacter::~AWizardCharacter() = default;
@@ -148,8 +161,8 @@ void AWizardCharacter::Tick(float DeltaTime)
 
 void AWizardCharacter::TakeSpellDamageFloat(float damage, AActor* cause)
 {
-	Health -= damage * (1 + DamageTakenMultiplier / 100.f);
-	SpawnDamageText(damage * (1 + DamageTakenMultiplier / 100.f));
+	Health -= damage * DamageTakenMultiplier;
+	SpawnDamageText(damage * DamageTakenMultiplier);
 	OnTakeHit(cause);
 	CheckDeath();
 }
@@ -167,6 +180,8 @@ void AWizardCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction<FAddElementDelegate>("FireElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Fire);
 	PlayerInputComponent->BindAction<FAddElementDelegate>("FrostElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Frost);
 	PlayerInputComponent->BindAction<FAddElementDelegate>("WindElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Wind);
+	auto& action = PlayerInputComponent->BindAction("Pause", IE_Pressed, this, &AWizardCharacter::Pause);
+	action.bExecuteWhenPaused = true;
 }
 
 void AWizardCharacter::OnSpellHitEnemy( ABaseSpell* spell, AActor* enemy)
@@ -283,9 +298,34 @@ int AWizardCharacter::GetBounces()
 	return Bounces;
 }
 
+float AWizardCharacter::GetSpellDamageMultiplier()
+{
+	return SpellDamageMultiplier;
+}
+
+void AWizardCharacter::SetSpellDamageMultiplier(float newSpellDamage)
+{
+	SpellDamageMultiplier = newSpellDamage;
+}
+
+float AWizardCharacter::GetDamageTakenMultiplier()
+{
+	return DamageTakenMultiplier;
+}
+
+void AWizardCharacter::SetDamageTakenMultiplier(float newDamageTaken)
+{
+	DamageTakenMultiplier = newDamageTaken;
+}
+
 TArray<FStatusEffect>& AWizardCharacter::GetBaseAttackEffectsRef()
 {
 	return BaseAttackEffects;
+}
+
+int AWizardCharacter::GetCombinedElementLevel()
+{
+	return FireLevel + WindLevel + FrostLevel;
 }
 
 void AWizardCharacter::LowerCooldowns(float amount)
@@ -306,6 +346,14 @@ void AWizardCharacter::LowerCooldowns(float amount)
 			}
 		}
 	}
+}
+
+void AWizardCharacter::Pause()
+{
+	UGameplayStatics::SetGamePaused(GetWorld(), !UGameplayStatics::IsGamePaused(GetWorld()));
+	
+	//Add Pause menu widget to screen
+	//CreateWidget()
 }
 
 void AWizardCharacter::MoveUp(float value)
@@ -341,13 +389,13 @@ void AWizardCharacter::AddElement(WizardElement element)
 	switch (CurrentElements[1]) // passive effect of to be removed element removed
 	{
 	case WizardElement::Fire:
-		BaseDamageMultiplier -= DamagePerFire;
+		BaseDamageMultiplier /= 1+DamagePerFire;
 		break;
 	case WizardElement::Frost:
-		DamageTakenMultiplier += DamageReductionPerFrost;
+		DamageTakenMultiplier /= 1-DamageReductionPerFrost;
 		break;
 	case WizardElement::Wind:
-		GetCharacterMovement()->MaxWalkSpeed /= (1+SpeedPerWind/100.f);
+		GetCharacterMovement()->MaxWalkSpeed /= 1+SpeedPerWind;
 		break;
 	default:
 		break;
@@ -360,15 +408,15 @@ void AWizardCharacter::AddElement(WizardElement element)
 	{
 	case WizardElement::Fire:
 		FirstElementBillboard->SetSprite(FireElementTexture);
-		BaseDamageMultiplier += DamagePerFire;
+		BaseDamageMultiplier *= 1+DamagePerFire;
 		break;
 	case WizardElement::Frost:
 		FirstElementBillboard->SetSprite(FrostElementTexture);
-		DamageTakenMultiplier -= DamageReductionPerFrost;
+		DamageTakenMultiplier *= 1-DamageReductionPerFrost;
 		break;
 	case WizardElement::Wind:
 		FirstElementBillboard->SetSprite(WindElementTexture);
-		GetCharacterMovement()->MaxWalkSpeed *= (1 + SpeedPerWind / 100.f);
+		GetCharacterMovement()->MaxWalkSpeed *= 1 + SpeedPerWind;
 		break;
 	}
 
@@ -435,7 +483,8 @@ void AWizardCharacter::InitProjectile(ABaseProjectile* projectile, const FVector
 {
 	if (projectile)
 	{
-		projectile->SetDamageMultiplier(BaseDamageMultiplier);
+		projectile->SetDamageMultiplier(BaseDamageMultiplier * SpellDamageMultiplier);
+		projectile->SetStatusEffectDurationMultipliers(BurnDurationMultiplier, SlowDurationMultiplier, StunDurationMultiplier);
 		projectile->SetActorScale3D(FVector(0.75f, 0.75f, 0.75f));
 		projectile->SetActorLocationAndRotation(GetActorLocation(), direction.Rotation());
 		projectile->SetBounces(Bounces);
@@ -495,6 +544,8 @@ void AWizardCharacter::CastSpell()
 
 	 auto spell = GetWorld()->SpawnActor<ABaseSpell>(*spellType);
 	 spell->InitSpell(GetActorLocation(), hit.Location, projectileDirection, this, GetInstigator(), FireLevel, FrostLevel, WindLevel);
+	 spell->SetDamageMultiplier(SpellDamageMultiplier);
+	 spell->SetStatusEffectDurationMultipliers(BurnDurationMultiplier, SlowDurationMultiplier, StunDurationMultiplier);
 
 	 for (auto& trigger : OnCastTriggers)
 	 {
@@ -544,9 +595,13 @@ void AWizardCharacter::SetupMainElementPassive()
 		case 4:
 
 		case 3:
-
+			BurnDurationMultiplier += 0.5;
 		case 2:
-
+		{
+			auto spellDamageBoostTrigger = new TriggerEffects::SpellDamageOnKillTrigger();
+			spellDamageBoostTrigger->SetVars(0.15f, 7.f);
+			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(spellDamageBoostTrigger));
+		}
 		case 1:
 		{
 			auto lowerCooldownTrigger = new TriggerEffects::BaseAttackLowerCooldownTrigger();
@@ -571,11 +626,17 @@ void AWizardCharacter::SetupMainElementPassive()
 		switch (upgrades)
 		{
 		case 4:
-
+		{
+			auto blizzardTrigger = new TriggerEffects::BlizzardOnSlowTrigger();
+			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(blizzardTrigger));
+		}
 		case 3:
-
+			SlowDurationMultiplier += 0.5;
 		case 2:
-
+		{
+			auto damageReductionTrigger = new TriggerEffects::DamageReductionTrigger();
+			OnTakeHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(damageReductionTrigger));
+		}
 		case 1:
 			BaseAttackEffects.Add(FStatusEffect(Type::Slow, -1, 20, 3, this));
 		default:
@@ -598,7 +659,7 @@ void AWizardCharacter::SetupMainElementPassive()
 		case 4:
 
 		case 3:
-
+			StunDurationMultiplier += 0.5;
 		case 2:
 		{
 			auto tempFirerateTrigger = new TriggerEffects::BaseAttackTempFireRateTrigger();

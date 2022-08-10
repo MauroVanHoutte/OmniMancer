@@ -28,6 +28,7 @@ class AChainLightning;
 class AShockwave;
 class ABaseProjectile;
 class ABaseSpell;
+class UUserWidget;
 
 namespace TriggerEffects
 {
@@ -82,7 +83,14 @@ public:
 	float GetSpeed();
 	void SetBounces(int bounces);
 	int GetBounces();
+	float GetSpellDamageMultiplier();
+	void SetSpellDamageMultiplier(float newSpellDamage);
+	float GetDamageTakenMultiplier();
+	void SetDamageTakenMultiplier(float newDamageTaken);
 	TArray<FStatusEffect>& GetBaseAttackEffectsRef();
+
+	UFUNCTION(BlueprintCallable)
+	int GetCombinedElementLevel();
 
 	void LowerCooldowns(float amount);
 
@@ -101,6 +109,7 @@ protected:
 	int WindLevel = 1;
 
 private:
+	void Pause();
 	void MoveUp(float value);
 	void MoveRight(float value);
 	void Fire(float input); //Base Projectile
@@ -138,19 +147,32 @@ private:
 	TSubclassOf<ABaseProjectile> BaseProjectile = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category = "Spells")
 	TMap<int, TSubclassOf<ABaseSpell>> Spells;
+	//percentage increase
+	UPROPERTY(EditDefaultsOnly, Category = "Spells")
+	float SpellDamageMultiplier = 1;
+	UPROPERTY(EditDefaultsOnly, Category = "Spells")
+	float SlowDurationMultiplier = 1;
+	UPROPERTY(EditDefaultsOnly, Category = "Spells")
+	float StunDurationMultiplier = 1;
+	UPROPERTY(EditDefaultsOnly, Category = "Spells")
+	float BurnDurationMultiplier = 1;
+
 
 	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	WizardElement MainElement = WizardElement::Fire;
 	UPROPERTY(EditDefaultsOnly, Category = "Elements")
-	int SpeedPerWind = 10;
+	float SpeedPerWind = 0.1f;
 	UPROPERTY(EditDefaultsOnly, Category = "Elements")
-	int DamagePerFire = 10;
+	float DamagePerFire = 0.1f;
 	UPROPERTY(EditDefaultsOnly, Category = "Elements")
-	int DamageReductionPerFrost = 10;
-	UPROPERTY(EditDefaultsOnly)
-	int BaseDamageMultiplier = 20;
-	UPROPERTY(EditDefaultsOnly)
-	int DamageTakenMultiplier = 0;
+	float DamageReductionPerFrost = 0.1f;
+	//Percentage Increase
+	UPROPERTY(VisibleAnywhere)
+	float BaseDamageMultiplier = 1;
+	//Percentage Reduction
+	UPROPERTY(VisibleAnywhere)
+	float DamageTakenMultiplier = 1;
+	
 
 	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
 	UBillboardComponent* FirstElementBillboard = nullptr; 
@@ -170,6 +192,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Spells")
 	TMap<int, FTimerHandle> CooldownTimers{};
 
+
 	
 	UPROPERTY(EditDefaultsOnly)
 	float BasicAttackCooldown = 0.5f;
@@ -187,6 +210,7 @@ private:
 	TArray<FStatusEffect> ReflectEffects;
 	TArray<TUniquePtr<TriggerEffects::BaseTriggerEffect>> OnCastTriggers;
 	TArray<TUniquePtr<TriggerEffects::BaseTriggerEffect>> OnHitTriggers;
+	TArray<TUniquePtr<TriggerEffects::BaseTriggerEffect>> OnTakeHitTriggers;
 
 
 	int Spread = 0;
