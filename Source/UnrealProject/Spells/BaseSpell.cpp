@@ -129,6 +129,30 @@ void ABaseSpell::SetCurseParams(bool applyCurse, float damage, float range, floa
 	}
 }
 
+void ABaseSpell::SetStatusEffectDurationMultipliers(float burnMultiplier, float slowMultiplier, float stunMultiplier)
+{
+	BurnDurationMultiplier = burnMultiplier;
+	SlowDurationMultiplier = slowMultiplier;
+	StunDurationMultiplier = stunMultiplier;
+	for (size_t i = 0; i < StatusEffects.Num(); i++)
+	{
+		switch (StatusEffects[i].EffectType)
+		{
+		case Type::Damage:
+			StatusEffects[i].Duration *= BurnDurationMultiplier;
+			break;
+		case Type::Slow:
+			StatusEffects[i].Duration *= SlowDurationMultiplier;
+			break;
+		case Type::Stun:
+			StatusEffects[i].Duration *= StunDurationMultiplier;
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 void ABaseSpell::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
 {
 	SetOwner(owner);
@@ -164,7 +188,7 @@ void ABaseSpell::Tick(float DeltaTime)
 
 float ABaseSpell::GetDamage() const
 {
-	return Damage*(1+(DamageMultiplier/100.f));
+	return Damage*DamageMultiplier;
 }
 
 const TArray<FStatusEffect>& ABaseSpell::GetStatusEffects() const
@@ -172,7 +196,7 @@ const TArray<FStatusEffect>& ABaseSpell::GetStatusEffects() const
 	return StatusEffects;
 }
 
-void ABaseSpell::SetDamageMultiplier(int damageMultiplier)
+void ABaseSpell::SetDamageMultiplier(float damageMultiplier)
 {
 	DamageMultiplier = damageMultiplier;
 }

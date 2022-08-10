@@ -26,6 +26,9 @@ public:
 	void SetStunParams(bool applyStun, float duration);
 	UFUNCTION(BlueprintCallable)
 	void SetCurseParams(bool applyCurse, float damage, float range, float duration);
+	void SetStatusEffectDurationMultipliers(float burnMultiplier, float slowMultiplier, float stunMultiplier);
+
+
 
 	virtual void InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel);
 
@@ -35,7 +38,7 @@ public:
 	virtual const TArray<FStatusEffect>& GetStatusEffects() const;
 	UFUNCTION(BlueprintCallable)
 	void SetDamage(float damage);
-	virtual void SetDamageMultiplier(int damageMultiplier);
+	virtual void SetDamageMultiplier(float damageMultiplier);
 
 	void AddHitActor(AActor* actor);
 	bool WasActorHit(AActor* actor) const;
@@ -69,7 +72,13 @@ protected:
 	int WindLevel = -1;
 private:
 	UPROPERTY(VisibleAnywhere)
-	int DamageMultiplier = 0;
+	float DamageMultiplier = 1;
+	UPROPERTY(VisibleAnywhere)
+	float SlowDurationMultiplier = 1;
+	UPROPERTY(VisibleAnywhere)
+	float BurnDurationMultiplier = 1;
+	UPROPERTY(VisibleAnywhere)
+	float StunDurationMultiplier = 1;
 
 	FTimerHandle LifeTimer{};
 };
