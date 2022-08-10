@@ -11,6 +11,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "../FloatingTextActor.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "../Coin.h"
 
 
 // Sets default values
@@ -76,13 +77,23 @@ void ABaseCharacter::CheckDeath()
 {
 	if (Health <= 0)
 	{
-		if (SpawnPowerupOnDeath)
-		{
-			SpawnPowerup();
-		}
 		OnDeath();
 		Destroy();
 	}
+}
+
+void ABaseCharacter::OnDeath()
+{
+	OnDeathEvent();
+
+	//Spawn Powerup
+	if (SpawnPowerupOnDeath)
+	{
+		SpawnPowerup();
+	}
+
+	//Spawn Coins
+	SpawnCoins();
 }
 
 void ABaseCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -139,7 +150,7 @@ void ABaseCharacter::SpawnDamageText(float damage)
 	if (FloatingTextClass == nullptr || FMath::IsNearlyEqual(damage, 0.f))
 		return;
 	auto text = GetWorld()->SpawnActor(FloatingTextClass);
-	Cast<AFloatingTextActor>(text)->Initialize(FText::FromString(FString::SanitizeFloat(damage)), DamageTextColor);
+	Cast<AFloatingTextActor>(text)->Initialize(FText::FromString(FString::SanitizeFloat(FMath::RoundHalfToZero(damage * 100)/100.f)), DamageTextColor);
 	text->SetActorLocation(GetActorLocation());
 }
 
@@ -149,12 +160,26 @@ void ABaseCharacter::SpawnPowerup()
 		return;
 	
 	auto location = GetActorLocation();
-	auto actor = GetWorld()->SpawnActor(Powerup.Get(), &location);
+	auto actor = GetWorld()->SpawnActor(PowerupBP.Get(), &location);
 	float angle = FMath::FRandRange(0.f, 360.f);
 	FVector direction{ FMath::Sin(FMath::DegreesToRadians(angle)), FMath::Cos(FMath::DegreesToRadians(angle)), 1 };
 	auto powerup = Cast<APowerUp>(actor);
 	powerup->SetRandomEffect();
 	powerup->LaunchInDirection(direction.GetSafeNormal(), 300);
+}
+
+void ABaseCharacter::SpawnCoins()
+{
+	int nrCoins = FMath::RandRange(MinCoinsDropped, MaxCoinsDropped);
+	for (size_t i = 0; i < nrCoins; i++)
+	{
+		auto location = GetActorLocation();
+		auto actor = GetWorld()->SpawnActor(CoinBP.Get(), &location);
+		float angle = FMath::FRandRange(0.f, 360.f);
+		FVector direction{ FMath::Sin(FMath::DegreesToRadians(angle)), FMath::Cos(FMath::DegreesToRadians(angle)), 1 };
+		auto coin = Cast<ACoin>(actor);
+		coin->LaunchInDirection(direction.GetSafeNormal(), 300);
+	}
 }
 
 void ABaseCharacter::UpdateStatusEffects(float deltaTime)
@@ -241,11 +266,6 @@ void ABaseCharacter::SpreadCurse(const FStatusEffect& curseEffect)
 
 void ABaseCharacter::Knockup()
 {
-	auto controller = GetController<AAIController>();
-	
-	if (controller != nullptr)
-		controller->StopMovement();
-
 	Push(FVector(0.f, 0.f, 500.f));
 }
 
@@ -259,7 +279,7 @@ void ABaseCharacter::Push(const FVector& force)
 	if (comps.Num() > 0)
 	{
 		comps[0]->Velocity = FVector(0.f, 0.f, 0.f);
-		comps[0]->AddImpulse(force, true);
+		comps[0]->AddImpulse(force*KnockbackMultiplier, true);
 	}
 }
 

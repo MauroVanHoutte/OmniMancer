@@ -12,6 +12,7 @@ class APowerUp;
 class UNiagaraComponent;
 class AFloatingTextActor;
 class ABaseSpell;
+class ACoin;
 
 UCLASS(Abstract)
 class UNREALPROJECT_API ABaseCharacter : public ACharacter
@@ -35,7 +36,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnStunned();
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnDeath();
+	void OnDeathEvent();
 	UFUNCTION(BlueprintCallable)
 	bool GetStunned();
 	UFUNCTION(BlueprintCallable)
@@ -57,6 +58,8 @@ protected:
 
 	virtual void CheckDeath();
 
+	virtual void OnDeath();
+
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
@@ -66,6 +69,7 @@ protected:
 	void SpawnDamageText(float damage);
 
 	void SpawnPowerup();
+	void SpawnCoins();
 
 	void UpdateStatusEffects(float deltaTime);
 
@@ -99,7 +103,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float PowerupSpawnChance = 10;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<APowerUp> Powerup;
+	TSubclassOf<APowerUp> PowerupBP;
+
+	UPROPERTY(EditDefaultsOnly)
+	float KnockbackMultiplier = 1.f;
+
+
+	UPROPERTY(EditDefaultsOnly)
+	int MinCoinsDropped = 0;
+	UPROPERTY(EditDefaultsOnly)
+	int MaxCoinsDropped = 2;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ACoin> CoinBP;
 
 private:
 	void SpreadCurse(const FStatusEffect& curseEffect);
