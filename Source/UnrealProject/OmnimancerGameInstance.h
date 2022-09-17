@@ -71,4 +71,5 @@ private:
 	TArray<FSkillData> FireSkills;
 	TArray<FSkillData> FrostSkills;
 	TArray<FSkillData> WindSkills;
+
 };

@@ -7,9 +7,9 @@
 #include "Json.h"
 #include "Misc/FileHelper.h"
 
-
 void UOmnimancerGameInstance::Init()
 {
+
 	//loading unlocks
 	UOmnimancerSaveGame* loadedSave;
 	if (UGameplayStatics::DoesSaveGameExist("SaveSlot", 0))
