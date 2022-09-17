@@ -39,7 +39,7 @@ bool AWaveFunctionCollapse::SolveGrid()
 			FillInTile(possibleTiles, row, col);
 			AdjustNeighbouringTiles(possibleTiles, row, col);
 		}
-	} while (!CheckAccessibility(possibleTiles));
+	} while (!CheckAccessibility(possibleTiles)); //only allow solutions where every tile is accessible
 
 	
 	PlaceMeshes(possibleTiles);
@@ -100,6 +100,7 @@ bool AWaveFunctionCollapse::IsSolved(const TArray<TArray<TArray<FTile>>>& possib
 
 void AWaveFunctionCollapse::SetupUpStartingGrid(TArray<TArray<TArray<FTile>>>& possibleOptions)
 {
+	//Setup array sizes
 	for (size_t i = 0; i < Rows; i++)
 	{
 		possibleOptions.Add({});
@@ -109,14 +110,16 @@ void AWaveFunctionCollapse::SetupUpStartingGrid(TArray<TArray<TArray<FTile>>>& p
 		}
 	}
 
+
+	//Setup start options assuming the outer border is all walls
 	for (size_t i = 0; i < Rows; i++)
 	{
 		for (size_t j = 0; j < Columns; j++)
 		{
 			if (possibleOptions[i][j].Num() == 0)
 			{
-				WallType Front = WallType::DEFAULT, Back = WallType::DEFAULT, Right = WallType::DEFAULT, Left = WallType::DEFAULT;
-				GetNeighbouringWallTypes(possibleOptions, i, j, Front, Back, Right, Left);
+				WallType Front = WallType::DEFAULT, Back = WallType::DEFAULT, Right = WallType::DEFAULT, Left = WallType::DEFAULT; 
+				GetNeighbouringWallTypes(possibleOptions, i, j, Front, Back, Right, Left); 
 
 				possibleOptions[i][j] = TileSet.FilterByPredicate([Front, Back, Right, Left](const FTile& tile) 
 					{
@@ -129,6 +132,8 @@ void AWaveFunctionCollapse::SetupUpStartingGrid(TArray<TArray<TArray<FTile>>>& p
 		}
 	}
 
+
+	//let start and end tile only have 1 open side
 	auto predicate = [](const FTile& tile)
 	{
 		int openSides{ 0 };
@@ -145,6 +150,7 @@ void AWaveFunctionCollapse::SetupUpStartingGrid(TArray<TArray<TArray<FTile>>>& p
 
 void AWaveFunctionCollapse::GenerateBeginAndEndCoords()
 {
+	//start and end coords on opposite sides
 	int rand = FMath::RandRange(0, 3);
 	switch (rand)
 	{
@@ -264,11 +270,13 @@ void AWaveFunctionCollapse::FillInTile(TArray<TArray<TArray<FTile>>>& possibleOp
 		}); //tiles with atleast 2 open sides to prevent closed of segments
 
 	FTile selectedTile;
-	if (nonClosingPossibilities.Num() == 0) //if tiles with multiple open sides fit, select one of those
+	if (nonClosingPossibilities.Num() == 0) //if no tiles with multiple open sides fit, use all tiles
 	{
 		nonClosingPossibilities = possibleOptions[row][col];
 	}
 
+
+	//weighted random selection
 	float totalWeight{ 0.f };
 
 	for (size_t i = 0; i < nonClosingPossibilities.Num(); i++)
@@ -342,6 +350,7 @@ void AWaveFunctionCollapse::AdjustNeighbouringTiles(TArray<TArray<TArray<FTile>>
 
 void AWaveFunctionCollapse::AddConnectedCells(TArray<TArray<TArray<FTile>>>& possibleOptions, TArray<TArray<bool>>& connected, int row, int col)
 {
+	//recursive function to get all tiles that are connected
 	auto currentTile = possibleOptions[row][col][0];
 	connected[row][col] = true;
 	for (const auto& pair : currentTile.SideTypes)
@@ -392,7 +401,7 @@ bool AWaveFunctionCollapse::CheckAccessibility(TArray<TArray<TArray<FTile>>>& po
 		for (size_t j = 0; j < connected[i].Num(); j++)
 		{
 			if (!connected[i][j])
-				return false;
+				return false; //false means unaccessible
 		}
 	}
 	return true;
@@ -417,9 +426,10 @@ void AWaveFunctionCollapse::PlaceMeshes(TArray<TArray<TArray<FTile>>>& possibleO
 			auto meshComp = actor->GetStaticMeshComponent();
 			if (meshComp != nullptr)
 			{
-				if (possibleOptions[i][j][0].Meshes.Num() != possibleOptions[i][j][0].MeshWeights.Num())
+				if (possibleOptions[i][j][0].Meshes.Num() != possibleOptions[i][j][0].MeshWeights.Num()) // weights intialised to 1 if not set
 					possibleOptions[i][j][0].MeshWeights.Init(1.f, possibleOptions[i][j][0].Meshes.Num());
 
+				//weighted random
 				float totalWeight{ 0.f };
 				for (size_t k = 0; k < possibleOptions[i][j][0].MeshWeights.Num(); k++)
 				{
@@ -447,16 +457,36 @@ void AWaveFunctionCollapse::PlaceMeshes(TArray<TArray<TArray<FTile>>>& possibleO
 void AWaveFunctionCollapse::PlaceMesh(int row, int col)
 {
 	FVector tileCenter{ BotLeft };
-	tileCenter.X += row * TileSize + (TileSize / 2);
-	tileCenter.Y += col * TileSize + (TileSize / 2);
-	auto actor = GetWorld()->SpawnActor<AStaticMeshActor>(tileCenter, FRotator{0,0,0}, FActorSpawnParameters{});
+	tileCenter.Y += row * TileSize + (TileSize / 2);
+	tileCenter.X += col * TileSize + (TileSize / 2);
+	auto actor = GetWorld()->SpawnActor<AStaticMeshActor>(tileCenter, FRotator{ 0,0,0 }, FActorSpawnParameters{});
 	PlacedMeshes.Add(actor);
 
 	auto meshComp = actor->GetStaticMeshComponent();
 	if (meshComp != nullptr)
 	{
-		int randomMesh = FMath::RandRange(0, StepThroughArray[row][col][0].Meshes.Num() - 1);
-		meshComp->SetStaticMesh(Cast<UStaticMesh>(StepThroughArray[row][col][0].Meshes[randomMesh].TryLoad()));
+		if (StepThroughArray[row][col][0].Meshes.Num() != StepThroughArray[row][col][0].MeshWeights.Num()) //weights set to 1 if they arent set
+			StepThroughArray[row][col][0].MeshWeights.Init(1.f, StepThroughArray[row][col][0].Meshes.Num());
+
+		//weigthed random
+		float totalWeight{ 0.f };
+		for (size_t k = 0; k < StepThroughArray[row][col][0].MeshWeights.Num(); k++)
+		{
+			totalWeight += StepThroughArray[row][col][0].MeshWeights[k];
+		}
+
+		float rand = FMath::FRandRange(0, totalWeight);
+		float weightSoFar{ 0.f };
+		for (size_t k = 0; k < StepThroughArray[row][col][0].MeshWeights.Num(); k++)
+		{
+			weightSoFar += StepThroughArray[row][col][0].MeshWeights[k];
+			if (rand < weightSoFar)
+			{
+				meshComp->SetStaticMesh(Cast<UStaticMesh>(StepThroughArray[row][col][0].Meshes[k].TryLoad()));
+				break;
+			}
+		}
+
 		meshComp->SetGenerateOverlapEvents(true);
 	}
 }
