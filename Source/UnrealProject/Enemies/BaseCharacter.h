@@ -52,6 +52,7 @@ public:
 	//no on hit effects can be applied
 	UFUNCTION(BlueprintCallable)
 	virtual void TakeSpellDamageFloat(float damage, AActor* cause);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -64,9 +65,14 @@ protected:
 	virtual void OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	virtual void OnTakeHit(AActor* cause);
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnTakeHitBP();
 
 	virtual void TakeTickDamage(float damage);
 	void SpawnDamageText(float damage);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PerceiveDamage(AActor* cause, const FVector& location);
 
 	void SpawnPowerup();
 	void SpawnCoins();

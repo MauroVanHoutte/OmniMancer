@@ -14,6 +14,7 @@
 #include "../Coin.h"
 
 
+
 // Sets default values
 ABaseCharacter::ABaseCharacter()
 {
@@ -119,20 +120,25 @@ void ABaseCharacter::TakeSpellDamage(ABaseSpell* spell)
 {
 	Health -= spell->GetDamage();
 	OnTakeHit(spell->GetInstigator());
+	OnTakeHitBP();
 	SpawnDamageText(spell->GetDamage());
 	CheckDeath();
+	PerceiveDamage(spell->GetInstigator(), spell->GetActorLocation());
 }
 
 void ABaseCharacter::TakeSpellDamageFloat(float damage, AActor* cause)
 {
 	Health -= damage;
 	SpawnDamageText(damage);
+	OnTakeHitBP();
 	CheckDeath();
+	PerceiveDamage(cause, cause->GetActorLocation());
 }
 
 void ABaseCharacter::TakeTickDamage(float damage)
 {
 	Health -= damage;
+	OnTakeHitBP();
 	SpawnDamageText(damage);
 	CheckDeath();
 }
