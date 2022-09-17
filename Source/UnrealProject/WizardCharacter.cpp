@@ -24,6 +24,7 @@
 #include "TriggerEffects.h"
 #include "OmnimancerGameInstance.h"
 #include <Blueprint/UserWidget.h>
+#include "UI/PlayerHUD.h"
 
 // Sets default values
 AWizardCharacter::AWizardCharacter()
@@ -105,7 +106,11 @@ void AWizardCharacter::BeginPlay()
 
 	APlayerController* controller = GetController<APlayerController>();
 	if (controller != nullptr)
+	{
 		controller->SetShowMouseCursor(true);
+		PlayerHud = CreateWidget<UPlayerHUD>(controller, PlayerHudType);
+		PlayerHud->AddToPlayerScreen();
+	}
 
 	SetupMainElementPassive();
 }
@@ -157,6 +162,8 @@ void AWizardCharacter::Tick(float DeltaTime)
 	mousePosWorld = FMath::RayPlaneIntersection(mousePosWorld, mouseDirWorld, FPlane(GetActorLocation(), FVector(0.f, 0.f, 1.f))); //screen position raycast to plane at actor height
 
 	WizardMesh->SetRelativeRotation((mousePosWorld - GetActorLocation()).Rotation()); //character looks towards cursor
+
+	SpringArm->TargetArmLength = FMath::FInterpConstantTo(SpringArm->TargetArmLength, TargetSpringArmLength, DeltaTime, CameraZoomSpeed);
 }
 
 void AWizardCharacter::TakeSpellDamageFloat(float damage, AActor* cause)
@@ -172,16 +179,20 @@ void AWizardCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	//Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	InputComponent = PlayerInputComponent;
+
 	PlayerInputComponent->BindAxis("MoveUp", this, &AWizardCharacter::MoveUp);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AWizardCharacter::MoveRight);
 	PlayerInputComponent->BindAction("Space", IE_Pressed, this, &AWizardCharacter::Dash);
-	PlayerInputComponent->BindAxis("LMB", this, &AWizardCharacter::Fire);
+	PlayerInputComponent->BindAxis("LMB", this, &AWizardCharacter::Fire); //IE_Repeat doesnt work with mouse buttons
 	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AWizardCharacter::CastSpell);
 	PlayerInputComponent->BindAction<FAddElementDelegate>("FireElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Fire);
 	PlayerInputComponent->BindAction<FAddElementDelegate>("FrostElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Frost);
 	PlayerInputComponent->BindAction<FAddElementDelegate>("WindElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Wind);
 	auto& action = PlayerInputComponent->BindAction("Pause", IE_Pressed, this, &AWizardCharacter::Pause);
 	action.bExecuteWhenPaused = true;
+	PlayerInputComponent->BindAction("OpenMap", IE_Pressed, this, &AWizardCharacter::ShowMap);
+	PlayerInputComponent->BindAction("OpenMap", IE_Released, this, &AWizardCharacter::HideMap);
 }
 
 void AWizardCharacter::OnSpellHitEnemy( ABaseSpell* spell, AActor* enemy)
@@ -352,8 +363,43 @@ void AWizardCharacter::Pause()
 {
 	UGameplayStatics::SetGamePaused(GetWorld(), !UGameplayStatics::IsGamePaused(GetWorld()));
 	
-	//Add Pause menu widget to screen
-	//CreateWidget()
+	//Add/remove Pause menu widget to screen
+	if (UGameplayStatics::IsGamePaused(GetWorld()))
+	{
+		PlayerHud->SetVisibility(ESlateVisibility::Collapsed);
+		if (PauseMenu->IsValidLowLevel())
+		{
+			PauseMenu->AddToPlayerScreen();
+			return;
+		}
+
+		PauseMenu = CreateWidget<UUserWidget>(GetController<APlayerController>(), PauseMenuType);
+		PauseMenu->AddToPlayerScreen();
+	}
+	else
+	{
+		if (PauseMenu->IsValidLowLevel())
+		{
+			PauseMenu->RemoveFromParent();
+		}
+		PlayerHud->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void AWizardCharacter::ShowMap()
+{
+	InputComponent->BindAxis("LMB");
+	InputComponent->RemoveActionBinding("RMB", IE_Pressed);
+	TargetSpringArmLength = SpringArmZoomedOutLength;
+	//Camera->SetProjectionMode(ECameraProjectionMode::Orthographic); need to gradually change fov to work
+}
+
+void AWizardCharacter::HideMap()
+{
+	InputComponent->BindAxis("LMB", this, &AWizardCharacter::Fire);
+	InputComponent->BindAction("RMB", IE_Pressed, this, &AWizardCharacter::CastSpell);
+	TargetSpringArmLength = SpringArmLength;
+	//Camera->SetProjectionMode(ECameraProjectionMode::Perspective);
 }
 
 void AWizardCharacter::MoveUp(float value)
@@ -438,7 +484,7 @@ void AWizardCharacter::AddElement(WizardElement element)
 
 void AWizardCharacter::Fire(float input)
 {
-	if (input < 1.f || GetWorld()->GetTimerManager().IsTimerActive(BasicAttackTimer))
+	if (input < 1 || GetWorld()->GetTimerManager().IsTimerActive(BasicAttackTimer))
 		return;
 
 	GetWorld()->GetTimerManager().SetTimer(BasicAttackTimer, BasicAttackCooldown, false);
@@ -502,6 +548,8 @@ void AWizardCharacter::InitProjectile(ABaseProjectile* projectile, const FVector
 		{
 			projectile->SetExplosion(ExplosionRadius, ExplosionDamage);
 		}
+
+		projectile->Initialized = true;
 	}
 }
 

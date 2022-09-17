@@ -29,6 +29,7 @@ class AShockwave;
 class ABaseProjectile;
 class ABaseSpell;
 class UUserWidget;
+class UPlayerHUD;
 
 namespace TriggerEffects
 {
@@ -108,8 +109,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	int WindLevel = 1;
 
+	UInputComponent* InputComponent = nullptr;
+
 private:
 	void Pause();
+	void ShowMap();
+	void HideMap();
 	void MoveUp(float value);
 	void MoveRight(float value);
 	void Fire(float input); //Base Projectile
@@ -131,12 +136,18 @@ private:
 	void AddElement(WizardElement element);
 	DECLARE_DELEGATE_OneParam(FAddElementDelegate, WizardElement);
 
-
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
+	float SpringArmLength = 1200.f;
+	UPROPERTY(EditDefaultsOnly)
+	float SpringArmZoomedOutLength = 10000.f;
+	float TargetSpringArmLength = SpringArmLength;
+	UPROPERTY(EditDefaultsOnly)
+	float CameraZoomSpeed = 20000.f;
+	UPROPERTY(EditDefaultsOnly)
 	USpringArmComponent* SpringArm;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	UCameraComponent* Camera;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* WizardMesh;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Elements")
@@ -221,4 +232,13 @@ private:
 	float ExplosionRadius = 0;
 	float ExplosionDamage = 0;
 
+	//UI
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UPlayerHUD> PlayerHudType;
+	UPlayerHUD* PlayerHud;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> PauseMenuType;
+	UUserWidget* PauseMenu;
+
+	int InputBlockers = 0;
 };
