@@ -10,7 +10,7 @@
 /**
  * 
  */
-UCLASS(Abstract)
+UCLASS(Abstract, BlueprintType)
 class UNREALPROJECT_API UPowerUpEffect : public UObject
 {
 	GENERATED_BODY()

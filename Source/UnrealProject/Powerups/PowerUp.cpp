@@ -22,6 +22,8 @@ APowerUp::APowerUp()
 	Mesh->SetupAttachment(Collider);
 
 	Collider->OnComponentBeginOverlap.AddDynamic(this, &APowerUp::OnPickup);
+
+	BobbingPhaseOffset = FMath::FRandRange(0, 3.14f);
 }
 
 void APowerUp::OnPickup(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -79,11 +81,18 @@ void APowerUp::Tick(float DeltaTime)
 	rotation.Yaw += FMath::RadiansToDegrees(RotationSpeed) * DeltaTime;
 
 	Mesh->SetRelativeRotation(rotation);
+
+	Mesh->SetRelativeLocation(FVector(0, 0, FMath::Sin((GetWorld()->TimeSeconds + BobbingPhaseOffset) * BobbingSpeed) * BobbingAmplitude));
 }
 
 void APowerUp::LaunchInDirection(const FVector& direction, float strength)
 {
 	Collider->AddImpulse(direction * strength, NAME_None, true);
+}
+
+void APowerUp::SetEffect(TSubclassOf<UPowerUpEffect> effect)
+{
+	Effect = effect;
 }
 
 void APowerUp::ReInitializeEffects()

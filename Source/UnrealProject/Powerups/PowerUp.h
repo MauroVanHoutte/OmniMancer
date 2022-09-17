@@ -28,6 +28,9 @@ public:
 
 	void LaunchInDirection(const FVector& direction, float strength);
 
+	UFUNCTION(BlueprintCallable)
+	void SetEffect(TSubclassOf<UPowerUpEffect> effect);
+
 protected:
 
 	UFUNCTION(CallInEditor)
@@ -44,6 +47,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	float RotationSpeed = 1.f;
+	UPROPERTY(EditDefaultsOnly)
+	float BobbingAmplitude = 50.f;
+	UPROPERTY(EditDefaultsOnly)
+	float BobbingSpeed = 1.f;
+	float BobbingPhaseOffset = 0.f;
 
 	static TArray<TSubclassOf<UPowerUpEffect>> AllEffects;
 
