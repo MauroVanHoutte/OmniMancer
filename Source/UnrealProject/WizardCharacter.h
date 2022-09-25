@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Enemies/BaseCharacter.h"
 #include "GenericPlatform/GenericPlatformMisc.h" 
+#include "CharacterUpgrades.h"
 
 #include "WizardCharacter.generated.h"
 
@@ -14,6 +15,13 @@ enum class WizardElement : uint8
 	Fire = 0,
 	Frost = 1,
 	Wind = 3
+};
+UENUM(BlueprintType)
+enum class TriggerCondition : uint8
+{
+	OnCast,
+	OnHit,
+	OnTakeHit
 };
 
 class UPowerUpEffect;
@@ -30,11 +38,8 @@ class ABaseProjectile;
 class ABaseSpell;
 class UUserWidget;
 class UPlayerHUD;
+class UBaseTriggerEffect;
 
-namespace TriggerEffects
-{
-	class BaseTriggerEffect;
-}
 
 UCLASS()
 class UNREALPROJECT_API AWizardCharacter : public ABaseCharacter
@@ -73,6 +78,8 @@ public:
 	TMap<int, FTimerHandle>& GetCooldownTimers();
 
 	void AddPowerUpEffect( UPowerUpEffect* effect);
+	void AddTriggerEffect(UBaseTriggerEffect* effect);
+	void RemoveTriggerEffect(UBaseTriggerEffect* effect, const FString& tag = "");
 
 	void SetExplosionVariables(float damage, float radius, bool explode);
 	void GetExplosionVariables(float& damageOut, float& radiusOut);
@@ -219,10 +226,9 @@ private:
 	//effects that are applied to attacker when wizard takes damage
 	UPROPERTY(VisibleAnywhere, Category = "Active")
 	TArray<FStatusEffect> ReflectEffects;
-	TArray<TUniquePtr<TriggerEffects::BaseTriggerEffect>> OnCastTriggers;
-	TArray<TUniquePtr<TriggerEffects::BaseTriggerEffect>> OnHitTriggers;
-	TArray<TUniquePtr<TriggerEffects::BaseTriggerEffect>> OnTakeHitTriggers;
-
+	TArray<TUniquePtr<UBaseTriggerEffect>> TriggerEffects;
+	UPROPERTY(EditAnywhere, Instanced)
+	TArray<UCharacterUpgrade*> CharacterUpgrades;
 
 	int Spread = 0;
 

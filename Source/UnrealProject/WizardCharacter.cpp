@@ -22,6 +22,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "TriggerEffects.h"
+#include "CharacterUpgrades.h"
 #include "OmnimancerGameInstance.h"
 #include <Blueprint/UserWidget.h>
 #include "UI/PlayerHUD.h"
@@ -60,6 +61,7 @@ AWizardCharacter::AWizardCharacter()
 	SecondElementBillboard->SetupAttachment(RootComponent);
 	SecondElementBillboard->SetRelativeLocation(FVector(0, 50, 100));
 	SecondElementBillboard->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+
 }
 
 AWizardCharacter::AWizardCharacter(FVTableHelper& Helper)
@@ -136,9 +138,10 @@ void AWizardCharacter::OnTakeHit(AActor* cause)
 	if (caster->IsValidLowLevel())
 		caster->AddStatusEffects(ReflectEffects);
 
-	for (auto& trigger : OnTakeHitTriggers)
+	for (auto& trigger : TriggerEffects)
 	{
-		trigger->OnTrigger(this, nullptr, cause);
+		if (trigger->Condition == TriggerCondition::OnTakeHit)
+			trigger->OnTrigger(this, nullptr, cause);
 	}
 }
 
@@ -197,8 +200,9 @@ void AWizardCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void AWizardCharacter::OnSpellHitEnemy( ABaseSpell* spell, AActor* enemy)
 {
-	for (auto& trigger : OnHitTriggers)
+	for (auto& trigger : TriggerEffects)
 	{
+		if (trigger->Condition == TriggerCondition::OnHit)
 		trigger->OnTrigger(this, spell, enemy);
 	}
 }
@@ -254,6 +258,23 @@ void AWizardCharacter::AddPowerUpEffect( UPowerUpEffect* effect)
 {
 	effect->Apply(this);
 	PowerUpEffects.Add(effect);
+}
+
+void AWizardCharacter::AddTriggerEffect(UBaseTriggerEffect* effect)
+{
+	TriggerEffects.Add(TUniquePtr<UBaseTriggerEffect>(effect));
+}
+
+void AWizardCharacter::RemoveTriggerEffect(UBaseTriggerEffect* effect, const FString& tag)
+{
+	for (size_t i = 0; i < TriggerEffects.Num(); i++)
+	{
+		if (TriggerEffects[i]->GetClass() == effect->GetClass() && TriggerEffects[i]->UpgradeTag == tag)
+		{
+			TriggerEffects.RemoveAt(i);
+			--i;
+		}
+	}
 }
 
 void AWizardCharacter::SetExplosionVariables(float damage, float radius, bool explode)
@@ -595,9 +616,10 @@ void AWizardCharacter::CastSpell()
 	 spell->SetDamageMultiplier(SpellDamageMultiplier);
 	 spell->SetStatusEffectDurationMultipliers(BurnDurationMultiplier, SlowDurationMultiplier, StunDurationMultiplier);
 
-	 for (auto& trigger : OnCastTriggers)
+	 for (auto& trigger : TriggerEffects)
 	 {
-		 trigger->OnTrigger(this, nullptr, nullptr);
+		 if (trigger->Condition == TriggerCondition::OnCast)
+			trigger->OnTrigger(this, nullptr, nullptr);
 	 }
 }
 
@@ -646,15 +668,15 @@ void AWizardCharacter::SetupMainElementPassive()
 			BurnDurationMultiplier += 0.5;
 		case 2:
 		{
-			auto spellDamageBoostTrigger = new TriggerEffects::SpellDamageOnKillTrigger();
+			/*auto spellDamageBoostTrigger = new SpellDamageOnKillTrigger();
 			spellDamageBoostTrigger->SetVars(0.15f, 7.f);
-			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(spellDamageBoostTrigger));
+			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(spellDamageBoostTrigger));*/
 		}
 		case 1:
 		{
-			auto lowerCooldownTrigger = new TriggerEffects::BaseAttackLowerCooldownTrigger();
+		/*	auto lowerCooldownTrigger = new BaseAttackLowerCooldownTrigger();
 			lowerCooldownTrigger->SetVars(30, 1);
-			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(lowerCooldownTrigger));
+			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(lowerCooldownTrigger));*/
 		}
 		default:
 			break;
@@ -664,9 +686,9 @@ void AWizardCharacter::SetupMainElementPassive()
 	case WizardElement::Frost:
 	{
 		//Always active
-		auto slowTrigger = new TriggerEffects::AoeSlowTrigger();
+	/*	auto slowTrigger = new AoeSlowTrigger();
 		slowTrigger->SetVars(600, 20, 3);
-		OnCastTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(slowTrigger));
+		OnCastTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(slowTrigger));*/
 
 
 		int upgrades = gameInstance->GetFrostUpgrades();
@@ -675,15 +697,15 @@ void AWizardCharacter::SetupMainElementPassive()
 		{
 		case 4:
 		{
-			auto blizzardTrigger = new TriggerEffects::BlizzardOnSlowTrigger();
-			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(blizzardTrigger));
+			/*auto blizzardTrigger = new BlizzardOnSlowTrigger();
+			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(blizzardTrigger));*/
 		}
 		case 3:
 			SlowDurationMultiplier += 0.5;
 		case 2:
 		{
-			auto damageReductionTrigger = new TriggerEffects::DamageReductionTrigger();
-			OnTakeHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(damageReductionTrigger));
+			/*auto damageReductionTrigger = new DamageReductionTrigger();
+			OnTakeHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(damageReductionTrigger));*/
 		}
 		case 1:
 			BaseAttackEffects.Add(FStatusEffect(Type::Slow, -1, 20, 3, this));
@@ -695,9 +717,9 @@ void AWizardCharacter::SetupMainElementPassive()
 	case WizardElement::Wind:
 	{
 		//Always active
-		auto speedBuffTrigger = new TriggerEffects::SpeedBuffTrigger();
+		/*auto speedBuffTrigger = new SpeedBuffTrigger();
 		speedBuffTrigger->SetVars(20, 3);
-		OnCastTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(speedBuffTrigger));
+		OnCastTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(speedBuffTrigger));*/
 
 
 		int upgrades = gameInstance->GetWindUpgrades();
@@ -710,9 +732,9 @@ void AWizardCharacter::SetupMainElementPassive()
 			StunDurationMultiplier += 0.5;
 		case 2:
 		{
-			auto tempFirerateTrigger = new TriggerEffects::BaseAttackTempFireRateTrigger();
+			auto tempFirerateTrigger = NewObject<UBaseAttackLowerCooldownTrigger>(this, TEXT("OnHitFireRate"));
 			tempFirerateTrigger->SetVars(1.15f, 1.5f);
-			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(tempFirerateTrigger));
+			TriggerEffects.Add(TUniquePtr<UBaseTriggerEffect>(Cast<UBaseTriggerEffect>(tempFirerateTrigger)));
 		}
 		case 1:
 			DashForce *= 1.1;
