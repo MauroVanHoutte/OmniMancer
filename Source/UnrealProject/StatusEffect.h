@@ -6,7 +6,8 @@
 
 #include "StatusEffect.generated.h"
 
-enum class Type
+UENUM(BlueprintType)
+enum class Type : uint8
 {
 	Damage,
 	Slow,
@@ -17,7 +18,7 @@ enum class Type
 /**
  * 
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FStatusEffect
 {
 	GENERATED_BODY()
@@ -35,10 +36,14 @@ struct FStatusEffect
 			FMath::IsNearlyEqual(Timer, other.Timer) &&
 			Cause == other.Cause;
 	};
-
+	UPROPERTY(EditAnywhere)
 	Type EffectType{};
-	float Interval{}; //used for curse range
+	UPROPERTY(EditAnywhere, DisplayName = "Damage Interval/Curse spread range")
+	float Interval{};
+	//Damage amount/slow amount
+	UPROPERTY(EditAnywhere)
 	float Value{};
+	UPROPERTY(EditAnywhere)
 	float Duration{};
 	float Timer{};
 	UObject* Cause{};
