@@ -21,8 +21,7 @@
 #include "Spells/BaseProjectile.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "TriggerEffects.h"
-#include "CharacterUpgrades.h"
+#include "Upgrades/Triggers/TriggerEffects.h"
 #include "OmnimancerGameInstance.h"
 #include <Blueprint/UserWidget.h>
 #include "UI/PlayerHUD.h"
@@ -114,7 +113,7 @@ void AWizardCharacter::BeginPlay()
 		PlayerHud->AddToPlayerScreen();
 	}
 
-	SetupMainElementPassive();
+	SetupUpgrades();
 }
 
 void AWizardCharacter::TakeSpellDamage(ABaseSpell* spell)
@@ -277,6 +276,22 @@ void AWizardCharacter::RemoveTriggerEffect(UBaseTriggerEffect* effect, const FSt
 	}
 }
 
+void AWizardCharacter::ApplyUpgrade(const FString& tag)
+{
+	(* CharacterUpgrades.FindByPredicate([tag](const UCharacterUpgrade* upgrade)
+		{
+			return upgrade->Tag.Compare(tag) == 0;
+		}))->Apply(this);
+}
+
+void AWizardCharacter::RemoveUpgrade(const FString& tag)
+{
+	(* CharacterUpgrades.FindByPredicate([tag](const UCharacterUpgrade* upgrade)
+		{
+			return upgrade->Tag.Compare(tag) == 0;
+		}))->Remove(this);
+}
+
 void AWizardCharacter::SetExplosionVariables(float damage, float radius, bool explode)
 {
 	ExplosionDamage = damage;
@@ -348,6 +363,66 @@ float AWizardCharacter::GetDamageTakenMultiplier()
 void AWizardCharacter::SetDamageTakenMultiplier(float newDamageTaken)
 {
 	DamageTakenMultiplier = newDamageTaken;
+}
+
+float AWizardCharacter::GetBurnDurationMultiplier()
+{
+	return BurnDurationMultiplier;
+}
+
+void AWizardCharacter::SetBurnDurationMultiplier(float newBurnDurationMultiplier)
+{
+	BurnDurationMultiplier = newBurnDurationMultiplier;
+}
+
+float AWizardCharacter::GetSlowDurationMultiplier()
+{
+	return SlowDurationMultiplier;
+}
+
+void AWizardCharacter::SetSlowDurationMultiplier(float newSlowDurationMultiplier)
+{
+	SlowDurationMultiplier = newSlowDurationMultiplier;
+}
+
+float AWizardCharacter::GetStunDurationMultiplier()
+{
+	return StunDurationMultiplier;
+}
+
+void AWizardCharacter::SetStunDurationMultiplier(float newStunDurationMultiplier)
+{
+	StunDurationMultiplier = newStunDurationMultiplier;
+}
+
+float AWizardCharacter::GetDashForce()
+{
+	return DashForce;
+}
+
+void AWizardCharacter::SetDashForce(float newDashForce)
+{
+	DashForce = newDashForce;
+}
+
+void AWizardCharacter::AddBaseAttackStatusEffect(const FStatusEffect& effect)
+{
+	BaseAttackEffects.Add(effect);
+}
+
+void AWizardCharacter::RemoveBaseAttackStatusEffect(const FStatusEffect& effect)
+{
+	BaseAttackEffects.Remove(effect);
+}
+
+void AWizardCharacter::AddReflectStatusEffect(const FStatusEffect& effect)
+{
+	ReflectEffects.Add(effect);
+}
+
+void AWizardCharacter::RemoveReflectStatusEffect(const FStatusEffect& effect)
+{
+	ReflectEffects.Remove(effect);
 }
 
 TArray<FStatusEffect>& AWizardCharacter::GetBaseAttackEffectsRef()
@@ -647,9 +722,25 @@ void AWizardCharacter::UpdatePowerups(float deltaTime)
 	}
 }
 
-void AWizardCharacter::SetupMainElementPassive()
+void AWizardCharacter::SetupUpgrades()
 {
 	auto gameInstance = GetGameInstance<UOmnimancerGameInstance>();
+	auto& unlockedUpgrades = gameInstance->GetUnlockedUpgrades();
+	unlockedUpgrades.Add("FreeUpgrade");
+
+	for (const auto& upgradeTag : unlockedUpgrades)
+	{
+		UCharacterUpgrade** matchingUpgrade = CharacterUpgrades.FindByPredicate([upgradeTag](UCharacterUpgrade* upgrade) 
+			{
+				return upgrade->Tag == upgradeTag;
+			});
+		
+		if (matchingUpgrade != nullptr)
+		{
+			(*matchingUpgrade)->Apply(this);
+		}
+	}
+
 	switch (MainElement)
 	{
 	case WizardElement::Fire:

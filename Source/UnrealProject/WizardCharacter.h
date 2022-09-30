@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Enemies/BaseCharacter.h"
 #include "GenericPlatform/GenericPlatformMisc.h" 
-#include "CharacterUpgrades.h"
+#include "Upgrades/CharacterUpgrades.h"
 
 #include "WizardCharacter.generated.h"
 
@@ -80,6 +80,10 @@ public:
 	void AddPowerUpEffect( UPowerUpEffect* effect);
 	void AddTriggerEffect(UBaseTriggerEffect* effect);
 	void RemoveTriggerEffect(UBaseTriggerEffect* effect, const FString& tag = "");
+	UFUNCTION(BlueprintCallable)
+	void ApplyUpgrade(const FString& tag);
+	UFUNCTION(BlueprintCallable)
+	void RemoveUpgrade(const FString& tag);
 
 	void SetExplosionVariables(float damage, float radius, bool explode);
 	void GetExplosionVariables(float& damageOut, float& radiusOut);
@@ -95,6 +99,18 @@ public:
 	void SetSpellDamageMultiplier(float newSpellDamage);
 	float GetDamageTakenMultiplier();
 	void SetDamageTakenMultiplier(float newDamageTaken);
+	float GetBurnDurationMultiplier();
+	void SetBurnDurationMultiplier(float newBurnDurationMultiplier);
+	float GetSlowDurationMultiplier();
+	void SetSlowDurationMultiplier(float newSlowDurationMultiplier);
+	float GetStunDurationMultiplier();
+	void SetStunDurationMultiplier(float newStunDurationMultiplier);
+	float GetDashForce();
+	void SetDashForce(float newDashForce);
+	void AddBaseAttackStatusEffect(const FStatusEffect& effect);
+	void RemoveBaseAttackStatusEffect(const FStatusEffect& effect);
+	void AddReflectStatusEffect(const FStatusEffect& effect);
+	void RemoveReflectStatusEffect(const FStatusEffect& effect);
 	TArray<FStatusEffect>& GetBaseAttackEffectsRef();
 
 	UFUNCTION(BlueprintCallable)
@@ -132,7 +148,7 @@ private:
 
 	void UpdatePowerups(float deltaTime);
 
-	void SetupMainElementPassive();
+	void SetupUpgrades();
 
 	UPROPERTY(EditDefaultsOnly)
 	float DashForce = 10000.f;
