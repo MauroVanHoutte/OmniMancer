@@ -60,12 +60,19 @@ public:
 	const TArray<FSkillData>& GetFrostSkills();
 	UFUNCTION(BlueprintCallable)
 	const TArray<FSkillData>& GetWindSkills();
+	UFUNCTION(BlueprintCallable)
+	void AddUnlockedUpgrade(const FString& tag);
+	UFUNCTION(BlueprintCallable)
+	void RemoveUnlockedUpgrade(const FString& tag);
+	UFUNCTION(BlueprintCallable)
+	TArray<FString>& GetUnlockedUpgrades();
 
 private:
-	int Currency = 0;
+	int Currency = 500;
 	int FireUpgrades = 0;
 	int FrostUpgrades = 0;
 	int WindUpgrades = 0;
+	TArray<FString> UnlockedUpgrades{};
 	WizardElement Selected = WizardElement::Fire;
 
 	TArray<FSkillData> FireSkills;

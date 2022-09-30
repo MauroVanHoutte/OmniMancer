@@ -21,10 +21,12 @@ void UOmnimancerGameInstance::Init()
 		loadedSave = Cast<UOmnimancerSaveGame>(UGameplayStatics::CreateSaveGameObject(UOmnimancerSaveGame::StaticClass()));
 	}
 
-	Currency = loadedSave->Currency;
+	//Currency = loadedSave->Currency;
 	FireUpgrades = loadedSave->FireUpgrades;
 	FrostUpgrades = loadedSave->FrostUpgrades;
 	WindUpgrades = loadedSave->WindUpgrades;
+
+	UnlockedUpgrades = loadedSave->UnlockedUpgrades;
 
 	//loading skill names and prices
 	FString rawJson;
@@ -73,6 +75,7 @@ void UOmnimancerGameInstance::Shutdown()
 	save->FireUpgrades = FireUpgrades;
 	save->FrostUpgrades = FrostUpgrades;
 	save->WindUpgrades = WindUpgrades;
+	save->UnlockedUpgrades = UnlockedUpgrades;
 	UGameplayStatics::SaveGameToSlot(save, "SaveSlot", 0);
 }
 
@@ -139,4 +142,19 @@ const TArray<FSkillData>& UOmnimancerGameInstance::GetFrostSkills()
 const TArray<FSkillData>& UOmnimancerGameInstance::GetWindSkills()
 {
 	return WindSkills;
+}
+
+void UOmnimancerGameInstance::AddUnlockedUpgrade(const FString& tag)
+{
+	UnlockedUpgrades.Add(tag);
+}
+
+void UOmnimancerGameInstance::RemoveUnlockedUpgrade(const FString& tag)
+{
+	UnlockedUpgrades.Remove(tag);
+}
+
+TArray<FString>& UOmnimancerGameInstance::GetUnlockedUpgrades()
+{
+	return UnlockedUpgrades;
 }

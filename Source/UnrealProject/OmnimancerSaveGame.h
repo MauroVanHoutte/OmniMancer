@@ -22,4 +22,6 @@ public:
 	int FrostUpgrades = 0;
 	UPROPERTY();
 	int WindUpgrades = 0;
+	UPROPERTY();
+	TArray<FString> UnlockedUpgrades{};
 };
