@@ -220,7 +220,7 @@ void ABaseCharacter::UpdateStatusEffects(float deltaTime)
 				if (CurrentStatusEffects[i].EffectType == Type::Slow)
 				{
 					SlowAmount -= CurrentStatusEffects[i].Value;
-					CharacterMovement->MaxWalkSpeed /= (1 - CurrentStatusEffects[i].Value / 100.f);
+					CharacterMovement->MaxWalkSpeed /= (1 - CurrentStatusEffects[i].Value);
 				}
 				if (CurrentStatusEffects[i].EffectType == Type::Stun)
 				{
@@ -332,7 +332,7 @@ void ABaseCharacter::ReapplyStatusEffects(const TArray<FStatusEffect>& statusEff
 		if (effect.EffectType == Type::Slow)
 		{
 			SlowAmount += effect.Value;
-			CharacterMovement->MaxWalkSpeed *= (1 - effect.Value / 100.f);
+			CharacterMovement->MaxWalkSpeed *= (1 - effect.Value);
 		}
 		CurrentStatusEffects.Add(effect);
 	}
@@ -355,7 +355,7 @@ void ABaseCharacter::AddStatusEffect(const FStatusEffect& effect)
 	if (effect.EffectType == Type::Slow)
 	{
 		SlowAmount += effect.Value;
-		CharacterMovement->MaxWalkSpeed *= (1 - effect.Value / 100.f);
+		CharacterMovement->MaxWalkSpeed *= (1 - effect.Value);
 	}
 	if (effect.EffectType == Type::Curse)
 	{
