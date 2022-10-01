@@ -6,7 +6,7 @@
 void USlowPoweUpEffect::Apply(AWizardCharacter* target)
 {
 	auto& effects = target->GetBaseAttackEffectsRef();
-	FStatusEffect effect = FStatusEffect(Type::Slow, -1, Amount, Duration, target);
+	FStatusEffect effect = FStatusEffect(Type::Slow, -1, Amount, Duration, this);
 	effects.Add(effect);
 }
 

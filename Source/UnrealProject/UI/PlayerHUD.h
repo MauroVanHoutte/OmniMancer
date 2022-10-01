@@ -16,6 +16,8 @@ public:
 
 	void SetCurrency(int currency);
 
+	void SetExperiencePercentage(float expPercentage);
+
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UImage* Cooldown0;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
@@ -31,4 +33,6 @@ public:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UTextBlock* Currency;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class UProgressBar* Experience;
 };

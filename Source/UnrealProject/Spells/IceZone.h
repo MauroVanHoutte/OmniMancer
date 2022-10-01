@@ -39,7 +39,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float EffectLingerDuration = 2.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	int SlowAmount = 50;
+	int SlowAmount = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float CircleScale = 7.f;

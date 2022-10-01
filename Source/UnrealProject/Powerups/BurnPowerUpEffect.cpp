@@ -7,7 +7,7 @@
 void UBurnPowerUpEffect::Apply(AWizardCharacter* target)
 {
 	auto& effects = target->GetBaseAttackEffectsRef();
-	FStatusEffect effect = FStatusEffect(Type::Damage, Interval, Damage, Duration, target);
+	FStatusEffect effect = FStatusEffect(Type::Damage, Interval, Damage, Duration, this);
 	auto existingEffect = effects.FindByPredicate([this](const FStatusEffect& effect) {return effect.EffectType == Type::Damage && effect.Interval == this->Interval; });
 
 	if (existingEffect == nullptr)
@@ -26,7 +26,7 @@ void UBurnPowerUpEffect::Remove(AWizardCharacter* target)
 
 	for (int i = 0; i < effects.Num(); i++)
 	{
-		if (effects[i].EffectType == Type::Damage && effects[i].Interval == Interval)
+		if (effects[i].EffectType == Type::Damage && effects[i].Interval == Interval && effects[i].Cause == this)
 		{
 			effects[i].Value -= Damage;
 			if (effects[i].Value < Damage)

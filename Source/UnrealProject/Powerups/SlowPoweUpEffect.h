@@ -18,5 +18,5 @@ class UNREALPROJECT_API USlowPoweUpEffect : public UPowerUpEffect
 	void Remove(AWizardCharacter* target) override;
 
 	float Duration = 5;
-	float Amount = 10;
+	float Amount = 0.1f;
 };

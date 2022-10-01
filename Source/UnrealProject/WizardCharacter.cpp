@@ -430,6 +430,21 @@ TArray<FStatusEffect>& AWizardCharacter::GetBaseAttackEffectsRef()
 	return BaseAttackEffects;
 }
 
+float AWizardCharacter::GetExperiencePercentage()
+{
+	return Experience/(float)ExeperienceRequired;
+}
+
+void AWizardCharacter::PickupExperience(int experience)
+{
+	Experience += experience;
+	if (Experience > ExeperienceRequired)
+	{
+		Experience -= ExeperienceRequired;
+		OnLevelUp();
+	}
+}
+
 int AWizardCharacter::GetCombinedElementLevel()
 {
 	return FireLevel + WindLevel + FrostLevel;
@@ -725,6 +740,11 @@ void AWizardCharacter::UpdatePowerups(float deltaTime)
 void AWizardCharacter::SetupUpgrades()
 {
 	auto gameInstance = GetGameInstance<UOmnimancerGameInstance>();
+	if (gameInstance == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Game instance nullptr"))
+		return;
+	}
 	auto& unlockedUpgrades = gameInstance->GetUnlockedUpgrades();
 	unlockedUpgrades.Add("FreeUpgrade");
 
@@ -739,103 +759,6 @@ void AWizardCharacter::SetupUpgrades()
 		{
 			(*matchingUpgrade)->Apply(this);
 		}
-	}
-
-	switch (MainElement)
-	{
-	case WizardElement::Fire:
-	{
-		//Always active
-		ReflectEffects.Add(FStatusEffect{ Type::Damage, 1, 1, 5, this });
-
-
-		int upgrades = gameInstance->GetFireUpgrades();
-		//Unlocked through the upgrade menu
-		switch (upgrades)
-		{
-		case 4:
-
-		case 3:
-			BurnDurationMultiplier += 0.5;
-		case 2:
-		{
-			/*auto spellDamageBoostTrigger = new SpellDamageOnKillTrigger();
-			spellDamageBoostTrigger->SetVars(0.15f, 7.f);
-			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(spellDamageBoostTrigger));*/
-		}
-		case 1:
-		{
-		/*	auto lowerCooldownTrigger = new BaseAttackLowerCooldownTrigger();
-			lowerCooldownTrigger->SetVars(30, 1);
-			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(lowerCooldownTrigger));*/
-		}
-		default:
-			break;
-		}
-	}
-	break;
-	case WizardElement::Frost:
-	{
-		//Always active
-	/*	auto slowTrigger = new AoeSlowTrigger();
-		slowTrigger->SetVars(600, 20, 3);
-		OnCastTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(slowTrigger));*/
-
-
-		int upgrades = gameInstance->GetFrostUpgrades();
-		//Unlocked through the upgrade menu
-		switch (upgrades)
-		{
-		case 4:
-		{
-			/*auto blizzardTrigger = new BlizzardOnSlowTrigger();
-			OnHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(blizzardTrigger));*/
-		}
-		case 3:
-			SlowDurationMultiplier += 0.5;
-		case 2:
-		{
-			/*auto damageReductionTrigger = new DamageReductionTrigger();
-			OnTakeHitTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(damageReductionTrigger));*/
-		}
-		case 1:
-			BaseAttackEffects.Add(FStatusEffect(Type::Slow, -1, 20, 3, this));
-		default:
-			break;
-		}
-	}
-		break;
-	case WizardElement::Wind:
-	{
-		//Always active
-		/*auto speedBuffTrigger = new SpeedBuffTrigger();
-		speedBuffTrigger->SetVars(20, 3);
-		OnCastTriggers.Add(TUniquePtr<TriggerEffects::BaseTriggerEffect>(speedBuffTrigger));*/
-
-
-		int upgrades = gameInstance->GetWindUpgrades();
-		//Unlocked through the upgrade menu
-		switch (upgrades)
-		{
-		case 4:
-
-		case 3:
-			StunDurationMultiplier += 0.5;
-		case 2:
-		{
-			auto tempFirerateTrigger = NewObject<UBaseAttackLowerCooldownTrigger>(this, TEXT("OnHitFireRate"));
-			tempFirerateTrigger->SetVars(1.15f, 1.5f);
-			TriggerEffects.Add(TUniquePtr<UBaseTriggerEffect>(Cast<UBaseTriggerEffect>(tempFirerateTrigger)));
-		}
-		case 1:
-			DashForce *= 1.1;
-		default:
-			break;
-		}
-	}
-		break;
-	default:
-		break;
 	}
 }
 

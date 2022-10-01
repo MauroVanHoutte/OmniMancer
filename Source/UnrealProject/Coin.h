@@ -36,6 +36,10 @@ private:
 	USphereComponent* CollisionComponent;
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* Mesh;
+	UPROPERTY(EditAnywhere)
+	bool IsExperience = true;
+	UPROPERTY(EditAnywhere)
+	int Value = 1;
 	
 	AWizardCharacter* Player;
 };

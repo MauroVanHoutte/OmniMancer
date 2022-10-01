@@ -112,6 +112,10 @@ public:
 	void AddReflectStatusEffect(const FStatusEffect& effect);
 	void RemoveReflectStatusEffect(const FStatusEffect& effect);
 	TArray<FStatusEffect>& GetBaseAttackEffectsRef();
+	float GetExperiencePercentage();
+	void PickupExperience(int experience);
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnLevelUp();
 
 	UFUNCTION(BlueprintCallable)
 	int GetCombinedElementLevel();
@@ -242,9 +246,14 @@ private:
 	//effects that are applied to attacker when wizard takes damage
 	UPROPERTY(VisibleAnywhere, Category = "Active")
 	TArray<FStatusEffect> ReflectEffects;
+	//effects applied on hit, take hit and cast
 	TArray<TUniquePtr<UBaseTriggerEffect>> TriggerEffects;
 	UPROPERTY(EditAnywhere, Instanced)
 	TArray<UCharacterUpgrade*> CharacterUpgrades;
+
+	int Experience = 0;
+	UPROPERTY(EditDefaultsOnly)
+	int ExeperienceRequired = 100;
 
 	int Spread = 0;
 

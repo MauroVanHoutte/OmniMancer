@@ -1,5 +1,6 @@
 #include <Components/Image.h>
 #include <Components/TextBlock.h>
+#include <Components/ProgressBar.h>
 #include "PlayerHUD.h"
 #include "../OmnimancerGameInstance.h"
 #include "../WizardCharacter.h"
@@ -14,12 +15,20 @@ void UPlayerHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	auto player = GetOwningPlayer()->GetPawn<AWizardCharacter>();
 	if (player)
+	{
 		SetCooldowns(player->GetCooldowns(), player->GetCooldownTimers());
+		SetExperiencePercentage(player->GetExperiencePercentage());
+	}
 }
 
 void UPlayerHUD::SetCurrency(int currency)
 {
 	Currency->SetText(FText::FromString(FString::FromInt(currency)));
+}
+
+void UPlayerHUD::SetExperiencePercentage(float expPercentage)
+{
+	Experience->SetPercent(expPercentage);
 }
 
 void UPlayerHUD::SetCooldowns(const TMap<int, float>& Cooldowns, const TMap<int, FTimerHandle>& Timers)

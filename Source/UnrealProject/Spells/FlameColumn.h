@@ -55,6 +55,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
 	float DurationPerFrostLevel = 0.5f;
 
+	bool SetOff = false;
+
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* CylinderMesh;
 	UPROPERTY(EditAnywhere)

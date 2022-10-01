@@ -34,8 +34,15 @@ void ACoin::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, U
 {
 	if (OtherActor->IsA<AWizardCharacter>())
 	{
-		auto gameInstance = Cast<UOmnimancerGameInstance>(GetGameInstance());
-		gameInstance->SetCurrency(gameInstance->GetCurrency() + 1);
+		if (IsExperience)
+		{
+			Player->PickupExperience(Value);
+		}
+		else
+		{
+			auto gameInstance = Cast<UOmnimancerGameInstance>(GetGameInstance());
+			gameInstance->SetCurrency(gameInstance->GetCurrency() + Value);
+		}
 		Destroy();
 	}
 }
