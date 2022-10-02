@@ -421,6 +421,7 @@ void AWaveFunctionCollapse::PlaceMeshes(TArray<TArray<TArray<FTile>>>& possibleO
 				continue;
 
 			auto actor = GetWorld()->SpawnActor<AStaticMeshActor>(tileCenter, FRotator{0,0,0}, FActorSpawnParameters{});
+			actor->Tags.Add(FName("Tile"));
 			PlacedMeshes.Add(actor);
 
 			auto meshComp = actor->GetStaticMeshComponent();
