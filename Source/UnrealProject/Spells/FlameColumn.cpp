@@ -39,21 +39,10 @@ void AFlameColumn::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	ImpactDelay -= DeltaTime;
-	if (ImpactDelay < 0)
+	if (ImpactDelay < 0 && !SetOff)
 	{
 		CylinderMesh->SetRelativeScale3D(FVector(CircleScale + ScalePerWindLevel * WindLevel, CircleScale + ScalePerWindLevel * WindLevel, 100.f));
 		CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-		TArray<AActor*> overlapping;
-		GetOverlappingActors(overlapping);
-		for (AActor* actor : overlapping)
-		{
-			ABaseCharacter* character = Cast<ABaseCharacter>(actor);
-			if (character != nullptr && character != GetInstigator<ABaseCharacter>())
-			{
-				character->TakeSpellDamage(this);
-				character->AddStatusEffects(StatusEffects);
-			}
-		}
 		SetOff = true;
 	}
 }
