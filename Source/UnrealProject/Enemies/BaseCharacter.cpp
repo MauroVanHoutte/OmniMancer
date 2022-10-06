@@ -167,11 +167,14 @@ void ABaseCharacter::SpawnPowerup()
 	
 	auto location = GetActorLocation();
 	auto actor = GetWorld()->SpawnActor(PowerupBP.Get(), &location);
-	float angle = FMath::FRandRange(0.f, 360.f);
-	FVector direction{ FMath::Sin(FMath::DegreesToRadians(angle)), FMath::Cos(FMath::DegreesToRadians(angle)), 1 };
-	auto powerup = Cast<APowerUp>(actor);
-	powerup->SetRandomEffect();
-	powerup->LaunchInDirection(direction.GetSafeNormal(), 300);
+	if (actor != nullptr)
+	{
+		float angle = FMath::FRandRange(0.f, 360.f);
+		FVector direction{ FMath::Sin(FMath::DegreesToRadians(angle)), FMath::Cos(FMath::DegreesToRadians(angle)), 1 };
+		auto powerup = Cast<APowerUp>(actor);
+		powerup->SetRandomEffect();
+		powerup->LaunchInDirection(direction.GetSafeNormal(), 300);
+	}
 }
 
 void ABaseCharacter::SpawnCoins()
@@ -228,6 +231,7 @@ void ABaseCharacter::UpdateStatusEffects(float deltaTime)
 					if (otherStunEffect.Num() < 2)
 					{
 						Stunned = false;
+						OnStunnedEnd();
 						if (NiagaraComponent != nullptr)
 							NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 0.f);
 					}

@@ -36,6 +36,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnStunned();
 	UFUNCTION(BlueprintImplementableEvent)
+	void OnStunnedEnd();
+	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeathEvent();
 	UFUNCTION(BlueprintCallable)
 	bool GetStunned();
