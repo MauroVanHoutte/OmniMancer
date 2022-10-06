@@ -32,8 +32,6 @@ private:
 	bool Stuns = true;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float StunDuration = 0.5f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float MaxSpeed = 2000.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
 	float DamagePerWindLevel = 3.f;

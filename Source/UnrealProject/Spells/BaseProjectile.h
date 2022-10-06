@@ -50,6 +50,8 @@ protected:
 	UProjectileMovementComponent* ProjectileMovement;
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* Mesh;
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
+	float MaxSpeed = 2000.f;
 
 	//Amount of times the projectile will bounce to nearby enemies
 	UPROPERTY(EditDefaultsOnly)
