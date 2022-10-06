@@ -34,6 +34,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	AActor* EndTarget;
 	UPROPERTY(EditAnywhere)
+	float EnemyRoomChance = 0.5f;
+	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<ABaseCharacter>> Enemies;
 	UPROPERTY(EditAnywhere)
 	int PacksPerTile = 3;

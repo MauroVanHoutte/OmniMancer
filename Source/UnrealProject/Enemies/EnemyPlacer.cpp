@@ -18,7 +18,8 @@ void AEnemyPlacer::PlaceEnemies()
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Tile"), tileActors);
 	for (AActor* tile : tileActors)
 	{
-		if (StartTarget == nullptr || FVector::DistSquared(tile->GetActorLocation(), StartTarget->GetActorLocation()) > SpawnSafeRadius)
+		bool isEnemyRoom = FMath::FRand() <= EnemyRoomChance;
+		if (isEnemyRoom && (StartTarget == nullptr || FVector::DistSquared(tile->GetActorLocation(), StartTarget->GetActorLocation()) > SpawnSafeRadius*SpawnSafeRadius))
 		{
 			FVector origin;
 			FVector extent;
@@ -48,7 +49,7 @@ void AEnemyPlacer::PlaceEnemies()
 void AEnemyPlacer::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	PlaceEnemies();
 }
 
 // Called every frame
