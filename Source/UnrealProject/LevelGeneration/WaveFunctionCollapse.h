@@ -18,8 +18,6 @@ enum class WallType : uint8
 {
 	OPEN,
 	WALL,
-	START,
-	END,
 	DEFAULT
 };
 

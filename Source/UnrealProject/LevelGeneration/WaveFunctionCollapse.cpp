@@ -185,6 +185,7 @@ void AWaveFunctionCollapse::GenerateBeginAndEndCoords()
 	if (StartTarget != nullptr)
 	{
 		FVector tileCenter{ BotLeft };
+		tileCenter.Z += 100.f;
 		tileCenter.X += StartRow * TileSize + (TileSize / 2);
 		tileCenter.Y += StartColumn * TileSize + (TileSize / 2);
 		StartTarget->SetActorLocation(tileCenter);
@@ -192,6 +193,7 @@ void AWaveFunctionCollapse::GenerateBeginAndEndCoords()
 	if (EndTarget != nullptr)
 	{
 		FVector tileCenter{ BotLeft };
+		tileCenter.Z += 100.f;
 		tileCenter.X += EndRow * TileSize + (TileSize / 2);
 		tileCenter.Y += EndColumn * TileSize + (TileSize / 2);
 		EndTarget->SetActorLocation(tileCenter);
@@ -271,18 +273,13 @@ void AWaveFunctionCollapse::FillInTile(TArray<TArray<TArray<FTile>>>& possibleOp
 
 	FTile selectedTile;
 	if (nonClosingPossibilities.Num() == 0) //if no tiles with multiple open sides fit, use all tiles
-	{
 		nonClosingPossibilities = possibleOptions[row][col];
-	}
-
 
 	//weighted random selection
 	float totalWeight{ 0.f };
 
 	for (size_t i = 0; i < nonClosingPossibilities.Num(); i++)
-	{
 		totalWeight += nonClosingPossibilities[i].TileWeight;
-	}
 
 	float rand = FMath::FRandRange(0, totalWeight);
 	float weightSoFar{ 0.f };
@@ -327,7 +324,10 @@ void AWaveFunctionCollapse::AdjustNeighbouringTiles(TArray<TArray<TArray<FTile>>
 		default:
 			break;
 		}
-		if (row + rowToCheck < 0 || col + colToCheck < 0 || row + rowToCheck >= possibleOptions.Num() || col + colToCheck >= possibleOptions[row + rowToCheck].Num() || possibleOptions[row + rowToCheck][col + colToCheck].Num() == 1)
+		if (row + rowToCheck < 0 || col + colToCheck < 0 ||
+			row + rowToCheck >= possibleOptions.Num() ||
+			col + colToCheck >= possibleOptions[row + rowToCheck].Num() ||
+			possibleOptions[row + rowToCheck][col + colToCheck].Num() == 1)
 			continue;
 
 		WallType Front = WallType::DEFAULT, Back = WallType::DEFAULT, Right = WallType::DEFAULT, Left = WallType::DEFAULT;
@@ -411,7 +411,7 @@ void AWaveFunctionCollapse::PlaceMeshes(TArray<TArray<TArray<FTile>>>& possibleO
 {
 	for (size_t i = 0; i < possibleOptions.Num(); i++)
 	{
-		for (size_t j = 0; j < possibleOptions[i].Num(); j++)
+		for (size_t j = 0; j < possibleOptions[i].Num(); j++) //2d grid
 		{
 			FVector tileCenter{ BotLeft };
 			tileCenter.X += i * TileSize + (TileSize / 2);
@@ -421,6 +421,7 @@ void AWaveFunctionCollapse::PlaceMeshes(TArray<TArray<TArray<FTile>>>& possibleO
 				continue;
 
 			auto actor = GetWorld()->SpawnActor<AStaticMeshActor>(tileCenter, FRotator{0,0,0}, FActorSpawnParameters{});
+			actor->SetMobility(EComponentMobility::Movable);
 			actor->Tags.Add(FName("Tile"));
 			PlacedMeshes.Add(actor);
 
@@ -438,11 +439,10 @@ void AWaveFunctionCollapse::PlaceMeshes(TArray<TArray<TArray<FTile>>>& possibleO
 				}
 
 				float rand = FMath::FRandRange(0, totalWeight);
-				float weightSoFar{ 0.f };
 				for (size_t k = 0; k < possibleOptions[i][j][0].MeshWeights.Num(); k++)
 				{
-					weightSoFar += possibleOptions[i][j][0].MeshWeights[k];
-					if (rand < weightSoFar)
+					rand -= possibleOptions[i][j][0].MeshWeights[k];
+					if (rand < 0)
 					{
 						meshComp->SetStaticMesh(Cast<UStaticMesh>(possibleOptions[i][j][0].Meshes[k].TryLoad()));
 						break;
@@ -471,19 +471,18 @@ void AWaveFunctionCollapse::PlaceMesh(int row, int col)
 
 		//weigthed random
 		float totalWeight{ 0.f };
-		for (size_t k = 0; k < StepThroughArray[row][col][0].MeshWeights.Num(); k++)
+		for (size_t i = 0; i < StepThroughArray[row][col][0].MeshWeights.Num(); i++)
 		{
-			totalWeight += StepThroughArray[row][col][0].MeshWeights[k];
+			totalWeight += StepThroughArray[row][col][0].MeshWeights[i];
 		}
 
 		float rand = FMath::FRandRange(0, totalWeight);
-		float weightSoFar{ 0.f };
-		for (size_t k = 0; k < StepThroughArray[row][col][0].MeshWeights.Num(); k++)
+		for (size_t i = 0; i < StepThroughArray[row][col][0].MeshWeights.Num(); i++)
 		{
-			weightSoFar += StepThroughArray[row][col][0].MeshWeights[k];
-			if (rand < weightSoFar)
+			rand -= StepThroughArray[row][col][0].MeshWeights[i];
+			if (rand < 0)
 			{
-				meshComp->SetStaticMesh(Cast<UStaticMesh>(StepThroughArray[row][col][0].Meshes[k].TryLoad()));
+				meshComp->SetStaticMesh(Cast<UStaticMesh>(StepThroughArray[row][col][0].Meshes[i].TryLoad()));
 				break;
 			}
 		}
