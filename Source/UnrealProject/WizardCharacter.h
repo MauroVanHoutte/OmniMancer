@@ -12,6 +12,7 @@
 UENUM(BlueprintType)
 enum class WizardElement : uint8
 {
+	// x = 2^n - 1
 	Fire = 0,
 	Frost = 1,
 	Wind = 3
@@ -64,18 +65,18 @@ public:
 	void OnAddElement();
 
 	UFUNCTION(BlueprintCallable)
-	const TArray<WizardElement>& GetCurrentElements();
+	const TArray<WizardElement>& GetCurrentElements() const;
 
 	UFUNCTION(BlueprintCallable)
 	void LevelUpElement(WizardElement element);
 
 	UFUNCTION(BlueprintCallable)
-	int GetCurrentElementLevel(WizardElement element);
+	int GetCurrentElementLevel(WizardElement element) const;
 
 	UFUNCTION(BlueprintCallable)
-	TMap<int, float>& GetCooldowns();
+	const TMap<int, float>& GetCooldowns() const;
 	UFUNCTION(BlueprintCallable)
-	TMap<int, FTimerHandle>& GetCooldownTimers();
+	const TMap<int, FTimerHandle>& GetCooldownTimers() const;
 
 	void AddPowerUpEffect( UPowerUpEffect* effect);
 	void AddTriggerEffect(UBaseTriggerEffect* effect);
@@ -86,39 +87,41 @@ public:
 	void RemoveUpgrade(const FString& tag);
 
 	void SetExplosionVariables(float damage, float radius, bool explode);
-	void GetExplosionVariables(float& damageOut, float& radiusOut);
+	void GetExplosionVariables(float& damageOut, float& radiusOut) const;
 	void SetSpread(int spread);
-	int GetSpread();
+	int GetSpread() const;
 	void SetBasicAttackCooldown(float fireRate);
-	float GetBasicAttackCooldown();
+	float GetBasicAttackCooldown() const;
 	void SetSpeed(float speed);
-	float GetSpeed();
+	float GetSpeed() const;
 	void SetBounces(int bounces);
-	int GetBounces();
-	float GetSpellDamageMultiplier();
+	int GetBounces() const;
+	float GetSpellDamageMultiplier() const;
 	void SetSpellDamageMultiplier(float newSpellDamage);
-	float GetDamageTakenMultiplier();
+	float GetBaseProjecileDamageMultiplier() const;
+	void SetBaseProjectileDamageMultiplier(float newBaseProjectileMultiplier);
+	float GetDamageTakenMultiplier() const;
 	void SetDamageTakenMultiplier(float newDamageTaken);
-	float GetBurnDurationMultiplier();
+	float GetBurnDurationMultiplier() const;
 	void SetBurnDurationMultiplier(float newBurnDurationMultiplier);
-	float GetSlowDurationMultiplier();
+	float GetSlowDurationMultiplier() const;
 	void SetSlowDurationMultiplier(float newSlowDurationMultiplier);
-	float GetStunDurationMultiplier();
+	float GetStunDurationMultiplier() const;
 	void SetStunDurationMultiplier(float newStunDurationMultiplier);
-	float GetDashForce();
+	float GetDashForce() const;
 	void SetDashForce(float newDashForce);
 	void AddBaseAttackStatusEffect(const FStatusEffect& effect);
 	void RemoveBaseAttackStatusEffect(const FStatusEffect& effect);
 	void AddReflectStatusEffect(const FStatusEffect& effect);
 	void RemoveReflectStatusEffect(const FStatusEffect& effect);
 	TArray<FStatusEffect>& GetBaseAttackEffectsRef();
-	float GetExperiencePercentage();
+	float GetExperiencePercentage() const;
 	void PickupExperience(int experience);
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnLevelUp();
 
 	UFUNCTION(BlueprintCallable)
-	int GetCombinedElementLevel();
+	int GetCombinedElementLevel() const;
 
 	void LowerCooldowns(float amount);
 
@@ -153,6 +156,8 @@ private:
 	void UpdatePowerups(float deltaTime);
 
 	void SetupUpgrades();
+
+	void RaycastMouseOnLevel(FVector& mouseAtWizardHeight, FHitResult& raycastHit);
 
 	UPROPERTY(EditDefaultsOnly)
 	float DashForce = 10000.f;
@@ -247,13 +252,15 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Active")
 	TArray<FStatusEffect> ReflectEffects;
 	//effects applied on hit, take hit and cast
-	TArray<TUniquePtr<UBaseTriggerEffect>> TriggerEffects;
+	TArray<UBaseTriggerEffect*> TriggerEffects;
 	UPROPERTY(EditAnywhere, Instanced)
 	TArray<UCharacterUpgrade*> CharacterUpgrades;
 
 	int Experience = 0;
 	UPROPERTY(EditDefaultsOnly)
 	int ExeperienceRequired = 100;
+	UPROPERTY(EditDefaultsOnly)
+	float NextLevelExperienceRequired = 1.1f;
 
 	int Spread = 0;
 

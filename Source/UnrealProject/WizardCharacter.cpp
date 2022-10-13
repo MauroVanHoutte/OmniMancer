@@ -165,7 +165,9 @@ void AWizardCharacter::Tick(float DeltaTime)
 
 	WizardMesh->SetRelativeRotation((mousePosWorld - GetActorLocation()).Rotation()); //character looks towards cursor
 
-	SpringArm->TargetArmLength = FMath::FInterpConstantTo(SpringArm->TargetArmLength, TargetSpringArmLength, DeltaTime, CameraZoomSpeed);
+	//player can zoom camera in and out to see the level layout
+	if (!FMath::IsNearlyEqual(SpringArm->TargetArmLength, TargetSpringArmLength))
+		SpringArm->TargetArmLength = FMath::FInterpConstantTo(SpringArm->TargetArmLength, TargetSpringArmLength, DeltaTime, CameraZoomSpeed);
 }
 
 void AWizardCharacter::TakeSpellDamageFloat(float damage, AActor* cause)
@@ -206,12 +208,12 @@ void AWizardCharacter::OnSpellHitEnemy( ABaseSpell* spell, AActor* enemy)
 	}
 }
 
-const TArray<WizardElement>& AWizardCharacter::GetCurrentElements()
+const TArray<WizardElement>& AWizardCharacter::GetCurrentElements() const
 {
 	return CurrentElements;
 }
 
-void AWizardCharacter::LevelUpElement(WizardElement element)
+void AWizardCharacter::LevelUpElement(WizardElement element) 
 {
 	switch (element)
 	{
@@ -229,7 +231,7 @@ void AWizardCharacter::LevelUpElement(WizardElement element)
 	}
 }
 
-int AWizardCharacter::GetCurrentElementLevel(WizardElement element)
+int AWizardCharacter::GetCurrentElementLevel(WizardElement element) const
 {
 	switch (element)
 	{
@@ -243,12 +245,12 @@ int AWizardCharacter::GetCurrentElementLevel(WizardElement element)
 	return 0;
 }
 
-TMap<int, float>& AWizardCharacter::GetCooldowns()
+const TMap<int, float>& AWizardCharacter::GetCooldowns() const
 {
 	return Cooldowns;
 }
 
-TMap<int, FTimerHandle>& AWizardCharacter::GetCooldownTimers()
+const TMap<int, FTimerHandle>& AWizardCharacter::GetCooldownTimers() const
 {
 	return CooldownTimers;
 }
@@ -261,7 +263,7 @@ void AWizardCharacter::AddPowerUpEffect( UPowerUpEffect* effect)
 
 void AWizardCharacter::AddTriggerEffect(UBaseTriggerEffect* effect)
 {
-	TriggerEffects.Add(TUniquePtr<UBaseTriggerEffect>(effect));
+	TriggerEffects.Add(effect);
 }
 
 void AWizardCharacter::RemoveTriggerEffect(UBaseTriggerEffect* effect, const FString& tag)
@@ -299,7 +301,7 @@ void AWizardCharacter::SetExplosionVariables(float damage, float radius, bool ex
 	ExplosiveBaseAttack = explode;
 }
 
-void AWizardCharacter::GetExplosionVariables(float& damageOut, float& radiusOut)
+void AWizardCharacter::GetExplosionVariables(float& damageOut, float& radiusOut) const
 {
 	damageOut = ExplosionDamage;
 	radiusOut = ExplosionRadius;
@@ -310,7 +312,7 @@ void AWizardCharacter::SetSpread(int spread)
 	Spread = spread;
 }
 
-int AWizardCharacter::GetSpread()
+int AWizardCharacter::GetSpread() const
 {
 	return Spread;
 }
@@ -320,7 +322,7 @@ void AWizardCharacter::SetBasicAttackCooldown(float cooldown)
 	BasicAttackCooldown = cooldown;
 }
 
-float AWizardCharacter::GetBasicAttackCooldown()
+float AWizardCharacter::GetBasicAttackCooldown() const
 {
 	return BasicAttackCooldown;
 }
@@ -330,7 +332,7 @@ void AWizardCharacter::SetSpeed(float speed)
 	CharacterMovement->MaxWalkSpeed = speed;
 }
 
-float AWizardCharacter::GetSpeed()
+float AWizardCharacter::GetSpeed() const
 {
 	return CharacterMovement->MaxWalkSpeed;
 }
@@ -340,12 +342,12 @@ void AWizardCharacter::SetBounces(int bounces)
 	Bounces = bounces;
 }
 
-int AWizardCharacter::GetBounces()
+int AWizardCharacter::GetBounces() const
 {
 	return Bounces;
 }
 
-float AWizardCharacter::GetSpellDamageMultiplier()
+float AWizardCharacter::GetSpellDamageMultiplier() const
 {
 	return SpellDamageMultiplier;
 }
@@ -355,7 +357,17 @@ void AWizardCharacter::SetSpellDamageMultiplier(float newSpellDamage)
 	SpellDamageMultiplier = newSpellDamage;
 }
 
-float AWizardCharacter::GetDamageTakenMultiplier()
+float AWizardCharacter::GetBaseProjecileDamageMultiplier() const
+{
+	return BaseDamageMultiplier;
+}
+
+void AWizardCharacter::SetBaseProjectileDamageMultiplier(float newBaseProjectileMultiplier)
+{
+	BaseDamageMultiplier = newBaseProjectileMultiplier;
+}
+
+float AWizardCharacter::GetDamageTakenMultiplier() const
 {
 	return DamageTakenMultiplier;
 }
@@ -365,7 +377,7 @@ void AWizardCharacter::SetDamageTakenMultiplier(float newDamageTaken)
 	DamageTakenMultiplier = newDamageTaken;
 }
 
-float AWizardCharacter::GetBurnDurationMultiplier()
+float AWizardCharacter::GetBurnDurationMultiplier() const
 {
 	return BurnDurationMultiplier;
 }
@@ -375,7 +387,7 @@ void AWizardCharacter::SetBurnDurationMultiplier(float newBurnDurationMultiplier
 	BurnDurationMultiplier = newBurnDurationMultiplier;
 }
 
-float AWizardCharacter::GetSlowDurationMultiplier()
+float AWizardCharacter::GetSlowDurationMultiplier() const
 {
 	return SlowDurationMultiplier;
 }
@@ -385,7 +397,7 @@ void AWizardCharacter::SetSlowDurationMultiplier(float newSlowDurationMultiplier
 	SlowDurationMultiplier = newSlowDurationMultiplier;
 }
 
-float AWizardCharacter::GetStunDurationMultiplier()
+float AWizardCharacter::GetStunDurationMultiplier() const
 {
 	return StunDurationMultiplier;
 }
@@ -395,7 +407,7 @@ void AWizardCharacter::SetStunDurationMultiplier(float newStunDurationMultiplier
 	StunDurationMultiplier = newStunDurationMultiplier;
 }
 
-float AWizardCharacter::GetDashForce()
+float AWizardCharacter::GetDashForce() const
 {
 	return DashForce;
 }
@@ -430,7 +442,7 @@ TArray<FStatusEffect>& AWizardCharacter::GetBaseAttackEffectsRef()
 	return BaseAttackEffects;
 }
 
-float AWizardCharacter::GetExperiencePercentage()
+float AWizardCharacter::GetExperiencePercentage() const
 {
 	return Experience/(float)ExeperienceRequired;
 }
@@ -441,11 +453,12 @@ void AWizardCharacter::PickupExperience(int experience)
 	if (Experience > ExeperienceRequired)
 	{
 		Experience -= ExeperienceRequired;
+		ExeperienceRequired *= NextLevelExperienceRequired;
 		OnLevelUp();
 	}
 }
 
-int AWizardCharacter::GetCombinedElementLevel()
+int AWizardCharacter::GetCombinedElementLevel() const
 {
 	return FireLevel + WindLevel + FrostLevel;
 }
@@ -610,20 +623,17 @@ void AWizardCharacter::Fire(float input)
 
 	FActorSpawnParameters spawnParams{};
 	spawnParams.Owner = this;
-	spawnParams.Instigator = GetInstigator();
+	spawnParams.Instigator = this;
 
-	auto actor = GetWorld()->SpawnActor<AActor>(BaseProjectile.Get(), spawnParams);
-	auto projectile = Cast<ABaseProjectile>(actor);
+	auto projectile = GetWorld()->SpawnActor<ABaseProjectile>(BaseProjectile.Get(), spawnParams);
 
 	InitProjectile(projectile, direction);
 
 	for (int i = 0; i < Spread; i++)
 	{
 		float angleOffset = ((i + 1) * 45.f / Spread);
-		auto actorCW = GetWorld()->SpawnActor<AActor>(BaseProjectile.Get(), spawnParams);
-		auto actorCCW = GetWorld()->SpawnActor<AActor>(BaseProjectile.Get(), spawnParams);
-		auto projectileCW = Cast<ABaseProjectile>(actorCW);
-		auto projectileCCW = Cast<ABaseProjectile>(actorCCW);
+		auto projectileCW = GetWorld()->SpawnActor<ABaseProjectile>(BaseProjectile.Get(), spawnParams);
+		auto projectileCCW = GetWorld()->SpawnActor<ABaseProjectile>(BaseProjectile.Get(), spawnParams);
 
 		auto rotation = direction.Rotation();
 		auto rotationCW = rotation;
@@ -640,20 +650,12 @@ void AWizardCharacter::InitProjectile(ABaseProjectile* projectile, const FVector
 {
 	if (projectile)
 	{
-		projectile->SetDamageMultiplier(BaseDamageMultiplier * SpellDamageMultiplier);
-		projectile->SetStatusEffectDurationMultipliers(BurnDurationMultiplier, SlowDurationMultiplier, StunDurationMultiplier);
-		projectile->SetActorScale3D(FVector(0.75f, 0.75f, 0.75f));
-		projectile->SetActorLocationAndRotation(GetActorLocation(), direction.Rotation());
-		projectile->SetBounces(Bounces);
-		projectile->FireInDirection(direction);
-
 		for (const auto& effect : BaseAttackEffects)
 		{
 			projectile->AddStatusEffect(effect);
 		}
 
-		projectile->SetInstigator(GetInstigator());
-		projectile->SetOwner(this);
+		projectile->InitSpell(FVector(), direction, this);
 
 		if (ExplosiveBaseAttack)
 		{
@@ -664,53 +666,45 @@ void AWizardCharacter::InitProjectile(ABaseProjectile* projectile, const FVector
 	}
 }
 
+// Fire -> 0, Frost -> 1, Wind -> 3
+// 0 + 0 = 0  ---> FlameColumn
+// 0 + 1 = 1  ---> IceZone
+// 1 + 1 = 2  ---> IceWall
+// 0 + 3 = 3  ---> Tornado
+// 1 + 3 = 4  ---> ChainLightning
+// 3 + 3 = 6  ---> Shockwave
+
 void AWizardCharacter::CastSpell()
 {
-	FVector worldPos, worldDir;
-	GetController<APlayerController>()->DeprojectMousePositionToWorld(worldPos, worldDir);
-	FHitResult hit{};
-	FCollisionObjectQueryParams collisionParams{};
-	collisionParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldStatic);
-	GetWorld()->LineTraceSingleByObjectType(hit, worldPos, worldPos + worldDir * 100000, collisionParams); //get mouse position on static level
-	
-	FVector mouseWorldPosAtActorHeight = FMath::RayPlaneIntersection(worldPos, worldDir, FPlane(GetActorLocation(), FVector(0, 0, 1)));
-	FVector projectileDirection = (mouseWorldPosAtActorHeight - GetActorLocation()).GetSafeNormal(); // direction for projectile spells
+	FVector mousePosAtActorHeight;
+	FHitResult raycastHit;
+	RaycastMouseOnLevel(mousePosAtActorHeight, raycastHit);
+	FVector projectileDirection = (mousePosAtActorHeight - GetActorLocation()).GetSafeNormal(); // direction for projectile spells
 
 	int spellID{};
-
 	for ( auto element : CurrentElements)
 	{
 		spellID += int(element);
 	}
-	// Fire -> 0, Frost -> 1, Wind -> 3
-	// 0 + 0 = 0  ---> FlameColumn
-	// 0 + 1 = 1  ---> IceZone
-	// 1 + 1 = 2  ---> IceWall
-	// 0 + 3 = 3  ---> Tornado
-	// 1 + 3 = 4  ---> ChainLightning
-	// 3 + 3 = 6  ---> Shockwave
 
-	if (GetWorld()->GetTimerManager().IsTimerActive(CooldownTimers[spellID]))
-	{
-		return;
-	}
+	if (GetWorld()->GetTimerManager().IsTimerActive(CooldownTimers[spellID])) //spell is on cooldown
+		return; 
 
-	GetWorld()->GetTimerManager().SetTimer(CooldownTimers[spellID], Cooldowns[spellID], false);
+	GetWorld()->GetTimerManager().SetTimer(CooldownTimers[spellID], Cooldowns[spellID], false); //start 
 
 	auto spellType = Spells.Find(spellID);
 	if (spellType == nullptr)
 		return;
 
-	 auto spell = GetWorld()->SpawnActor<ABaseSpell>(*spellType);
-	 spell->InitSpell(GetActorLocation(), hit.Location, projectileDirection, this, GetInstigator(), FireLevel, FrostLevel, WindLevel);
-	 spell->SetDamageMultiplier(SpellDamageMultiplier);
-	 spell->SetStatusEffectDurationMultipliers(BurnDurationMultiplier, SlowDurationMultiplier, StunDurationMultiplier);
+	FActorSpawnParameters spawnParams{};
+	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	auto spell = GetWorld()->SpawnActor<ABaseSpell>(*spellType, spawnParams);
+	if (spell != nullptr)
+		spell->InitSpell(raycastHit.Location, projectileDirection, this); //virtual init overriden in derived spells
 
-	 for (auto& trigger : TriggerEffects)
-	 {
-		 if (trigger->Condition == TriggerCondition::OnCast)
+	for (auto& trigger : TriggerEffects)
+		if (trigger->Condition == TriggerCondition::OnCast)
 			trigger->OnTrigger(this, nullptr, nullptr);
-	 }
 }
 
 void AWizardCharacter::Dash()
@@ -760,5 +754,15 @@ void AWizardCharacter::SetupUpgrades()
 			(*matchingUpgrade)->Apply(this);
 		}
 	}
+}
+
+void AWizardCharacter::RaycastMouseOnLevel(FVector& mouseAtWizardHeight, FHitResult& raycastHit)
+{
+	FVector worldPos, worldDir;
+	GetController<APlayerController>()->DeprojectMousePositionToWorld(worldPos, worldDir);
+	FCollisionObjectQueryParams collisionParams{};
+	collisionParams.AddObjectTypesToQuery(ECollisionChannel::ECC_WorldStatic);
+	GetWorld()->LineTraceSingleByObjectType(raycastHit, worldPos, worldPos + worldDir * 100000, collisionParams); //get mouse position on static level
+	mouseAtWizardHeight = FMath::RayPlaneIntersection(worldPos, worldDir, FPlane(GetActorLocation(), FVector(0, 0, 1)));
 }
 
