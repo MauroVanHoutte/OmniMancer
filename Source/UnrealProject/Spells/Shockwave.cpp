@@ -3,6 +3,7 @@
 
 #include "Shockwave.h"
 #include "../Enemies/BaseCharacter.h"
+#include "../WizardCharacter.h"
 
 AShockwave::AShockwave()
 {
@@ -26,14 +27,14 @@ void AShockwave::Tick(float deltaTime)
 	StaticMeshComponent->SetRelativeScale3D(scale);
 }
 
-void AShockwave::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
+void AShockwave::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
 {
-	Super::InitSpell(casterLocation, targetLocation, projectileDirection, owner, instigator, fireLevel, frostLevel, windLevel);
+	Super::InitSpell(targetLocation, projectileDirection, wizard);
 
-	SetActorLocation(casterLocation);
-	SetStunParams(true, StunDuration + StunDurationPerFrostLevel * frostLevel);
-	Damage = InitialDamage + DamagePerWindLevel * windLevel;
-	KnockbackAmount += KnockbackPerWindLevel * windLevel;
+	SetActorLocation(wizard->GetActorLocation());
+	SetStunParams(true, (StunDuration + StunDurationPerFrostLevel * FrostLevel) * wizard->GetStunDurationMultiplier());
+	Damage = InitialDamage + DamagePerWindLevel * WindLevel;
+	KnockbackAmount += KnockbackPerWindLevel * WindLevel;
 }
 
 void AShockwave::BeginPlay()

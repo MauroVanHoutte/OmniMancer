@@ -7,8 +7,8 @@
 #include <Kismet/GameplayStatics.h>
 #include "../WizardCharacter.h"
 #include <Components/SphereComponent.h>
-#include "../ParticleActor.h"
 #include <GameFramework/ProjectileMovementComponent.h>
+#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
 ABaseProjectile::ABaseProjectile()
@@ -51,10 +51,7 @@ void ABaseProjectile::BeginPlay()
 
 void ABaseProjectile::Explode()
 {
-	auto particleActor = GetWorld()->SpawnActor<AParticleActor>(ParticleActorClass);
-	particleActor->SetSystem(ExplosionSystem, 0.5f);
-	particleActor->SetActorScale3D(FVector(ExplosionRadius));
-	particleActor->SetActorLocation(GetActorLocation());
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ExplosionParticle, GetActorLocation());
 	TArray<AActor*> outActors{};
 	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), ExplosionRadius * 100, TArray<TEnumAsByte<EObjectTypeQuery>>{}, ABaseCharacter::StaticClass(), TArray<AActor*>{GetInstigator()}, outActors);
 	for (AActor* actor : outActors)
@@ -68,6 +65,16 @@ void ABaseProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ABaseProjectile::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
+{
+	Super::InitSpell(targetLocation, projectileDirection, wizard);
+
+	SetDamageMultiplier(wizard->GetBaseProjecileDamageMultiplier() * wizard->GetSpellDamageMultiplier());
+	TotalBounces = wizard->GetBounces();
+	SetActorLocationAndRotation(wizard->GetActorLocation(), projectileDirection.Rotation());
+	FireInDirection(projectileDirection);
 }
 
 void ABaseProjectile::FireInDirection(const FVector& direction)
@@ -85,6 +92,11 @@ void ABaseProjectile::OnHit(AActor* hitActor)
 	if (Explosive)
 	{
 		Explode();
+	}
+
+	if (HitParticle != nullptr)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitParticle, hitActor->GetActorLocation(), GetActorRotation());
 	}
 
 	if (BounceCount < TotalBounces)

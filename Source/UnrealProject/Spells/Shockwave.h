@@ -20,7 +20,7 @@ public:
 
 	void Tick(float deltaTime) override;
 
-	virtual void InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel) override;
+	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard) override;
 
 protected:
 	void BeginPlay() override;

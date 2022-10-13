@@ -129,37 +129,14 @@ void ABaseSpell::SetCurseParams(bool applyCurse, float damage, float range, floa
 	}
 }
 
-void ABaseSpell::SetStatusEffectDurationMultipliers(float burnMultiplier, float slowMultiplier, float stunMultiplier)
+void ABaseSpell::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
 {
-	BurnDurationMultiplier = burnMultiplier;
-	SlowDurationMultiplier = slowMultiplier;
-	StunDurationMultiplier = stunMultiplier;
-	for (size_t i = 0; i < StatusEffects.Num(); i++)
-	{
-		switch (StatusEffects[i].EffectType)
-		{
-		case Type::Damage:
-			StatusEffects[i].Duration *= BurnDurationMultiplier;
-			break;
-		case Type::Slow:
-			StatusEffects[i].Duration *= SlowDurationMultiplier;
-			break;
-		case Type::Stun:
-			StatusEffects[i].Duration *= StunDurationMultiplier;
-			break;
-		default:
-			break;
-		}
-	}
-}
-
-void ABaseSpell::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
-{
-	SetOwner(owner);
-	SetInstigator(instigator);
-	FireLevel = fireLevel;
-	FrostLevel = frostLevel;
-	WindLevel = windLevel;
+	SetOwner(wizard);
+	SetInstigator(wizard);
+	FireLevel = wizard->GetCurrentElementLevel(WizardElement::Fire);
+	FrostLevel = wizard->GetCurrentElementLevel(WizardElement::Frost);
+	WindLevel = wizard->GetCurrentElementLevel(WizardElement::Wind);
+	DamageMultiplier = wizard->GetSpellDamageMultiplier();
 }
 
 void ABaseSpell::SetDamage(float damage)
@@ -217,7 +194,7 @@ void ABaseSpell::OnHit(AActor* hitActor)
 	auto caster = Cast<AWizardCharacter>(GetOwner());
 	if (ApplyWizardOnHitEffects && caster != nullptr && caster->IsValidLowLevel())
 	{
-		caster->OnSpellHitEnemy(this, hitActor);
+		caster->OnSpellHitEnemy(this, hitActor); //activate on hit triggers
 	}
 }
 

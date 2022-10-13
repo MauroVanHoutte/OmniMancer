@@ -17,7 +17,7 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel) override;
+	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard) override;
 
 	void SetRadius(float radius);
 
@@ -39,7 +39,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float EffectLingerDuration = 2.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	int SlowAmount = 0.5f;
+	float SlowAmount = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float CircleScale = 7.f;

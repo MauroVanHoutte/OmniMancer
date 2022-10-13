@@ -20,18 +20,23 @@ class UNREALPROJECT_API AChainLightning : public ABaseProjectile
 public:
 	AChainLightning();
 
-	virtual void InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel) override;
+	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard) override;
 	virtual void OnHit(AActor* hitActor) override;
 protected:
 	virtual void BeginPlay() override;
 
 private:
+	const TArray<AActor*>& GetHitActors() const;
+	void AddHitActors(const TArray<AActor*>& actors);
+
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float InitialDamage = 15.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	bool Stuns = true;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float StunDuration = 0.5f;
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
+	int NrOfBounces = 3;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
 	float DamagePerWindLevel = 3.f;

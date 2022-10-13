@@ -9,7 +9,6 @@
 
 class USphereComponent;
 class UProjectileMovementComponent;
-class AParticleActor;
 class UNiagaraSystem;
 
 UCLASS()
@@ -23,7 +22,7 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard);
 	UFUNCTION(BlueprintCallable)
 	void FireInDirection(const FVector& direction);
 
@@ -68,7 +67,7 @@ protected:
 	float ExplosionRadius = 0;
 	float ExplosionDamage = 0;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AParticleActor> ParticleActorClass;
+	UNiagaraSystem* ExplosionParticle;
 	UPROPERTY(EditDefaultsOnly)
-	UNiagaraSystem* ExplosionSystem;
+	UNiagaraSystem* HitParticle;
 };

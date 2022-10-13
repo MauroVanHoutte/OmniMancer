@@ -3,6 +3,7 @@
 
 #include "FlameColumn.h"
 #include "../Enemies/BaseCharacter.h"
+#include "../WizardCharacter.h"
 
 // Sets default values
 AFlameColumn::AFlameColumn()
@@ -26,10 +27,12 @@ void AFlameColumn::BeginPlay()
 
 void AFlameColumn::OnDeath()
 {
-	if (FireLevel > 3)
+	if (FireLevel > 3) // flame columns with fire level 4 or higher spawn a new one on death with adjusted levels
 	{
-		auto spell = GetWorld()->SpawnActor<AFlameColumn>(GetClass());
-		spell->InitSpell(FVector(), GetActorLocation(), FVector(), GetOwner(), GetInstigator(), 3, FrostLevel, WindLevel * 2); //bigger radius less damage
+		auto spell = GetWorld()->SpawnActor<AFlameColumn>(GetClass()); 
+		spell->InitSpell(GetActorLocation(), FVector(), GetOwner<AWizardCharacter>()); 
+		spell->FireLevel /= 2; // less damage
+		spell->WindLevel *= 3; // bigger area
 	}
 }
 
@@ -47,14 +50,14 @@ void AFlameColumn::Tick(float DeltaTime)
 	}
 }
 
-void AFlameColumn::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
+void AFlameColumn::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
 {
-	Super::InitSpell(casterLocation, targetLocation, projectileDirection, owner, instigator, fireLevel, frostLevel, windLevel);
+	Super::InitSpell(targetLocation, projectileDirection, wizard);
 
-	Damage = InitialDamage + DamagePerFireLevel * fireLevel;
+	Damage = InitialDamage + DamagePerFireLevel * FireLevel;
 	SetActorLocation(targetLocation);
-	SetBurnParams(ApplyBurn, BurnDamage + BurnDamagePerFireLevel * fireLevel, BurnInterval, BurnDuration + DurationPerFrostLevel * frostLevel);
-	CylinderMesh->SetRelativeScale3D(FVector(CircleScale + ScalePerWindLevel*windLevel, CircleScale + ScalePerWindLevel*windLevel, 1.f));
+	SetBurnParams(ApplyBurn, BurnDamage + BurnDamagePerFireLevel * FireLevel, BurnInterval, (BurnDuration + DurationPerFrostLevel * FrostLevel) * wizard->GetSlowDurationMultiplier());
+	CylinderMesh->SetRelativeScale3D(FVector(CircleScale + ScalePerWindLevel * WindLevel, CircleScale + ScalePerWindLevel * WindLevel, 1.f));
 	SetLifeTime(ImpactDelay + VisualLinger);
 }
 

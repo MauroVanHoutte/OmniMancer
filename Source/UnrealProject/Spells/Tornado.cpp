@@ -4,6 +4,7 @@
 #include "Tornado.h"
 #include <GameFramework/ProjectileMovementComponent.h>
 #include "../Enemies/BaseCharacter.h"
+#include "../WizardCharacter.h"
 #include "ChainLightning.h"
 
 ATornado::ATornado()
@@ -38,16 +39,16 @@ void ATornado::FireInDirection(const FVector& direction)
 	ProjectileMovement->Velocity = direction * ProjectileMovement->InitialSpeed;
 }
 
-void ATornado::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
+void ATornado::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
 {
-	Super::InitSpell(casterLocation, targetLocation, projectileDirection, owner, instigator, fireLevel, frostLevel, windLevel);
+	Super::InitSpell(targetLocation, projectileDirection, wizard);
 
-	SetActorLocation(casterLocation);
+	SetActorLocation(wizard->GetActorLocation());
 	FireInDirection(projectileDirection);
 
-	Damage += DamagePerFireLevel * fireLevel;
-	ScaleGrowth += ScaleGrowthPerWindLevel * windLevel;
-	SetStunParams(true, StunDuration + (StunDurationPerFrostLevel * frostLevel));
+	Damage += DamagePerFireLevel * FireLevel;
+	ScaleGrowth += ScaleGrowthPerWindLevel * WindLevel;
+	SetStunParams(true, (StunDuration + StunDurationPerFrostLevel * FireLevel) * wizard->GetStunDurationMultiplier());
 }
 
 void ATornado::BeginPlay()
@@ -77,7 +78,8 @@ void ATornado::ShootLightning(AActor* targetActor)
 	auto lightning = GetWorld()->SpawnActor<AChainLightning>(Lightning);
 	FVector caster = GetActorLocation();
 	caster.Z += 100.f;
-	lightning->InitSpell(caster, targetActor->GetActorLocation(), (targetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal(), GetOwner(), GetInstigator(), 1, 1, WindLevel / 2); //lowered levels
+	lightning->InitSpell(targetActor->GetActorLocation(), (targetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal(), Cast<AWizardCharacter>(GetInstigator()));
+	lightning->SetDamageMultiplier(0.5f); //weaker damage
 }
 
 void ATornado::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

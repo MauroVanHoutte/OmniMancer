@@ -11,13 +11,15 @@ AChainLightning::AChainLightning()
 {
 }
 
-void AChainLightning::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
+void AChainLightning::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
 {
-	Super::InitSpell(casterLocation, targetLocation, projectileDirection, owner, instigator, fireLevel, frostLevel, windLevel);
+	Super::InitSpell(targetLocation, projectileDirection, wizard);
 
-	SetActorLocation(casterLocation);
-	auto pos = GetActorLocation();
+	TotalBounces = NrOfBounces + WindLevel;
+	SetActorLocation(wizard->GetActorLocation());
 	FireInDirection(projectileDirection);
+	Damage = InitialDamage + DamagePerWindLevel * WindLevel;
+	SetStunParams(true, StunDuration + DurationPerFrost * FrostLevel);
 }
 
 void AChainLightning::BeginPlay()
@@ -25,11 +27,16 @@ void AChainLightning::BeginPlay()
 	ProjectileMovement->MaxSpeed = MaxSpeed;
 	ProjectileMovement->InitialSpeed = MaxSpeed;
 	Super::BeginPlay();
-	Damage = InitialDamage;
-	if (Stuns)
-	{
-		StatusEffects.Add(FStatusEffect(Type::Stun, -1.f, -1.f, StunDuration, this));
-	}
+}
+
+const TArray<AActor*>& AChainLightning::GetHitActors() const
+{
+	return HitActors;
+}
+
+void AChainLightning::AddHitActors(const TArray<AActor*>& actors)
+{
+	HitActors.Append(actors);
 }
 
 void AChainLightning::OnHit(AActor* hitActor)
@@ -54,7 +61,8 @@ void AChainLightning::OnHit(AActor* hitActor)
 		{
 			auto secondBolt = GetWorld()->SpawnActor<AChainLightning>(GetClass());
 			secondBolt->AddHitActor(hitActor);
-			secondBolt->InitSpell(GetActorLocation(), actors[i]->GetActorLocation(), (actors[i]->GetActorLocation() - GetActorLocation()).GetSafeNormal(), GetOwner(), GetInstigator(), FireLevel, FrostLevel, WindLevel);
+			secondBolt->InitSpell( actors[i]->GetActorLocation(), (actors[i]->GetActorLocation() - GetActorLocation()).GetSafeNormal(), GetOwner<AWizardCharacter>()); //Split on hit
+			secondBolt->AddHitActors(GetHitActors());
 			secondBolt->BounceCount = BounceCount;
 			auto pos = secondBolt->GetActorLocation();
 			auto thisPos = GetActorLocation();

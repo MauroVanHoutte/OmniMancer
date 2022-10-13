@@ -2,6 +2,7 @@
 
 
 #include "IceWall.h"
+#include "../WizardCharacter.h"
 
 AIceWall::AIceWall()
 {
@@ -34,10 +35,11 @@ void AIceWall::Tick(float deltaTime)
 	}
 }
 
-void AIceWall::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
+void AIceWall::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
 {
-	Super::InitSpell(casterLocation, targetLocation, projectileDirection, owner, instigator, fireLevel, frostLevel, windLevel);
-	SetSlowParams(true, 50, 3);
+	Super::InitSpell(targetLocation, projectileDirection, wizard);
+	SetSlowParams(true, (SlowValue + SlowPerFrostLevel * FrostLevel), (SlowDuration + DurationPerFrostLevel * FrostLevel) * wizard->GetSlowDurationMultiplier());
+	Damage = Damage + DamagePerFrostLevel * FrostLevel;
 
 	if (FrostLevel > 3)
 		SetCurseParams(true, 15, 500, 5);
@@ -48,5 +50,5 @@ void AIceWall::InitSpell(const FVector& casterLocation, const FVector& targetLoc
 	TargetLocation = targetLocation;
 	StartLocation = startLocation;
 	SetActorLocation(startLocation);
-	SetActorRotation(FRotator(0, (targetLocation - casterLocation).Rotation().Yaw, 0));
+	SetActorRotation(FRotator(0, (targetLocation - wizard->GetActorLocation()).Rotation().Yaw, 0));
 }

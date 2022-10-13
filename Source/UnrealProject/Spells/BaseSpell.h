@@ -7,6 +7,8 @@
 #include "../StatusEffect.h"
 #include "BaseSpell.generated.h"
 
+class AWizardCharacter;
+
 UCLASS(Abstract)
 class UNREALPROJECT_API ABaseSpell : public AActor
 {
@@ -26,11 +28,8 @@ public:
 	void SetStunParams(bool applyStun, float duration);
 	UFUNCTION(BlueprintCallable)
 	void SetCurseParams(bool applyCurse, float damage, float range, float duration);
-	void SetStatusEffectDurationMultipliers(float burnMultiplier, float slowMultiplier, float stunMultiplier);
 
-
-
-	virtual void InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel);
+	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard);
 
 	virtual void Tick(float DeltaTime) override;
 

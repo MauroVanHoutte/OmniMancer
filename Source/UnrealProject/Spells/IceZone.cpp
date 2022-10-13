@@ -3,6 +3,7 @@
 
 #include "IceZone.h"
 #include "../Enemies/BaseCharacter.h"
+#include "../WizardCharacter.h"
 
 // Sets default values
 AIceZone::AIceZone()
@@ -69,13 +70,13 @@ void AIceZone::Tick(float DeltaTime)
 
 }
 
-void AIceZone::InitSpell(const FVector& casterLocation, const FVector& targetLocation, const FVector& projectileDirection, AActor* owner, APawn* instigator, int fireLevel, int frostLevel, int windLevel)
+void AIceZone::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
 {
-	Super::InitSpell(casterLocation, targetLocation, projectileDirection, owner, instigator, fireLevel, frostLevel, windLevel);
+	Super::InitSpell(targetLocation, projectileDirection, wizard);
 
 	SetActorLocation(targetLocation);
-	SetBurnParams(ApplyBurn, BurnDamage + DamagePerFireLevel * fireLevel, BurnInterval, EffectLingerDuration + DurationPerFrostLevel * frostLevel);
-	SetSlowParams(true, SlowAmount + SlowPerFrostLevel * frostLevel, EffectLingerDuration);
+	SetBurnParams(ApplyBurn, BurnDamage + DamagePerFireLevel * FireLevel, BurnInterval, (EffectLingerDuration + DurationPerFrostLevel * FrostLevel) * wizard->GetBurnDurationMultiplier());
+	SetSlowParams(true, SlowAmount + SlowPerFrostLevel * FrostLevel, EffectLingerDuration * wizard->GetSlowDurationMultiplier());
 	SetRadius(7.f);
 }
 
