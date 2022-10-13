@@ -36,7 +36,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	float EnemyRoomChance = 0.5f;
 	UPROPERTY(EditAnywhere)
-	TArray<TSubclassOf<ABaseCharacter>> Enemies;
+	TMap<TSubclassOf<ABaseCharacter>, float> Enemies;
 	UPROPERTY(EditAnywhere)
 	int PacksPerTile = 3;
 	UPROPERTY(EditAnywhere)

@@ -18,8 +18,8 @@ void AEnemyPlacer::PlaceEnemies()
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Tile"), tileActors);
 	for (AActor* tile : tileActors)
 	{
-		bool isEnemyRoom = FMath::FRand() <= EnemyRoomChance;
-		if (isEnemyRoom && (StartTarget == nullptr || FVector::DistSquared(tile->GetActorLocation(), StartTarget->GetActorLocation()) > SpawnSafeRadius*SpawnSafeRadius))
+		bool isEnemyRoom = FMath::FRand() <= EnemyRoomChance; // to have some rooms without enemies
+		if (isEnemyRoom && (StartTarget == nullptr || FVector::DistSquared(tile->GetActorLocation(), StartTarget->GetActorLocation()) > SpawnSafeRadius*SpawnSafeRadius)) // tiles too close to spawn dont have enemies
 		{
 			FVector origin;
 			FVector extent;
@@ -31,11 +31,29 @@ void AEnemyPlacer::PlaceEnemies()
 				FNavLocation chosenPackLocation;
 				navigationSystem->GetRandomReachablePointInRadius(origin, spawnRadius, chosenPackLocation);
 				int packSize = FMath::RandRange(MinPackSize, MaxPackSize);
-				TSubclassOf<ABaseCharacter> enemyType = Enemies[FMath::RandRange(0, Enemies.Num() - 1)];
+
+				//weightedRandom
+				TSubclassOf<ABaseCharacter> enemyType;
+				float totalWeight = 0;
+				for (auto pair : Enemies)
+					totalWeight += pair.Value;
+
+				float rand = FMath::FRandRange(0, totalWeight);
+
+				for (auto pair : Enemies)
+				{
+					rand -= pair.Value;
+					if (rand < 0)
+					{
+						enemyType = pair.Key;
+						break;
+					}
+				}
+ 
 				for (size_t j = 0; j < packSize; j++)
 				{
 					FNavLocation enemySpawnLocation;
-					navigationSystem->GetRandomReachablePointInRadius(chosenPackLocation.Location, PackRadius, enemySpawnLocation);
+					navigationSystem->GetRandomReachablePointInRadius(chosenPackLocation.Location, PackRadius, enemySpawnLocation); // random spots around pack spawn point
 					FActorSpawnParameters spawnParams{};
 					spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 					GetWorld()->SpawnActor<AActor>(enemyType.Get(), enemySpawnLocation.Location, FRotator(0, FMath::FRand(), 0), spawnParams);
