@@ -41,7 +41,6 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly, Instanced)
 	UBaseTriggerEffect* TriggerEffect;
-
 };
 
 //Stats

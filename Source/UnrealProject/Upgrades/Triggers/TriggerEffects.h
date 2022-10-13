@@ -6,6 +6,7 @@
 #include "../../WizardCharacter.h"
 #include "../../Spells/BaseSpell.h"
 #include "../../Spells/BaseProjectile.h"
+#include "../../Spells/Blizzard.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include "TriggerEffects.generated.h"
 
@@ -119,7 +120,7 @@ public:
 		if (baseProjectile == nullptr)
 			return;
 
-		int rand = FMath::FRandRange(0, 1);
+		float rand = FMath::FRandRange(0, 1);
 		if (rand < Chance)
 			caster->LowerCooldowns(Amount);
 	};
@@ -248,6 +249,8 @@ public:
 		if (spell == nullptr)
 			return;
 
+		Blizzard->SetWizard(caster);
+
 		auto slowEffect = spell->GetStatusEffects().FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Slow; });
 		if (slowEffect != nullptr)
 		{
@@ -255,7 +258,7 @@ public:
 			UE_LOG(LogTemp, Warning, TEXT("slow added"));
 			if (CurrentSlowsActive >= SlowsNeeded)
 			{
-				//implement blizzard
+				Blizzard->Activate();
 				UE_LOG(LogTemp, Warning, TEXT("Blizzard Activated"));	
 			}
 
@@ -265,6 +268,7 @@ public:
 				UE_LOG(LogTemp, Warning, TEXT("slow removed"));
 				if (CurrentSlowsActive < SlowsNeeded)
 				{
+					Blizzard->Deactivate();
 					UE_LOG(LogTemp, Warning, TEXT("Blizzard Deactivated"));
 				}}, slowEffect->Duration, false);
 		}
@@ -280,6 +284,9 @@ private:
 	int CurrentSlowsActive = 0;
 	UPROPERTY(EditAnywhere)
 	int SlowsNeeded = 4;
+	UPROPERTY(EditAnywhere, Instanced)
+	ABlizzard* Blizzard;
+
 };
 
 //Damage Reduction Trigger
