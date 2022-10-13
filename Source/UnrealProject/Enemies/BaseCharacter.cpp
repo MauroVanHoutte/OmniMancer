@@ -107,7 +107,7 @@ void ABaseCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 			spell->AddHitActor(this);
 			TakeSpellDamage(spell);
 			AddStatusEffects(spell->GetStatusEffects());
-			spell->OnHit(this);
+			spell->OnHit(this); //activates caster on hit trigger
 		}
 	}
 }
@@ -191,7 +191,7 @@ void ABaseCharacter::SpawnCoins()
 	}
 }
 
-void ABaseCharacter::UpdateStatusEffects(float deltaTime)
+void ABaseCharacter::UpdateStatusEffects(float deltaTime) //todo move logic into statuseffect
 {
 	for (int32 i = 0; i < CurrentStatusEffects.Num(); i++)
 	{
@@ -259,6 +259,7 @@ void ABaseCharacter::SpreadCurse(const FStatusEffect& curseEffect)
 {
 	TArray<AActor*>ignoreActors{this};
 	TArray<AActor*>outActors{};
+	//get nearby enemies
 	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), curseEffect.Interval, TArray<TEnumAsByte<EObjectTypeQuery>>(), StaticClass(), ignoreActors, outActors); //range is stored in interval
 
 	for (AActor* actor : outActors)
