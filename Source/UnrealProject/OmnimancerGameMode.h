@@ -7,6 +7,9 @@
 #include "WizardCharacter.h"
 #include "OmnimancerGameMode.generated.h"
 
+class AEnemyPlacer;
+class AWaveFunctionCollapse;
+class ANavigationData;
 /**
  * 
  */
@@ -21,6 +24,11 @@ public:
 	void NextRoom();
 
 private:
+
+	void SetupGeneratedLevel();
+	UFUNCTION()
+	void PostGenerationLevelSetup(ANavigationData* data);
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AWizardCharacter> FireWizardBlueprint;
 	UPROPERTY(EditDefaultsOnly)
@@ -28,7 +36,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AWizardCharacter> WindWizardBlueprint;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AActor> RoomSpawnPointBlueprint;
-	TArray<AActor*> RoomSpawnPoints;
+	AEnemyPlacer* EnemyPlacer = nullptr;
+	AWaveFunctionCollapse* WaveFunctionCollapse = nullptr;
+	AActor* SpawnPoint = nullptr;
 };
