@@ -14,3 +14,7 @@ Saved
 *.xcworkspace
 Build/WindowsNoEditor/FileOpenOrder/CookerOpenOrder.log
 Build/WindowsNoEditor/FileOpenOrder/EditorOpenOrder.log
+Build/WindowsNoEditor/Engine/Extras/Redist/en-us/UE4PrereqSetup_x64.exe
+Build/WindowsNoEditor/Manifest_NonUFSFiles_Win64.txt
+Build/WindowsNoEditor/UnrealProject.exe
+Build/WindowsNoEditor/UnrealProject/Content/Paks/UnrealProject-WindowsNoEditor.pak
