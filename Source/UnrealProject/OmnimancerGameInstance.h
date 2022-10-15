@@ -43,24 +43,6 @@ public:
 	void SetSelectedType(WizardElement type);
 
 	UFUNCTION(BlueprintCallable)
-	int GetFireUpgrades();
-	UFUNCTION(BlueprintCallable)
-	void UpgradeFire();
-	UFUNCTION(BlueprintCallable)
-	int GetFrostUpgrades();
-	UFUNCTION(BlueprintCallable)
-	void UpgradeFrost();
-	UFUNCTION(BlueprintCallable)
-	int GetWindUpgrades();
-	UFUNCTION(BlueprintCallable)
-	void UpgradeWind();
-	UFUNCTION(BlueprintCallable)
-	const TArray<FSkillData>& GetFireSkills();
-	UFUNCTION(BlueprintCallable)
-	const TArray<FSkillData>& GetFrostSkills();
-	UFUNCTION(BlueprintCallable)
-	const TArray<FSkillData>& GetWindSkills();
-	UFUNCTION(BlueprintCallable)
 	void AddUnlockedUpgrade(const FString& tag);
 	UFUNCTION(BlueprintCallable)
 	void RemoveUnlockedUpgrade(const FString& tag);
@@ -69,14 +51,10 @@ public:
 
 private:
 	int Currency = 500;
-	int FireUpgrades = 0;
-	int FrostUpgrades = 0;
-	int WindUpgrades = 0;
 	TArray<FString> UnlockedUpgrades{};
 	WizardElement Selected = WizardElement::Fire;
 
-	TArray<FSkillData> FireSkills;
-	TArray<FSkillData> FrostSkills;
-	TArray<FSkillData> WindSkills;
-
+	//TArray<FSkillData> FireSkills;
+	//TArray<FSkillData> FrostSkills;
+	//TArray<FSkillData> WindSkills;
 };

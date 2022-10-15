@@ -7,13 +7,13 @@
 void USpeedPowerUpEffect::Apply(AWizardCharacter* target)
 {
 	float moveSpeedBefore{ target->GetSpeed() };
-	moveSpeedBefore *= (1 + Value / 100.f);
+	moveSpeedBefore *= (1 + Value);
 	target->SetSpeed(moveSpeedBefore);
 }
 
 void USpeedPowerUpEffect::Remove(AWizardCharacter* target)
 {
 	float moveSpeedBefore{ target->GetSpeed() };
-	moveSpeedBefore /= (1 + Value / 100.f);
+	moveSpeedBefore /= (1 + Value);
 	target->SetSpeed(moveSpeedBefore);
 }

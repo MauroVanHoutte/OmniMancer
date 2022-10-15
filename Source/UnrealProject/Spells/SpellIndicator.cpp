@@ -26,23 +26,9 @@ ASpellIndicator::ASpellIndicator()
 	CylinderProgressMesh->SetCanEverAffectNavigation(false);
 	CylinderProgressMesh->bHiddenInGame = true;
 	
-	/*BoxMesh = CreateDefaultSubobject<UStaticMeshComponent>("BoxMesh");
-	UStaticMesh* cubeMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")).Object;
-	BoxMesh->SetStaticMesh(cubeMesh);
-	BoxMesh->SetCollisionProfileName(FName("NoCollision"));
-	BoxMesh->SetCanEverAffectNavigation(false);
-	BoxMesh->bHiddenInGame = true;
-
-	BoxProgressMesh = CreateDefaultSubobject<UStaticMeshComponent>("BoxProgressMesh");
-	BoxProgressMesh->SetStaticMesh(cubeMesh);
-	BoxProgressMesh->SetCollisionProfileName(FName("NoCollision"));
-	BoxProgressMesh->SetCanEverAffectNavigation(false);
-	BoxProgressMesh->bHiddenInGame = true;*/
 
 	CylinderMesh->SetupAttachment(Root);
 	CylinderProgressMesh->SetupAttachment(Root);
-	/*BoxMesh->SetupAttachment(Root);
-	BoxProgressMesh->SetupAttachment(Root);*/
 }
 
 // Called when the game starts or when spawned

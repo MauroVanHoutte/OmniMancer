@@ -40,8 +40,7 @@ struct FStatusEffect
 	Type EffectType{};
 	UPROPERTY(EditAnywhere, DisplayName = "Damage Interval/Curse spread range")
 	float Interval{};
-	//Damage amount/slow amount
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, DisplayName = "Damage amount/Slow amount")
 	float Value{};
 	UPROPERTY(EditAnywhere)
 	float Duration{};

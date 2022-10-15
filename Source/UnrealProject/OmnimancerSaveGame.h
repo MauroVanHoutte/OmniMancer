@@ -17,11 +17,5 @@ public:
 	UPROPERTY();
 	int Currency = 0;
 	UPROPERTY();
-	int FireUpgrades = 0;
-	UPROPERTY();
-	int FrostUpgrades = 0;
-	UPROPERTY();
-	int WindUpgrades = 0;
-	UPROPERTY();
 	TArray<FString> UnlockedUpgrades{};
 };

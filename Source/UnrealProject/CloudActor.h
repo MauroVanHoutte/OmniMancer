@@ -32,7 +32,6 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* CloudMesh;
-	UMaterialInstanceDynamic* CloudMatInstance;
 	UPROPERTY(EditDefaultsOnly)
 	UBoxComponent* CollisionComponent;
 	bool IsRising = false;

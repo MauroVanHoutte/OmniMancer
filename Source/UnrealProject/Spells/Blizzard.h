@@ -30,11 +30,11 @@ protected:
 private:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* CylinderMesh;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BaseParameter")
 	float TickInterval = 0.2f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BaseParameter")
 	float SlowAmount = 0.2f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BaseParameter")
 	float DamagePerTick = 0.4f;
 	FTimerHandle ApplicationTimer;
 };

@@ -56,7 +56,7 @@ void AFlameColumn::InitSpell(const FVector& targetLocation, const FVector& proje
 
 	Damage = InitialDamage + DamagePerFireLevel * FireLevel;
 	SetActorLocation(targetLocation);
-	SetBurnParams(ApplyBurn, BurnDamage + BurnDamagePerFireLevel * FireLevel, BurnInterval, (BurnDuration + DurationPerFrostLevel * FrostLevel) * wizard->GetSlowDurationMultiplier());
+	SetBurnParams(ApplyBurn, BurnDamage + BurnDamagePerFireLevel * FireLevel, BurnInterval, (BurnDuration + DurationPerFrostLevel * FrostLevel));
 	CylinderMesh->SetRelativeScale3D(FVector(CircleScale + ScalePerWindLevel * WindLevel, CircleScale + ScalePerWindLevel * WindLevel, 1.f));
 	SetLifeTime(ImpactDelay + VisualLinger);
 }

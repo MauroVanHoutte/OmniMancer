@@ -3,6 +3,9 @@
 #include "Blueprint/UserWidget.h"
 #include "PlayerHUD.generated.h"
 
+class AWizardCharacter;
+class UOmnimancerGameInstance;
+
 UCLASS(Abstract)
 class UNREALPROJECT_API UPlayerHUD : public UUserWidget
 {
@@ -10,8 +13,10 @@ class UNREALPROJECT_API UPlayerHUD : public UUserWidget
 
 protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
+	
 public:
+	virtual void PostLoad() override;
+
 	void SetCooldowns(const TMap<int, float>& Cooldowns, const TMap<int, FTimerHandle>& Timers);
 
 	void SetCurrency(int currency);
@@ -35,4 +40,7 @@ public:
 	class UTextBlock* Currency;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UProgressBar* Experience;
+
+	AWizardCharacter* Player;
+	UOmnimancerGameInstance* GameInstance;
 };

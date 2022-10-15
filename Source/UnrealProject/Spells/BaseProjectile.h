@@ -63,11 +63,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float PushbackForce = 1500.f;
 
+	//Explosion
 	bool Explosive = false;
 	float ExplosionRadius = 0;
 	float ExplosionDamage = 0;
 	UPROPERTY(EditDefaultsOnly)
 	UNiagaraSystem* ExplosionParticle;
+
+
 	UPROPERTY(EditDefaultsOnly)
 	UNiagaraSystem* HitParticle;
 };

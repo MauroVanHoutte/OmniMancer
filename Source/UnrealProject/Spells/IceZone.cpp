@@ -75,8 +75,8 @@ void AIceZone::InitSpell(const FVector& targetLocation, const FVector& projectil
 	Super::InitSpell(targetLocation, projectileDirection, wizard);
 
 	SetActorLocation(targetLocation);
-	SetBurnParams(ApplyBurn, BurnDamage + DamagePerFireLevel * FireLevel, BurnInterval, (EffectLingerDuration + DurationPerFrostLevel * FrostLevel) * wizard->GetBurnDurationMultiplier());
-	SetSlowParams(true, SlowAmount + SlowPerFrostLevel * FrostLevel, EffectLingerDuration * wizard->GetSlowDurationMultiplier());
+	SetBurnParams(ApplyBurn, BurnDamage + DamagePerFireLevel * FireLevel, BurnInterval, EffectLingerDuration + DurationPerFrostLevel * FrostLevel);
+	SetSlowParams(true, SlowAmount + SlowPerFrostLevel * FrostLevel, EffectLingerDuration);
 	SetRadius(7.f);
 }
 

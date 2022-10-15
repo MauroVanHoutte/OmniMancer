@@ -15,11 +15,13 @@ void AWaveFunctionCollapse::BeginPlay()
 
 bool AWaveFunctionCollapse::SolveGrid()
 {
+	//pick coords that will have start and end room
 	GenerateBeginAndEndCoords();
 
 	TArray<TArray<TArray<FTile>>> possibleTiles{};
 	do
 	{
+		//setup
 		for (size_t i = 0; i < possibleTiles.Num(); i++)
 		{
 			for (size_t j = 0; j < possibleTiles[i].Num(); j++)
@@ -32,6 +34,8 @@ bool AWaveFunctionCollapse::SolveGrid()
 
 		SetupUpStartingGrid(possibleTiles);
 
+
+		//main loop
 		while (!IsSolved(possibleTiles))
 		{
 			int row, col; //coord of next tile to fill in
@@ -51,6 +55,7 @@ bool AWaveFunctionCollapse::SolveGrid()
 
 void AWaveFunctionCollapse::CreateLevel()
 {
+	//destroy old tiles
 	for (AActor* actor : PlacedMeshes)
 	{
 		actor->Destroy();
@@ -59,6 +64,7 @@ void AWaveFunctionCollapse::CreateLevel()
 
 	SolveGrid();
 }
+
 
 void AWaveFunctionCollapse::CreateLevelStepThrough()
 {
@@ -84,12 +90,13 @@ void AWaveFunctionCollapse::ExecuteGenerationStep()
 	}
 }
 
-bool AWaveFunctionCollapse::IsSolved(const TArray<TArray<TArray<FTile>>>& possibleOptions)
+bool AWaveFunctionCollapse::IsSolved(const TArray<TArray<TArray<FTile>>>& possibleOptions) const
 {
 	for (size_t i = 0; i < possibleOptions.Num(); i++)
 	{
 		for (size_t j = 0; j < possibleOptions[i].Num(); j++)
 		{
+			//1 option left == solved
 			if (possibleOptions[i][j].Num() != 1)
 				return false;
 		}
@@ -98,7 +105,7 @@ bool AWaveFunctionCollapse::IsSolved(const TArray<TArray<TArray<FTile>>>& possib
 	return true;
 }
 
-void AWaveFunctionCollapse::SetupUpStartingGrid(TArray<TArray<TArray<FTile>>>& possibleOptions)
+void AWaveFunctionCollapse::SetupUpStartingGrid(TArray<TArray<TArray<FTile>>>& possibleOptions) const
 {
 	//Setup array sizes
 	for (size_t i = 0; i < Rows; i++)
@@ -201,7 +208,7 @@ void AWaveFunctionCollapse::GenerateBeginAndEndCoords()
 
 }
 
-void AWaveFunctionCollapse::GetNeighbouringWallTypes(const TArray<TArray<TArray<FTile>>>& possibleOptions, int row, int col, WallType& front, WallType& back, WallType& right, WallType& left)
+void AWaveFunctionCollapse::GetNeighbouringWallTypes(const TArray<TArray<TArray<FTile>>>& possibleOptions, int row, int col, WallType& front, WallType& back, WallType& right, WallType& left) const
 {
 	//front
 	if (row + 1 >= possibleOptions.Num()) // check bounds
@@ -229,10 +236,11 @@ void AWaveFunctionCollapse::GetNeighbouringWallTypes(const TArray<TArray<TArray<
 		left = possibleOptions[row][col - 1][0].SideTypes[Side::RIGHT];
 }
 
-void AWaveFunctionCollapse::GetLeastPossibilitiesTile(const TArray<TArray<TArray<FTile>>>& possibleOptions, int& row, int& col)
+void AWaveFunctionCollapse::GetLeastPossibilitiesTile(const TArray<TArray<TArray<FTile>>>& possibleOptions, int& row, int& col) const
 {
 	TArray<TTuple<int, int>> coordsWithLeastPossibleTiles{};
 
+	//overflow to max
 	uint16 leastPosibilities{ uint16(-1)};
 	//find all coord with the least amount of possibilities
 	for (size_t i = 0; i < possibleOptions.Num(); i++)
@@ -258,7 +266,7 @@ void AWaveFunctionCollapse::GetLeastPossibilitiesTile(const TArray<TArray<TArray
 	col = coordsWithLeastPossibleTiles[idx].Value;
 }
 
-void AWaveFunctionCollapse::FillInTile(TArray<TArray<TArray<FTile>>>& possibleOptions, int row, int col)
+void AWaveFunctionCollapse::FillInTile(TArray<TArray<TArray<FTile>>>& possibleOptions, int row, int col) const
 {
 	auto nonClosingPossibilities = possibleOptions[row][col].FilterByPredicate([](const FTile& tile)
 		{
@@ -269,7 +277,7 @@ void AWaveFunctionCollapse::FillInTile(TArray<TArray<TArray<FTile>>>& possibleOp
 					openSides++;
 			};
 			return openSides > 1;
-		}); //tiles with atleast 2 open sides to prevent closed of segments
+		}); //tiles with atleast 2 open sides prioritised to prevent closed of segments
 
 	FTile selectedTile;
 	if (nonClosingPossibilities.Num() == 0) //if no tiles with multiple open sides fit, use all tiles
@@ -297,7 +305,7 @@ void AWaveFunctionCollapse::FillInTile(TArray<TArray<TArray<FTile>>>& possibleOp
 	possibleOptions[row][col].Add(selectedTile);
 }
 
-void AWaveFunctionCollapse::AdjustNeighbouringTiles(TArray<TArray<TArray<FTile>>>& possibleOptions, int row, int col)
+void AWaveFunctionCollapse::AdjustNeighbouringTiles(TArray<TArray<TArray<FTile>>>& possibleOptions, int row, int col) const
 {
 	int rowToCheck{};
 	int colToCheck{};
@@ -324,6 +332,8 @@ void AWaveFunctionCollapse::AdjustNeighbouringTiles(TArray<TArray<TArray<FTile>>
 		default:
 			break;
 		}
+
+		//check array bounds
 		if (row + rowToCheck < 0 || col + colToCheck < 0 ||
 			row + rowToCheck >= possibleOptions.Num() ||
 			col + colToCheck >= possibleOptions[row + rowToCheck].Num() ||
@@ -348,7 +358,7 @@ void AWaveFunctionCollapse::AdjustNeighbouringTiles(TArray<TArray<TArray<FTile>>
 	}
 }
 
-void AWaveFunctionCollapse::AddConnectedCells(TArray<TArray<TArray<FTile>>>& possibleOptions, TArray<TArray<bool>>& connected, int row, int col)
+void AWaveFunctionCollapse::AddConnectedCells(TArray<TArray<TArray<FTile>>>& possibleOptions, TArray<TArray<bool>>& connected, int row, int col) const
 {
 	//recursive function to get all tiles that are connected
 	auto currentTile = possibleOptions[row][col][0];
@@ -360,6 +370,7 @@ void AWaveFunctionCollapse::AddConnectedCells(TArray<TArray<TArray<FTile>>>& pos
 			switch (pair.Key)
 			{
 			case Side::FRONT:
+				//check already added
 				if (!connected[row + 1][col])
 					AddConnectedCells(possibleOptions, connected, row + 1, col);
 				break;
@@ -382,8 +393,9 @@ void AWaveFunctionCollapse::AddConnectedCells(TArray<TArray<TArray<FTile>>>& pos
 	}
 }
 
-bool AWaveFunctionCollapse::CheckAccessibility(TArray<TArray<TArray<FTile>>>& possibleOptions)
+bool AWaveFunctionCollapse::CheckAccessibility(TArray<TArray<TArray<FTile>>>& possibleOptions) const
 {
+	//setup arrays
 	TArray<TArray<bool>> connected{};
 	for (size_t i = 0; i < possibleOptions.Num(); i++)
 	{
@@ -394,7 +406,8 @@ bool AWaveFunctionCollapse::CheckAccessibility(TArray<TArray<TArray<FTile>>>& po
 		}
 	}
 
-	AddConnectedCells(possibleOptions, connected, 0, 0); //recursively adds connected tiles
+	//recursively adds connected tiles
+	AddConnectedCells(possibleOptions, connected, 0, 0);
 
 	for (size_t i = 0; i < connected.Num(); i++)
 	{
@@ -411,7 +424,7 @@ void AWaveFunctionCollapse::PlaceMeshes(TArray<TArray<TArray<FTile>>>& possibleO
 {
 	for (size_t i = 0; i < possibleOptions.Num(); i++)
 	{
-		for (size_t j = 0; j < possibleOptions[i].Num(); j++) //2d grid
+		for (size_t j = 0; j < possibleOptions[i].Num(); j++)
 		{
 			FVector tileCenter{ BotLeft };
 			tileCenter.X += i * TileSize + (TileSize / 2);
@@ -421,7 +434,9 @@ void AWaveFunctionCollapse::PlaceMeshes(TArray<TArray<TArray<FTile>>>& possibleO
 				continue;
 
 			auto actor = GetWorld()->SpawnActor<AStaticMeshActor>(tileCenter, FRotator{0,0,0}, FActorSpawnParameters{});
+			// following line removes some warning and seeing as actors are spawned at runtime they will have dynamic lighting either way
 			actor->SetMobility(EComponentMobility::Movable);
+			// enemy placer uses tag to find tiles when placing enemies
 			actor->Tags.Add(FName("Tile"));
 			PlacedMeshes.Add(actor);
 
@@ -449,6 +464,7 @@ void AWaveFunctionCollapse::PlaceMeshes(TArray<TArray<TArray<FTile>>>& possibleO
 					}
 				}
 
+				//lets projectiles be destroyed when hitting walls
 				meshComp->SetGenerateOverlapEvents(true);
 			}
 		}
@@ -456,7 +472,7 @@ void AWaveFunctionCollapse::PlaceMeshes(TArray<TArray<TArray<FTile>>>& possibleO
 }
 
 void AWaveFunctionCollapse::PlaceMesh(int row, int col)
-{
+{ 
 	FVector tileCenter{ BotLeft };
 	tileCenter.Y += row * TileSize + (TileSize / 2);
 	tileCenter.X += col * TileSize + (TileSize / 2);
@@ -502,7 +518,8 @@ void AWaveFunctionCollapse::AdjustNavMeshVolume()
 	NavMeshBounds->SetActorScale3D(FVector(Rows * TileSize, Columns * TileSize, 10000.f));
 }
 
-void AWaveFunctionCollapse::PlaceClouds()
+//the clouds act like a minimap, the player can zoom the camera out and clouds will be covering unexplored parts
+void AWaveFunctionCollapse::PlaceClouds() const
 {
 	float currentX = BotLeft.X - TileSize;
 	float endX = BotLeft.X + (Columns+1) * TileSize;

@@ -18,7 +18,8 @@ void AEnemyPlacer::PlaceEnemies()
 	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("Tile"), tileActors);
 	for (AActor* tile : tileActors)
 	{
-		bool isEnemyRoom = FMath::FRand() <= EnemyRoomChance; // to have some rooms without enemies
+		// to have some rooms without enemies
+		bool isEnemyRoom = FMath::FRand() <= EnemyRoomChance; 
 		if (isEnemyRoom && (StartTarget == nullptr || FVector::DistSquared(tile->GetActorLocation(), StartTarget->GetActorLocation()) > SpawnSafeRadius*SpawnSafeRadius)) // tiles too close to spawn dont have enemies
 		{
 			FVector origin;
@@ -40,6 +41,7 @@ void AEnemyPlacer::PlaceEnemies()
 
 				float rand = FMath::FRandRange(0, totalWeight);
 
+				//map value is weight
 				for (auto pair : Enemies)
 				{
 					rand -= pair.Value;
@@ -49,11 +51,12 @@ void AEnemyPlacer::PlaceEnemies()
 						break;
 					}
 				}
- 
+				
 				for (size_t j = 0; j < packSize; j++)
 				{
 					FNavLocation enemySpawnLocation;
-					navigationSystem->GetRandomReachablePointInRadius(chosenPackLocation.Location, PackRadius, enemySpawnLocation); // random spots around pack spawn point
+					// random spots around pack spawn point
+					navigationSystem->GetRandomReachablePointInRadius(chosenPackLocation.Location, PackRadius, enemySpawnLocation); 
 					FActorSpawnParameters spawnParams{};
 					spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 					GetWorld()->SpawnActor<AActor>(enemyType.Get(), enemySpawnLocation.Location, FRotator(0, FMath::FRand(), 0), spawnParams);

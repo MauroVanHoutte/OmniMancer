@@ -22,14 +22,10 @@ void UOmnimancerGameInstance::Init()
 	}
 
 	Currency = 500;//loadedSave->Currency;
-	FireUpgrades = loadedSave->FireUpgrades;
-	FrostUpgrades = loadedSave->FrostUpgrades;
-	WindUpgrades = loadedSave->WindUpgrades;
-
 	UnlockedUpgrades = loadedSave->UnlockedUpgrades;
 
 	//loading skill names and prices
-	FString rawJson;
+	/*FString rawJson;
 	if (FFileHelper::LoadFileToString(rawJson, *FPaths::ProjectContentDir().Append("/SkillData/Skills.json")))
 	{
 		TSharedPtr<FJsonObject> parsedJson;
@@ -64,7 +60,7 @@ void UOmnimancerGameInstance::Init()
 				}
 			}
 		}
-	}
+	}*/
 }
 
 void UOmnimancerGameInstance::Shutdown()
@@ -72,9 +68,6 @@ void UOmnimancerGameInstance::Shutdown()
 	UOmnimancerSaveGame* save;
 	save = Cast<UOmnimancerSaveGame>(UGameplayStatics::CreateSaveGameObject(UOmnimancerSaveGame::StaticClass()));
 	save->Currency = Currency;
-	save->FireUpgrades = FireUpgrades;
-	save->FrostUpgrades = FrostUpgrades;
-	save->WindUpgrades = WindUpgrades;
 	save->UnlockedUpgrades = UnlockedUpgrades;
 	UGameplayStatics::SaveGameToSlot(save, "SaveSlot", 0);
 }
@@ -97,51 +90,6 @@ WizardElement UOmnimancerGameInstance::GetSelectedType()
 void UOmnimancerGameInstance::SetSelectedType(WizardElement type)
 {
 	Selected = type;
-}
-
-int UOmnimancerGameInstance::GetFireUpgrades()
-{
-	return FireUpgrades;
-}
-
-void UOmnimancerGameInstance::UpgradeFire()
-{
-	FireUpgrades++;
-}
-
-int UOmnimancerGameInstance::GetFrostUpgrades()
-{
-	return FrostUpgrades;
-}
-
-void UOmnimancerGameInstance::UpgradeFrost()
-{
-	FrostUpgrades++;
-}
-
-int UOmnimancerGameInstance::GetWindUpgrades()
-{
-	return WindUpgrades;
-}
-
-void UOmnimancerGameInstance::UpgradeWind()
-{
-	WindUpgrades++;
-}
-
-const TArray<FSkillData>& UOmnimancerGameInstance::GetFireSkills()
-{
-	return FireSkills;
-}
-
-const TArray<FSkillData>& UOmnimancerGameInstance::GetFrostSkills()
-{
-	return FrostSkills;
-}
-
-const TArray<FSkillData>& UOmnimancerGameInstance::GetWindSkills()
-{
-	return WindSkills;
 }
 
 void UOmnimancerGameInstance::AddUnlockedUpgrade(const FString& tag)

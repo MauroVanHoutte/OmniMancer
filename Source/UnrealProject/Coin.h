@@ -40,6 +40,8 @@ private:
 	bool IsExperience = true;
 	UPROPERTY(EditAnywhere)
 	int Value = 1;
+	UPROPERTY(EditAnywhere)
+	float Speed = 1;
 	
 	AWizardCharacter* Player;
 };

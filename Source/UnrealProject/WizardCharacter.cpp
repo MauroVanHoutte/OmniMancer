@@ -69,6 +69,8 @@ AWizardCharacter::AWizardCharacter(FVTableHelper& Helper)
 
 }
 
+AWizardCharacter::~AWizardCharacter() = default;
+
 
 // Called when the game starts or when spawned
 void AWizardCharacter::BeginPlay()
@@ -111,6 +113,9 @@ void AWizardCharacter::BeginPlay()
 		controller->SetShowMouseCursor(true);
 		PlayerHud = CreateWidget<UPlayerHUD>(controller, PlayerHudType);
 		PlayerHud->AddToPlayerScreen();
+
+		controller->SetShowMouseCursor(true);
+
 	}
 
 	SetupUpgrades();
@@ -144,7 +149,6 @@ void AWizardCharacter::OnTakeHit(AActor* cause)
 	}
 }
 
-AWizardCharacter::~AWizardCharacter() = default;
 
 // Called every frame
 void AWizardCharacter::Tick(float DeltaTime)
@@ -154,11 +158,6 @@ void AWizardCharacter::Tick(float DeltaTime)
 	UpdatePowerups(DeltaTime);
 
 	APlayerController* controller = GetController<APlayerController>();
-	if (controller == nullptr)
-		return;
-
-	controller->SetShowMouseCursor(true);
-
 	FVector mousePosWorld, mouseDirWorld;
 	controller->DeprojectMousePositionToWorld(mousePosWorld, mouseDirWorld);
 	mousePosWorld = FMath::RayPlaneIntersection(mousePosWorld, mouseDirWorld, FPlane(GetActorLocation(), FVector(0.f, 0.f, 1.f))); //screen position raycast to plane at actor height
@@ -456,6 +455,7 @@ void AWizardCharacter::PickupExperience(int experience)
 		ExeperienceRequired *= NextLevelExperienceRequired;
 		OnLevelUp();
 	}
+	PlayerHud->SetExperiencePercentage(float(Experience) / ExeperienceRequired);
 }
 
 int AWizardCharacter::GetCombinedElementLevel() const
@@ -629,6 +629,11 @@ void AWizardCharacter::Fire(float input)
 
 	InitProjectile(projectile, direction);
 
+	SpawnSpreadProjectiles(spawnParams, direction);
+}
+
+void AWizardCharacter::SpawnSpreadProjectiles(FActorSpawnParameters& spawnParams, FVector& direction)
+{
 	for (int i = 0; i < Spread; i++)
 	{
 		float angleOffset = ((i + 1) * 45.f / Spread);

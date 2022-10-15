@@ -36,14 +36,16 @@ struct UNREALPROJECT_API FTile
 	TMap<Side, WallType> SideTypes{ {{Side::FRONT, WallType::DEFAULT}, {Side::BACK, WallType::DEFAULT}, {Side::RIGHT, WallType::DEFAULT}, {Side::LEFT, WallType::DEFAULT}}};
 };
 
+
 UCLASS()
-class UNREALPROJECT_API AWaveFunctionCollapse : public AActor
+class UNREALPROJECT_API AWaveFunctionCollapse : public AActor //todo let inherit from uobject and make part of gamemode
 {
 	GENERATED_BODY()
 public:
 
 	void BeginPlay() override;
 
+	//Main loop
 	bool SolveGrid();
 
 	UFUNCTION(CallInEditor)
@@ -55,29 +57,29 @@ public:
 
 private:
 	
-	bool IsSolved(const TArray<TArray<TArray<FTile>>>& possibleOptions);
+	bool IsSolved(const TArray<TArray<TArray<FTile>>>& possibleOptions) const;
 
-	void SetupUpStartingGrid(TArray<TArray<TArray<FTile>>>& possibleOptions);
+	void SetupUpStartingGrid(TArray<TArray<TArray<FTile>>>& possibleOptions) const;
 
 	void GenerateBeginAndEndCoords();
 
-	void GetNeighbouringWallTypes(const TArray<TArray<TArray<FTile>>>& possibleOptions, int row, int col, WallType& front, WallType& back, WallType& right, WallType& left);
+	void GetNeighbouringWallTypes(const TArray<TArray<TArray<FTile>>>& possibleOptions, int row, int col, WallType& front, WallType& back, WallType& right, WallType& left) const;
 
-	void GetLeastPossibilitiesTile(const TArray<TArray<TArray<FTile>>>& possibleOptions, int& row, int& col);
+	void GetLeastPossibilitiesTile(const TArray<TArray<TArray<FTile>>>& possibleOptions, int& row, int& col) const;
 
-	void FillInTile(TArray<TArray<TArray<FTile>>>& possibleOptions, int row, int col);
+	void FillInTile(TArray<TArray<TArray<FTile>>>& possibleOptions, int row, int col) const;
 
-	void AdjustNeighbouringTiles(TArray<TArray<TArray<FTile>>>& possibleOptions, int row, int col);
+	void AdjustNeighbouringTiles(TArray<TArray<TArray<FTile>>>& possibleOptions, int row, int col) const;
 
-	bool CheckAccessibility(TArray<TArray<TArray<FTile>>>& possibleOptions);
-	void AddConnectedCells(TArray<TArray<TArray<FTile>>>& possibleOptions, TArray<TArray<bool>>& connected, int row, int col);
+	bool CheckAccessibility(TArray<TArray<TArray<FTile>>>& possibleOptions) const;
+	void AddConnectedCells(TArray<TArray<TArray<FTile>>>& possibleOptions, TArray<TArray<bool>>& connected, int row, int col) const;
 
 	void PlaceMeshes(TArray<TArray<TArray<FTile>>>& possibleOptions);
 	void PlaceMesh(int row, int col);
 
 	void AdjustNavMeshVolume();
 
-	void PlaceClouds();
+	void PlaceClouds() const;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACloudActor> CloudActor;
 	UPROPERTY(EditAnywhere)

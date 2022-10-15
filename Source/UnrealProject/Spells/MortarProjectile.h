@@ -39,9 +39,9 @@ private:
 	UStaticMeshComponent* Mesh;
 
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BaseParameter")
 	float ProjectileRadius = 50.f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "BaseParameter")
 	float ProjectileSpeedZ = 1000.f;
 
 };

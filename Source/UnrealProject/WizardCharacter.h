@@ -78,6 +78,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	const TMap<int, FTimerHandle>& GetCooldownTimers() const;
 
+	//Powerups/upgrades
 	void AddPowerUpEffect( UPowerUpEffect* effect);
 	void AddTriggerEffect(UBaseTriggerEffect* effect);
 	void RemoveTriggerEffect(UBaseTriggerEffect* effect, const FString& tag = "");
@@ -86,6 +87,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemoveUpgrade(const FString& tag);
 
+	//Getters/Setters
 	void SetExplosionVariables(float damage, float radius, bool explode);
 	void GetExplosionVariables(float& damageOut, float& radiusOut) const;
 	void SetSpread(int spread);
@@ -116,7 +118,9 @@ public:
 	void RemoveReflectStatusEffect(const FStatusEffect& effect);
 	TArray<FStatusEffect>& GetBaseAttackEffectsRef();
 	float GetExperiencePercentage() const;
+
 	void PickupExperience(int experience);
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnLevelUp();
 
@@ -148,6 +152,7 @@ private:
 	void MoveUp(float value);
 	void MoveRight(float value);
 	void Fire(float input); //Base Projectile
+	void SpawnSpreadProjectiles(FActorSpawnParameters& spawnParams, FVector& direction);
 	void InitProjectile(ABaseProjectile* projectile, const FVector& direction);
 	void CastSpell();
 
@@ -159,15 +164,17 @@ private:
 
 	void RaycastMouseOnLevel(FVector& mouseAtWizardHeight, FHitResult& raycastHit);
 
+	void AddElement(WizardElement element);
+	DECLARE_DELEGATE_OneParam(FAddElementDelegate, WizardElement);
+
+	//Dash
 	UPROPERTY(EditDefaultsOnly)
 	float DashForce = 10000.f;
 	UPROPERTY(EditDefaultsOnly)
 	float DashCooldown = 5.f;
 	FTimerHandle DashCooldownTimer;
 
-	void AddElement(WizardElement element);
-	DECLARE_DELEGATE_OneParam(FAddElementDelegate, WizardElement);
-
+	//Camera
 	UPROPERTY(EditDefaultsOnly)
 	float SpringArmLength = 1200.f;
 	UPROPERTY(EditDefaultsOnly)
@@ -179,18 +186,23 @@ private:
 	USpringArmComponent* SpringArm;
 	UPROPERTY(EditDefaultsOnly)
 	UCameraComponent* Camera;
+
+	//Mesh
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* WizardMesh;
 
+	//Active elements
 	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	TArray<WizardElement> CurrentElements{};
 	int MaxElements = 2;
 	
+	//Spell bp's
 	UPROPERTY(EditDefaultsOnly, Category = "Spells")
 	TSubclassOf<ABaseProjectile> BaseProjectile = nullptr;
 	UPROPERTY(EditDefaultsOnly, Category = "Spells")
 	TMap<int, TSubclassOf<ABaseSpell>> Spells;
-	//percentage increase
+
+	//Multipliers
 	UPROPERTY(EditDefaultsOnly, Category = "Spells")
 	float SpellDamageMultiplier = 1;
 	UPROPERTY(EditDefaultsOnly, Category = "Spells")
@@ -199,8 +211,12 @@ private:
 	float StunDurationMultiplier = 1;
 	UPROPERTY(EditDefaultsOnly, Category = "Spells")
 	float BurnDurationMultiplier = 1;
+	UPROPERTY(VisibleAnywhere)
+	float BaseDamageMultiplier = 1;
+	UPROPERTY(VisibleAnywhere)
+	float DamageTakenMultiplier = 1;
 
-
+	//Active element passice effects
 	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	WizardElement MainElement = WizardElement::Fire;
 	UPROPERTY(EditDefaultsOnly, Category = "Elements")
@@ -209,14 +225,8 @@ private:
 	float DamagePerFire = 0.1f;
 	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	float DamageReductionPerFrost = 0.1f;
-	//Percentage Increase
-	UPROPERTY(VisibleAnywhere)
-	float BaseDamageMultiplier = 1;
-	//Percentage Reduction
-	UPROPERTY(VisibleAnywhere)
-	float DamageTakenMultiplier = 1;
 	
-
+	//Active element visuals
 	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
 	UBillboardComponent* FirstElementBillboard = nullptr; 
 	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
@@ -234,8 +244,6 @@ private:
 	TMap<int, float> Cooldowns{};
 	UPROPERTY(VisibleAnywhere, Category = "Spells")
 	TMap<int, FTimerHandle> CooldownTimers{};
-
-
 	
 	UPROPERTY(EditDefaultsOnly)
 	float BasicAttackCooldown = 0.5f;
@@ -256,12 +264,14 @@ private:
 	UPROPERTY(EditAnywhere, Instanced)
 	TArray<UCharacterUpgrade*> CharacterUpgrades;
 
+	//Experience
 	int Experience = 0;
 	UPROPERTY(EditDefaultsOnly)
 	int ExeperienceRequired = 100;
 	UPROPERTY(EditDefaultsOnly)
 	float NextLevelExperienceRequired = 1.1f;
 
+	//base attack effects
 	int Spread = 0;
 
 	int Bounces = 0;
@@ -272,11 +282,9 @@ private:
 
 	//UI
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UPlayerHUD> PlayerHudType;
+	TSubclassOf<UPlayerHUD> PlayerHudType = nullptr;
 	UPlayerHUD* PlayerHud;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> PauseMenuType;
 	UUserWidget* PauseMenu;
-
-	int InputBlockers = 0;
 };

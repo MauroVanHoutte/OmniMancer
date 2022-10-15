@@ -38,7 +38,7 @@ void AIceWall::Tick(float deltaTime)
 void AIceWall::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
 {
 	Super::InitSpell(targetLocation, projectileDirection, wizard);
-	SetSlowParams(true, (SlowValue + SlowPerFrostLevel * FrostLevel), (SlowDuration + DurationPerFrostLevel * FrostLevel) * wizard->GetSlowDurationMultiplier());
+	SetSlowParams(true, SlowValue + SlowPerFrostLevel * FrostLevel, SlowDuration + DurationPerFrostLevel * FrostLevel);
 	Damage = Damage + DamagePerFrostLevel * FrostLevel;
 
 	if (FrostLevel > 3)

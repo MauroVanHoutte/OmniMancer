@@ -40,17 +40,17 @@ ABaseCharacter::ABaseCharacter()
 	NiagaraComponent->SetupAttachment(RootComponent);
 }
 
-bool ABaseCharacter::GetStunned()
+bool ABaseCharacter::GetStunned() const 
 {
 	return Stunned;
 }
 
-float ABaseCharacter::GetHealth()
+float ABaseCharacter::GetHealth() const
 {
 	return Health;
 }
 
-float ABaseCharacter::GetStartHealth()
+float ABaseCharacter::GetStartHealth() const
 {
 	return StartHealth;
 }
@@ -71,7 +71,7 @@ void ABaseCharacter::Heal(float hp)
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	StartHealth = Health;
+	Health = StartHealth;
 }
 
 void ABaseCharacter::CheckDeath()
@@ -107,7 +107,8 @@ void ABaseCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 			spell->AddHitActor(this);
 			TakeSpellDamage(spell);
 			AddStatusEffects(spell->GetStatusEffects());
-			spell->OnHit(this); //activates caster on hit trigger
+			//activates caster on hit trigger
+			spell->OnHit(this); 
 		}
 	}
 }
@@ -123,6 +124,7 @@ void ABaseCharacter::TakeSpellDamage(ABaseSpell* spell)
 	OnTakeHitBP();
 	SpawnDamageText(spell->GetDamage());
 	CheckDeath();
+	//Ai damage perception
 	PerceiveDamage(spell->GetInstigator(), spell->GetActorLocation());
 }
 
@@ -132,6 +134,7 @@ void ABaseCharacter::TakeSpellDamageFloat(float damage, AActor* cause)
 	SpawnDamageText(damage);
 	OnTakeHitBP();
 	CheckDeath();
+	//Ai damage perception
 	PerceiveDamage(cause, cause->GetActorLocation());
 }
 
@@ -160,13 +163,13 @@ void ABaseCharacter::SpawnDamageText(float damage)
 	text->SetActorLocation(GetActorLocation());
 }
 
-void ABaseCharacter::SpawnPowerup()
+void ABaseCharacter::SpawnPowerup() const
 {
-	if (FMath::RandRange(0.f, 100.f) > PowerupSpawnChance)
+	if (FMath::FRandRange(0.f, 1.f) > PowerupSpawnChance)
 		return;
 	
 	auto location = GetActorLocation();
-	auto actor = GetWorld()->SpawnActor(PowerupBP.Get(), &location);
+	auto actor = GetWorld()->SpawnActor(*PowerupBP, &location);
 	if (actor != nullptr)
 	{
 		float angle = FMath::FRandRange(0.f, 360.f);
@@ -177,7 +180,7 @@ void ABaseCharacter::SpawnPowerup()
 	}
 }
 
-void ABaseCharacter::SpawnCoins()
+void ABaseCharacter::SpawnCoins() const
 {
 	int nrCoins = FMath::RandRange(MinCoinsDropped, MaxCoinsDropped);
 	for (size_t i = 0; i < nrCoins; i++)
@@ -262,6 +265,7 @@ void ABaseCharacter::SpreadCurse(const FStatusEffect& curseEffect)
 	//get nearby enemies
 	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), curseEffect.Interval, TArray<TEnumAsByte<EObjectTypeQuery>>(), StaticClass(), ignoreActors, outActors); //range is stored in interval
 
+	//apply curse to one
 	for (AActor* actor : outActors)
 	{
 		if (!actor->IsA<AWizardCharacter>())
@@ -316,10 +320,11 @@ void ABaseCharacter::ReapplyStatusEffects(const TArray<FStatusEffect>& statusEff
 				default:
 					break;
 				}
+				break; // already found, no need to check others
 			}
 		}
 
-		if (doContinue)
+		if (doContinue) // status effect is already reapplied
 			continue;
 
 		if (effect.EffectType == Type::Stun)

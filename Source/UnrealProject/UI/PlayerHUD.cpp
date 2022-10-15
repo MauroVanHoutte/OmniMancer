@@ -9,16 +9,11 @@ void UPlayerHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	auto gameInstance = GetGameInstance<UOmnimancerGameInstance>();
-	if (gameInstance)
-		SetCurrency(gameInstance->GetCurrency());
+	if (GameInstance)
+		SetCurrency(GameInstance->GetCurrency());
 
-	auto player = GetOwningPlayer()->GetPawn<AWizardCharacter>();
-	if (player)
-	{
-		SetCooldowns(player->GetCooldowns(), player->GetCooldownTimers());
-		SetExperiencePercentage(player->GetExperiencePercentage());
-	}
+	if (Player)
+		SetCooldowns(Player->GetCooldowns(), Player->GetCooldownTimers());
 }
 
 void UPlayerHUD::SetCurrency(int currency)
@@ -31,6 +26,14 @@ void UPlayerHUD::SetExperiencePercentage(float expPercentage)
 	Experience->SetPercent(expPercentage);
 }
 
+void UPlayerHUD::PostLoad()
+{
+	Super::PostLoad();
+
+	Player = GetOwningPlayer()->GetPawn<AWizardCharacter>();
+	GameInstance = GetGameInstance<UOmnimancerGameInstance>();
+}
+
 void UPlayerHUD::SetCooldowns(const TMap<int, float>& Cooldowns, const TMap<int, FTimerHandle>& Timers)
 {
 	for (auto& it : Cooldowns)
@@ -38,7 +41,7 @@ void UPlayerHUD::SetCooldowns(const TMap<int, float>& Cooldowns, const TMap<int,
 		switch (it.Key)
 		{
 		case 0:
-			Cooldown0->GetDynamicMaterial()->SetScalarParameterValue(FName("Fill Percentage"), GetWorld()->GetTimerManager().GetTimerRemaining(Timers[0])/it.Value);
+			Cooldown0->GetDynamicMaterial()->SetScalarParameterValue(FName("Fill Percentage"), GetWorld()->GetTimerManager().GetTimerRemaining(Timers[0]) / it.Value);
 			break;
 		case 1:
 			Cooldown1->GetDynamicMaterial()->SetScalarParameterValue(FName("Fill Percentage"), GetWorld()->GetTimerManager().GetTimerRemaining(Timers[1]) / it.Value);

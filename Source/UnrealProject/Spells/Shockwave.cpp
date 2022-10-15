@@ -32,7 +32,7 @@ void AShockwave::InitSpell(const FVector& targetLocation, const FVector& project
 	Super::InitSpell(targetLocation, projectileDirection, wizard);
 
 	SetActorLocation(wizard->GetActorLocation());
-	SetStunParams(true, (StunDuration + StunDurationPerFrostLevel * FrostLevel) * wizard->GetStunDurationMultiplier());
+	SetStunParams(true, StunDuration + StunDurationPerFrostLevel * FrostLevel);
 	Damage = InitialDamage + DamagePerWindLevel * WindLevel;
 	KnockbackAmount += KnockbackPerWindLevel * WindLevel;
 }

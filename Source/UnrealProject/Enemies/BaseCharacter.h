@@ -40,11 +40,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeathEvent();
 	UFUNCTION(BlueprintCallable)
-	bool GetStunned();
+	bool GetStunned() const;
 	UFUNCTION(BlueprintCallable)
-	float GetHealth();
+	float GetHealth() const;
 	UFUNCTION(BlueprintCallable)
-	float GetStartHealth();
+	float GetStartHealth() const;
 
 	UFUNCTION(BlueprintCallable)
 	void Heal(float hp);
@@ -76,17 +76,17 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void PerceiveDamage(AActor* cause, const FVector& location);
 
-	void SpawnPowerup();
-	void SpawnCoins();
+	void SpawnPowerup() const;
+	void SpawnCoins() const;
 
 	void UpdateStatusEffects(float deltaTime);
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<FStatusEffect> CurrentStatusEffects{};
 
-	UPROPERTY(EditAnywhere)
-	float Health;
 	UPROPERTY(VisibleAnywhere)
+	float Health;
+	UPROPERTY(EditAnywhere)
 	float StartHealth;
 
 	UPROPERTY(VisibleAnywhere)
@@ -100,23 +100,25 @@ protected:
 
 	UCharacterMovementComponent* CharacterMovement;
 
+	//Popup text
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AFloatingTextActor> FloatingTextClass = nullptr;
-
 	UPROPERTY(EditDefaultsOnly)
 	FColor DamageTextColor = FColor::White;
 
+	//Powerups
 	UPROPERTY(EditDefaultsOnly)
 	bool SpawnPowerupOnDeath = true;
 	UPROPERTY(EditDefaultsOnly)
-	float PowerupSpawnChance = 10;
+	float PowerupSpawnChance = 0.1f;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<APowerUp> PowerupBP;
 
+	//knockback
 	UPROPERTY(EditDefaultsOnly)
 	float KnockbackMultiplier = 1.f;
 
-
+	//Coins
 	UPROPERTY(EditDefaultsOnly)
 	int MinCoinsDropped = 0;
 	UPROPERTY(EditDefaultsOnly)

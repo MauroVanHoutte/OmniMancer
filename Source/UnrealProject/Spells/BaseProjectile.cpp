@@ -45,7 +45,7 @@ void ABaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	Damage = 5;
+	//interrupt ai movement to allow knowback
 	SetStunParams(true, 0.1f);
 }
 
@@ -120,7 +120,6 @@ void ABaseProjectile::OnHit(AActor* hitActor)
 				}
 			}
 		}
-		return;
 	}
 	Destroy();
 }

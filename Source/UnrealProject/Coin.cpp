@@ -38,7 +38,7 @@ void ACoin::OnOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, U
 		{
 			Player->PickupExperience(Value);
 		}
-		else
+		else //currency
 		{
 			auto gameInstance = Cast<UOmnimancerGameInstance>(GetGameInstance());
 			gameInstance->SetCurrency(gameInstance->GetCurrency() + Value);
@@ -62,7 +62,8 @@ void ACoin::Tick(float DeltaTime)
 	FVector direction = Player->GetActorLocation() - GetActorLocation();
 	float sizeSquared = direction.SizeSquared();
 
-	SetActorLocation(FMath::VInterpConstantTo(GetActorLocation(), Player->GetActorLocation(), DeltaTime, 10000000 / sizeSquared));
+	
+	SetActorLocation(FMath::VInterpConstantTo(GetActorLocation(), Player->GetActorLocation(), DeltaTime, (10000000 / sizeSquared) * Speed));
 }
 
 void ACoin::LaunchInDirection(const FVector& direction, float strength)

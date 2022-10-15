@@ -46,14 +46,13 @@ void ATornado::InitSpell(const FVector& targetLocation, const FVector& projectil
 	SetActorLocation(wizard->GetActorLocation());
 	FireInDirection(projectileDirection);
 
-	Damage += DamagePerFireLevel * FireLevel;
+	Damage = BaseDamage + DamagePerFireLevel * FireLevel;
 	ScaleGrowth += ScaleGrowthPerWindLevel * WindLevel;
-	SetStunParams(true, (StunDuration + StunDurationPerFrostLevel * FireLevel) * wizard->GetStunDurationMultiplier());
+	SetStunParams(true, StunDuration + StunDurationPerFrostLevel * FireLevel);
 }
 
 void ATornado::BeginPlay()
 {
-	Damage = BaseDamage;
 	Super::BeginPlay();
 	ProjectileMovement->InitialSpeed = Speed;
 	ProjectileMovement->MaxSpeed = Speed;

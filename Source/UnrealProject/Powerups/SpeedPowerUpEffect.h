@@ -20,5 +20,5 @@ public:
 	virtual void Remove(AWizardCharacter* target) override;
 
 	UPROPERTY(EditAnywhere)
-	float Value = 50;
+	float Value = 0.5f;
 };

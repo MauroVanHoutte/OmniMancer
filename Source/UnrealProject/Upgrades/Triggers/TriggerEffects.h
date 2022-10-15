@@ -17,17 +17,10 @@ class UBaseTriggerEffect : public UObject
 public:
 
 	virtual void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) {};
+	UPROPERTY(EditDefaultsOnly)
 	FString UpgradeTag{};
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	TriggerCondition Condition{};
-	virtual void SetVars(const TMap<FString, float>& variables) {};
-protected:
-	bool TargetKilled(AActor* actor)
-	{
-		if (actor == nullptr || actor->IsActorBeingDestroyed())
-			return true;
-		return false;
-	}
 };
 
 //Slow enemies in radius around caster
@@ -49,29 +42,12 @@ public:
 		}
 	};
 
-	void SetVars(const TMap<FString, float>& variables) override
-	{
-		if (variables.Contains("Radius"))
-			Radius = variables["Radius"];
-		if (variables.Contains("Slow"))
-			Slow = variables["Slow"];
-		if (variables.Contains("Duration"))
-			Duration = variables["Duration"];
-	};
-
-	void SetVars(float radius, float slow, float duration)
-	{
-		Radius = radius;
-		Slow = slow;
-		Duration = duration;
-	};
-
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	float Radius = 600;
-	UPROPERTY(EditAnywhere)
-	float Slow = 20;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
+	float Slow = 0.2;
+	UPROPERTY(EditDefaultsOnly)
 	float Duration = 3;
 };
 
@@ -86,24 +62,10 @@ public:
 		caster->AddStatusEffect(FStatusEffect{ Type::Slow, -1, -Speed, Duration, caster });
 	};
 
-	void SetVars(const TMap<FString, float>& variables) override
-	{
-		if (variables.Contains("Speed"))
-			Speed = variables["Speed"];
-		if (variables.Contains("Duration"))
-			Duration = variables["Duration"];
-	};
-
-	void SetVars(float speed, float duration)
-	{
-		Speed = speed;
-		Duration = duration;
-	};
-
 private:
-	UPROPERTY(EditAnywhere)
-	float Speed = 20;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
+	float Speed = 0.2;
+	UPROPERTY(EditDefaultsOnly)
 	float Duration = 3;
 };
 
@@ -125,24 +87,10 @@ public:
 			caster->LowerCooldowns(Amount);
 	};
 
-	void SetVars(const TMap<FString, float>& variables) override
-	{
-		if (variables.Contains("Chance"))
-			Chance = variables["Chance"];
-		if (variables.Contains("Amount"))
-			Amount = variables["Amount"];
-	};
-
-	void SetVars(int chance, float amount)
-	{
-		Chance = chance;
-		Amount = amount;
-	};
-
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	float Chance = 0.3f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	float Amount = 1.f;
 };
 
@@ -171,24 +119,10 @@ public:
 			}, Duration, false);
 	};
 
-	void SetVars(const TMap<FString, float>& variables) override
-	{
-		if (variables.Contains("FireRateMultiplier"))
-			FireRateMultiplier = variables["FireRateMultiplier"];
-		if (variables.Contains("Duration"))
-			Duration = variables["Duration"];
-	};
-
-	void SetVars(float fireRateMultiplier, float duration)
-	{
-		FireRateMultiplier = fireRateMultiplier;
-		Duration = duration;
-	};
-
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	float FireRateMultiplier = 1.1f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	float Duration = 3.f;
 
 };
@@ -206,35 +140,21 @@ public:
 			return;
 
 		float currentSpellDamageMultiplier = caster->GetSpellDamageMultiplier();
-		caster->SetSpellDamageMultiplier(currentSpellDamageMultiplier * (1+SpellDamageBoost));
+		caster->SetSpellDamageMultiplier(currentSpellDamageMultiplier * SpellDamageBoost);
 
 		//undo buff after duration
 		FTimerHandle handle;
 		caster->GetWorld()->GetTimerManager().SetTimer(handle, [caster, this]()
 			{
 				float currentSpellDamageMultiplier = caster->GetSpellDamageMultiplier();
-				caster->SetSpellDamageMultiplier(currentSpellDamageMultiplier / (1+SpellDamageBoost));
+				caster->SetSpellDamageMultiplier(currentSpellDamageMultiplier / SpellDamageBoost);
 			}, Duration, false);
 	};
 
-	void SetVars(const TMap<FString, float>& variables) override
-	{
-		if (variables.Contains("SpellDamageBoost"))
-			SpellDamageBoost = variables["SpellDamageBoost"];
-		if (variables.Contains("Duration"))
-			Duration = variables["Duration"];
-	};
-
-	void SetVars(float spellDamageBoost, float duration)
-	{
-		SpellDamageBoost = spellDamageBoost;
-		Duration = duration;
-	};
-
 private:
-	UPROPERTY(EditAnywhere)
-	float SpellDamageBoost = 0.15f;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
+	float SpellDamageBoost = 1.15f;
+	UPROPERTY(EditDefaultsOnly)
 	float Duration = 7.f;
 };
 
@@ -274,17 +194,11 @@ public:
 		}
 	};
 
-	void SetVars(const TMap<FString, float>& variables) override
-	{
-		if (variables.Contains("SlowsNeeded"))
-			SlowsNeeded = (int)variables["SlowsNeeded"];
-	};
-
 private:
 	int CurrentSlowsActive = 0;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	int SlowsNeeded = 4;
-	UPROPERTY(EditAnywhere, Instanced)
+	UPROPERTY(EditDefaultsOnly, Instanced)
 	ABlizzard* Blizzard;
 
 };
@@ -297,27 +211,19 @@ class UDamageReductionTrigger : public UBaseTriggerEffect
 public:
 	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
 	{
-		caster->SetDamageTakenMultiplier(caster->GetDamageTakenMultiplier() * (1 - Amount));
+		caster->SetDamageTakenMultiplier(caster->GetDamageTakenMultiplier() * Amount);
 			
 		FTimerHandle handle;
 		caster->GetWorld()->GetTimerManager().SetTimer(handle, [caster, this]() {
-			caster->SetDamageTakenMultiplier(caster->GetDamageTakenMultiplier() / (1 - Amount));
+			caster->SetDamageTakenMultiplier(caster->GetDamageTakenMultiplier() / Amount);
 			}, Duration, false);
 	};
 
-	void SetVars(const TMap<FString, float>& variables) override
-	{
-		if (variables.Contains("Duration"))
-			Duration = variables["Duration"];
-		if (variables.Contains("Amount"))
-			Amount = variables["Amount"];
-	};
-
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	float Duration = 3.f;
-	UPROPERTY(EditAnywhere)
-	float Amount = 0.15f;
+	UPROPERTY(EditDefaultsOnly)
+	float Amount = 0.85f;
 };
 
 
