@@ -113,6 +113,7 @@ void AWizardCharacter::BeginPlay()
 		controller->SetShowMouseCursor(true);
 		PlayerHud = CreateWidget<UPlayerHUD>(controller, PlayerHudType);
 		PlayerHud->AddToPlayerScreen();
+		PlayerHud->Setup();
 
 		controller->SetShowMouseCursor(true);
 
@@ -145,7 +146,15 @@ void AWizardCharacter::OnTakeHit(AActor* cause)
 	for (auto& trigger : TriggerEffects)
 	{
 		if (trigger->Condition == TriggerCondition::OnTakeHit)
-			trigger->OnTrigger(this, nullptr, cause);
+			trigger->OnTrigger(this, nullptr, caster);
+	}
+}
+
+void AWizardCharacter::OnDeath()
+{
+	for (UCharacterUpgrade* upgrade : CharacterUpgrades)
+	{
+		upgrade->Remove(this);
 	}
 }
 
@@ -198,7 +207,7 @@ void AWizardCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("OpenMap", IE_Released, this, &AWizardCharacter::HideMap);
 }
 
-void AWizardCharacter::OnSpellHitEnemy( ABaseSpell* spell, AActor* enemy)
+void AWizardCharacter::OnSpellHitEnemy( ABaseSpell* spell, ABaseCharacter* enemy)
 {
 	for (auto& trigger : TriggerEffects)
 	{
@@ -265,11 +274,11 @@ void AWizardCharacter::AddTriggerEffect(UBaseTriggerEffect* effect)
 	TriggerEffects.Add(effect);
 }
 
-void AWizardCharacter::RemoveTriggerEffect(UBaseTriggerEffect* effect, const FString& tag)
+void AWizardCharacter::RemoveTriggerEffect(UBaseTriggerEffect* effect)
 {
 	for (size_t i = 0; i < TriggerEffects.Num(); i++)
 	{
-		if (TriggerEffects[i]->GetClass() == effect->GetClass() && TriggerEffects[i]->UpgradeTag == tag)
+		if (TriggerEffects[i] == effect)
 		{
 			TriggerEffects.RemoveAt(i);
 			--i;

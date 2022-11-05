@@ -24,7 +24,7 @@ public:
 
 protected:
 	void BeginPlay() override;
-	void OnHit(AActor* hitActor) override;
+	void OnHit(ABaseCharacter* hitActor) override;
 
 private:
 

@@ -59,7 +59,7 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void OnSpellHitEnemy( ABaseSpell* spell, AActor* enemy);
+	void OnSpellHitEnemy( ABaseSpell* spell, ABaseCharacter* enemy);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnAddElement();
@@ -81,7 +81,7 @@ public:
 	//Powerups/upgrades
 	void AddPowerUpEffect( UPowerUpEffect* effect);
 	void AddTriggerEffect(UBaseTriggerEffect* effect);
-	void RemoveTriggerEffect(UBaseTriggerEffect* effect, const FString& tag = "");
+	void RemoveTriggerEffect(UBaseTriggerEffect* effect);
 	UFUNCTION(BlueprintCallable)
 	void ApplyUpgrade(const FString& tag);
 	UFUNCTION(BlueprintCallable)
@@ -135,6 +135,8 @@ protected:
 	void TakeTickDamage(float damage) override;
 
 	virtual void OnTakeHit(AActor* actor);
+	virtual void OnDeath() override;
+
 
 	UPROPERTY(EditDefaultsOnly, Category = "Elements")
 	int FireLevel = 1;

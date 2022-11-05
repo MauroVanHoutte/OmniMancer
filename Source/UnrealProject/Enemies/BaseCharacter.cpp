@@ -106,9 +106,9 @@ void ABaseCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 		{
 			spell->AddHitActor(this);
 			TakeSpellDamage(spell);
-			AddStatusEffects(spell->GetStatusEffects());
+			ReapplyStatusEffects(spell->GetStatusEffects());
 			//activates caster on hit trigger
-			spell->OnHit(this); 
+			spell->OnHit(this);
 		}
 	}
 }
@@ -302,49 +302,44 @@ void ABaseCharacter::ReapplyStatusEffects(const TArray<FStatusEffect>& statusEff
 {
 	for (const auto& effect : statusEffects)
 	{
-		bool doContinue{ false };
-		for (auto& currEffect : CurrentStatusEffects)
+		FStatusEffect* existingEffect = CurrentStatusEffects.FindByPredicate([effect](const FStatusEffect& currEffect) {return effect.EffectType == currEffect.EffectType && effect.Cause == currEffect.Cause; });
+		if (existingEffect != nullptr) // refresh existing effect
 		{
-			if (effect.EffectType == currEffect.EffectType && effect.Cause == currEffect.Cause)
+			switch (existingEffect->EffectType)
 			{
-				doContinue = true;
-				switch (effect.EffectType)
-				{
-				case Type::Damage:
-					currEffect.Duration = effect.Duration;
-					break;
-				case Type::Slow:
-				case Type::Stun:
-					currEffect.Timer = 0;
-					break;
-				default:
-					break;
-				}
-				break; // already found, no need to check others
+			case Type::Damage:
+				existingEffect->Duration = effect.Duration;
+				existingEffect->Value = effect.Value;
+				break;
+			case Type::Slow:
+			case Type::Stun:
+				existingEffect->Timer = 0;
+				break;
+			default:
+				break;
 			}
 		}
-
-		if (doContinue) // status effect is already reapplied
-			continue;
-
-		if (effect.EffectType == Type::Stun)
+		else //add new effect
 		{
-			Stunned = true;
-			OnStunned();
-			if (NiagaraComponent != nullptr)
-				NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 1.f);
-		}
-		if (effect.EffectType == Type::Damage)
-		{
-			if (NiagaraComponent != nullptr)
-				NiagaraComponent->SetVariableFloat(TEXT("Burning"), 1.f);
-		}
-		if (effect.EffectType == Type::Slow)
-		{
-			SlowAmount += effect.Value;
-			CharacterMovement->MaxWalkSpeed *= (1 - effect.Value);
-		}
-		CurrentStatusEffects.Add(effect);
+			if (effect.EffectType == Type::Stun)
+			{
+				Stunned = true;
+				OnStunned();
+				if (NiagaraComponent != nullptr)
+					NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 1.f);
+			}
+			if (effect.EffectType == Type::Damage)
+			{
+				if (NiagaraComponent != nullptr)
+					NiagaraComponent->SetVariableFloat(TEXT("Burning"), 1.f);
+			}
+			if (effect.EffectType == Type::Slow)
+			{
+				SlowAmount += effect.Value;
+				CharacterMovement->MaxWalkSpeed *= (1 - effect.Value);
+			}
+			CurrentStatusEffects.Add(effect);
+		}	
 	}
 }
 

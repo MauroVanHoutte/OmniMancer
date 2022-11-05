@@ -83,11 +83,11 @@ void ABaseProjectile::FireInDirection(const FVector& direction)
 	SetActorRotation(direction.Rotation());
 }
 
-void ABaseProjectile::OnHit(AActor* hitActor)
+void ABaseProjectile::OnHit(ABaseCharacter* hitActor)
 {
 	Super::OnHit(hitActor);
 
-	Cast<ABaseCharacter>(hitActor)->Push(ProjectileMovement->Velocity.GetSafeNormal() * PushbackForce);
+	hitActor->Push(ProjectileMovement->Velocity.GetSafeNormal() * PushbackForce);
 
 	if (Explosive)
 	{

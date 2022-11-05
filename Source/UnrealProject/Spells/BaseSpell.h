@@ -8,6 +8,7 @@
 #include "BaseSpell.generated.h"
 
 class AWizardCharacter;
+class ABaseCharacter;
 
 UCLASS(Abstract)
 class UNREALPROJECT_API ABaseSpell : public AActor
@@ -42,7 +43,7 @@ public:
 	void AddHitActor(AActor* actor);
 	bool WasActorHit(AActor* actor) const;
 
-	virtual void OnHit(AActor* hitActor);
+	virtual void OnHit(ABaseCharacter* hitActor);
 
 protected:
 	virtual void BeginPlay() override;
@@ -69,6 +70,8 @@ protected:
 	int FrostLevel = -1;
 	UPROPERTY(VisibleAnywhere)
 	int WindLevel = -1;
+
+	FTimerHandle LifeTimer{};
 private:
 	UPROPERTY(VisibleAnywhere)
 	float DamageMultiplier = 1;
@@ -79,5 +82,4 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	float StunDurationMultiplier = 1;
 
-	FTimerHandle LifeTimer{};
 };

@@ -10,6 +10,7 @@ class AWizardCharacter;
 class UBaseTriggerEffect;
 class UBaseStatBoost;
 class UBaseAttackStatusEffect;
+class UBaseRepeatingEffect;
 //Upgrade Base
 UCLASS(BlueprintType, Abstract, Blueprintable, EditInlineNew)
 class UNREALPROJECT_API UCharacterUpgrade : public UObject
@@ -83,4 +84,17 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	FStatusEffect StatusEffect;
+};
+
+//Repeating effect
+UCLASS(BlueprintType, EditInlineNew)
+class UNREALPROJECT_API URepeatingEffectUpgrade : public UCharacterUpgrade
+{
+	GENERATED_BODY()
+public:
+	virtual void Apply(AWizardCharacter* character) override;
+	virtual void Remove(AWizardCharacter* character) override;
+private:
+	UPROPERTY(EditDefaultsOnly, Instanced)
+	UBaseRepeatingEffect* Effect;
 };

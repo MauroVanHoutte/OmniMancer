@@ -151,11 +151,14 @@ void ABaseSpell::SetDamage(float damage)
 void ABaseSpell::BeginPlay()
 {
 	Super::BeginPlay();
-	GetWorld()->GetTimerManager().SetTimer(LifeTimer, this, &ABaseSpell::Destroy, LifeSpan);
+	SetLifeTime(LifeSpan);
 }
 
 void ABaseSpell::SetLifeTime(float lifespan)
 {
+	if (lifespan < 0)
+		return;
+
 	GetWorld()->GetTimerManager().SetTimer(LifeTimer, this, &ABaseSpell::Destroy, lifespan);
 }
 
@@ -192,7 +195,7 @@ bool ABaseSpell::WasActorHit(AActor* actor) const
 	return HitActors.Find(actor, idx);
 }
 
-void ABaseSpell::OnHit(AActor* hitActor)
+void ABaseSpell::OnHit(ABaseCharacter* hitActor)
 {
 	auto caster = Cast<AWizardCharacter>(GetOwner());
 	if (ApplyWizardOnHitEffects && caster != nullptr && caster->IsValidLowLevel())

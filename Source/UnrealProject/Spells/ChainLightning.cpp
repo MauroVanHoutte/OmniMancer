@@ -39,7 +39,7 @@ void AChainLightning::AddHitActors(const TArray<AActor*>& actors)
 	HitActors.Append(actors);
 }
 
-void AChainLightning::OnHit(AActor* hitActor)
+void AChainLightning::OnHit(ABaseCharacter* hitActor)
 {
 	Super::OnHit(hitActor);
 

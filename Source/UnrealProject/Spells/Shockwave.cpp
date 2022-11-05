@@ -42,17 +42,16 @@ void AShockwave::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AShockwave::OnHit(AActor* hitActor)
+void AShockwave::OnHit(ABaseCharacter* hitActor)
 {
-	auto enemy = Cast<ABaseCharacter>(hitActor);
+	Super::OnHit(hitActor);
 
 	auto spellOrigin = GetActorLocation();
 	spellOrigin.Z -= 200.f; // push will be slightly upwards
 
-	auto direcrion = (enemy->GetActorLocation() - spellOrigin).GetSafeNormal();
+	auto direcrion = (hitActor->GetActorLocation() - spellOrigin).GetSafeNormal();
 
-	if (enemy != nullptr)
-		enemy->Push(direcrion*KnockbackAmount);
+	hitActor->Push(direcrion*KnockbackAmount);
 }
 
 

@@ -15,7 +15,7 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	
 public:
-	virtual void PostLoad() override;
+	void Setup();
 
 	void SetCooldowns(const TMap<int, float>& Cooldowns, const TMap<int, FTimerHandle>& Timers);
 

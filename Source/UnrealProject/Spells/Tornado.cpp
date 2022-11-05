@@ -59,11 +59,11 @@ void ATornado::BeginPlay()
 	Mesh->SetWorldScale3D(FVector(StartScale, StartScale, StartScale));
 }
 
-void ATornado::OnHit(AActor* hitActor)
+void ATornado::OnHit(ABaseCharacter* hitActor)
 {
-	auto enemy = Cast<ABaseCharacter>(hitActor);
-	if (enemy != nullptr)
-		enemy->Knockup();
+	Super::OnHit(hitActor);
+
+	hitActor->Knockup();
 
 	//Wind level 4 effect
 	if (WindLevel >= 4)

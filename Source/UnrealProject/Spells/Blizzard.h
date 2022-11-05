@@ -20,6 +20,7 @@ public:
 	void TickBlizzard();
 
 	void SetWizard(AWizardCharacter* wizard);
+	void ApplyWizardStats();
 
 	void Activate();
 	void Deactivate();
@@ -37,4 +38,5 @@ private:
 	UPROPERTY(EditAnywhere, Category = "BaseParameter")
 	float DamagePerTick = 0.4f;
 	FTimerHandle ApplicationTimer;
+	AWizardCharacter* Wizard;
 };

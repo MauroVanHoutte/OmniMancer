@@ -1,22 +1,29 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "IceZone.h"
+#include "FirePool.h"
 #include "../Enemies/BaseCharacter.h"
-#include "../WizardCharacter.h"
 
-// Sets default values
-AIceZone::AIceZone()
+AFirePool::AFirePool()
 {
-
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	CylinderMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shape"));
-	RootComponent = CylinderMesh;
+	CylinderMesh->SetupAttachment(RootComponent);
 	auto mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder")).Object;
 	CylinderMesh->SetStaticMesh(mesh);
-
+	CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 }
 
-void AIceZone::SetRadius(float radius)
+void AFirePool::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
+{
+	ABaseSpell::InitSpell(targetLocation, projectileDirection, wizard);
+
+	SetActorLocation(targetLocation);
+	SetBurnParams(ApplyBurn, BurnDamage + BurnDamagePerFireLevel * FireLevel, BurnInterval, EffectLingerDuration);
+	SetRadius(CircleScale + ScalePerFireLevel * FireLevel);
+}
+
+void AFirePool::SetRadius(float radius)
 {
 	auto scale = CylinderMesh->GetRelativeScale3D();
 	scale.X = radius;
@@ -24,17 +31,23 @@ void AIceZone::SetRadius(float radius)
 	CylinderMesh->SetRelativeScale3D(scale);
 }
 
-// Called when the game starts or when spawned
-void AIceZone::BeginPlay()
+void AFirePool::SetBurnCause(UObject* cause)
 {
-	Damage = 0.f;
+	for (FStatusEffect& effect : StatusEffects)
+	{
+		effect.Cause = cause;
+	}
+}
 
-	CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-
+void AFirePool::BeginPlay()
+{
 	Super::BeginPlay();
 
 	GetWorld()->GetTimerManager().SetTimer(ApplicationTimer, [this]()
 		{
+			if (this == nullptr || !IsValidLowLevel() || IsPendingKill())
+				return;
+
 			TArray<AActor*> overlappingActors{};
 			GetOverlappingActors(overlappingActors, ABaseCharacter::StaticClass());
 
@@ -49,18 +62,7 @@ void AIceZone::BeginPlay()
 		}, ApplicationInterval, true);
 }
 
-void AIceZone::OnDeath()
+void AFirePool::OnDeath()
 {
 	GetWorld()->GetTimerManager().ClearTimer(ApplicationTimer);
 }
-
-void AIceZone::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
-{
-	Super::InitSpell(targetLocation, projectileDirection, wizard);
-
-	SetActorLocation(targetLocation);
-	SetBurnParams(ApplyBurn, BurnDamage + DamagePerFireLevel * FireLevel, BurnInterval, EffectLingerDuration + DurationPerFrostLevel * FrostLevel);
-	SetSlowParams(true, SlowAmount + SlowPerFrostLevel * FrostLevel, EffectLingerDuration);
-	SetRadius(CircleScale);
-}
-

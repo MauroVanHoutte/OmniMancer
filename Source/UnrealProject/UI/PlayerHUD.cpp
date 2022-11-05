@@ -26,10 +26,8 @@ void UPlayerHUD::SetExperiencePercentage(float expPercentage)
 	Experience->SetPercent(expPercentage);
 }
 
-void UPlayerHUD::PostLoad()
+void UPlayerHUD::Setup()
 {
-	Super::PostLoad();
-
 	Player = GetOwningPlayer()->GetPawn<AWizardCharacter>();
 	GameInstance = GetGameInstance<UOmnimancerGameInstance>();
 }

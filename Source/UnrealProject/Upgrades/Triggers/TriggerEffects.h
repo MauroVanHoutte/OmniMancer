@@ -7,6 +7,7 @@
 #include "../../Spells/BaseSpell.h"
 #include "../../Spells/BaseProjectile.h"
 #include "../../Spells/Blizzard.h"
+#include "../../Spells/Vortex.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include "TriggerEffects.generated.h"
 
@@ -16,9 +17,7 @@ class UBaseTriggerEffect : public UObject
 	GENERATED_BODY()
 public:
 
-	virtual void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) {};
-	UPROPERTY(EditDefaultsOnly)
-	FString UpgradeTag{};
+	virtual void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target) {};
 	UPROPERTY(EditDefaultsOnly)
 	TriggerCondition Condition{};
 };
@@ -29,7 +28,7 @@ class UAoeSlowTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
+	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target) override
 	{
 		TArray<AActor*> ignore{ caster };
 		TArray<AActor*> outActors;
@@ -57,7 +56,7 @@ class USpeedBuffTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
+	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target) override
 	{
 		caster->AddStatusEffect(FStatusEffect{ Type::Slow, -1, -Speed, Duration, caster });
 	};
@@ -75,7 +74,7 @@ class UBaseAttackLowerCooldownTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
+	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target) override
 	{
 		//only execute if base projectile
 		auto baseProjectile = Cast<ABaseProjectile>(spell);
@@ -100,7 +99,7 @@ class UBaseAttackTempFireRateTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
+	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target) override
 	{
 		//only execute if base projectile
 		auto baseProjectile = Cast<ABaseProjectile>(spell);
@@ -133,7 +132,7 @@ class USpellDamageOnKillTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
+	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target) override
 	{
 		//only execute if target died
 		if (target == nullptr || !target->IsActorBeingDestroyed())
@@ -164,12 +163,19 @@ class UBlizzardOnSlowTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
+	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target) override
 	{
-		if (spell == nullptr)
+		//slows from blizzard itself dont count
+		ABlizzard* blizzard = Cast<ABlizzard>(spell);
+		if (spell == nullptr || blizzard != nullptr)
 			return;
 
-		Blizzard->SetWizard(caster);
+		if (!Initialized)
+		{
+			Blizzard = GetWorld()->SpawnActor<ABlizzard>(*BlizzardClass);
+			Blizzard->SetWizard(caster);
+			Initialized = true;
+		}
 
 		auto slowEffect = spell->GetStatusEffects().FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Slow; });
 		if (slowEffect != nullptr)
@@ -178,6 +184,7 @@ public:
 			UE_LOG(LogTemp, Warning, TEXT("slow added"));
 			if (CurrentSlowsActive >= SlowsNeeded)
 			{
+				GetWorld()->GetTimerManager().ClearTimer(DeactivationTimer);
 				Blizzard->Activate();
 				UE_LOG(LogTemp, Warning, TEXT("Blizzard Activated"));	
 			}
@@ -186,10 +193,10 @@ public:
 			caster->GetWorld()->GetTimerManager().SetTimer(handle, [caster, this](){
 				CurrentSlowsActive--;
 				UE_LOG(LogTemp, Warning, TEXT("slow removed"));
-				if (CurrentSlowsActive < SlowsNeeded)
+				if (CurrentSlowsActive == SlowsNeeded-1)
 				{
-					Blizzard->Deactivate();
-					UE_LOG(LogTemp, Warning, TEXT("Blizzard Deactivated"));
+					GetWorld()->GetTimerManager().SetTimer(DeactivationTimer, Blizzard, &ABlizzard::Deactivate, LingerDuration);
+					UE_LOG(LogTemp, Warning, TEXT("Blizzard deactivates soon"));
 				}}, slowEffect->Duration, false);
 		}
 	};
@@ -198,8 +205,13 @@ private:
 	int CurrentSlowsActive = 0;
 	UPROPERTY(EditDefaultsOnly)
 	int SlowsNeeded = 4;
-	UPROPERTY(EditDefaultsOnly, Instanced)
+	UPROPERTY(EditDefaultsOnly)
+	float LingerDuration = 3.f;
+	FTimerHandle DeactivationTimer;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABlizzard> BlizzardClass;
 	ABlizzard* Blizzard;
+	bool Initialized = false;
 
 };
 
@@ -209,7 +221,7 @@ class UDamageReductionTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, AActor* target) override
+	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target) override
 	{
 		caster->SetDamageTakenMultiplier(caster->GetDamageTakenMultiplier() * Amount);
 			
@@ -226,4 +238,28 @@ private:
 	float Amount = 0.85f;
 };
 
+//Vortex chance on Kill
+UCLASS(BlueprintType, EditInlineNew)
+class UVortexOnKillTrigger : public UBaseTriggerEffect
+{
+	GENERATED_BODY()
+public:
+	void OnTrigger(AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target) override
+	{
+		//only execute if target died
+		if (target == nullptr || !target->IsActorBeingDestroyed())
+			return;
 
+		if (FMath::FRand() > SpawnChance)
+			return;
+
+		AVortex* vortex = GetWorld()->SpawnActor<AVortex>(*VortexClass);
+		vortex->InitSpell(target->GetActorLocation(), FVector(), caster);
+	};
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float SpawnChance = 0.3f;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AVortex> VortexClass;
+};

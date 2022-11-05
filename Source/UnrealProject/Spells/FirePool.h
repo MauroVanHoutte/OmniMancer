@@ -5,19 +5,23 @@
 #include "CoreMinimal.h"
 #include "BaseSpell.h"
 
-#include "IceZone.generated.h"
+#include "FirePool.generated.h"
 
+/**
+ * 
+ */
 UCLASS()
-class UNREALPROJECT_API AIceZone : public ABaseSpell
+class UNREALPROJECT_API AFirePool : public ABaseSpell
 {
 	GENERATED_BODY()
-	
-public:	
-	AIceZone();
+public:
+	AFirePool();
 
 	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard) override;
 
 	void SetRadius(float radius);
+
+	void SetBurnCause(UObject* cause);
 
 protected:
 	// Called when the game starts or when spawned
@@ -25,7 +29,7 @@ protected:
 
 	virtual void OnDeath() override;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* CylinderMesh;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
@@ -35,23 +39,24 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float BurnInterval = 0.5f;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float EffectLingerDuration = 2.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float SlowAmount = 0.5f;
+	float EffectLingerDuration = 1.f;
+
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float CircleScale = 7.f;
+	float CircleScale = 4.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float ApplicationInterval = 0.2f;
+	float ApplicationInterval = 0.3f;
 
 
 	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float DamagePerFireLevel = 0.f;
+	float BurnDamagePerFireLevel = 0.3f;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float SlowPerFrostLevel = 0.f;
+	float ScalePerFireLevel = 0.5f;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float DurationPerFrostLevel = 0.f;
+	float DurationPerFireLevel = 0.3f;
 
 private:
 	FTimerHandle ApplicationTimer;
