@@ -22,9 +22,9 @@ public:
 
 
 class UOmnimancerSaveGame;
-/**
- * 
- */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCurrencyChanged, int, Currency);
+
 UCLASS()
 class UNREALPROJECT_API UOmnimancerGameInstance : public UGameInstance
 {
@@ -48,6 +48,9 @@ public:
 	void RemoveUnlockedUpgrade(const FString& tag);
 	UFUNCTION(BlueprintCallable)
 	TSet<FString>& GetUnlockedUpgrades();
+
+	UPROPERTY(BlueprintAssignable)
+	FCurrencyChanged OnCurrencyChanged;
 
 private:
 	int Currency = 500;

@@ -80,6 +80,7 @@ int UOmnimancerGameInstance::GetCurrency()
 void UOmnimancerGameInstance::SetCurrency(int newCurrency)
 {
 	Currency = newCurrency;
+	OnCurrencyChanged.Broadcast(Currency);
 }
 
 WizardElement UOmnimancerGameInstance::GetSelectedType()
