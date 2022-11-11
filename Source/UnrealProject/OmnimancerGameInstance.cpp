@@ -102,7 +102,7 @@ void UOmnimancerGameInstance::RemoveUnlockedUpgrade(const FString& tag)
 	UnlockedUpgrades.Remove(tag);
 }
 
-TArray<FString>& UOmnimancerGameInstance::GetUnlockedUpgrades()
+TSet<FString>& UOmnimancerGameInstance::GetUnlockedUpgrades()
 {
 	return UnlockedUpgrades;
 }

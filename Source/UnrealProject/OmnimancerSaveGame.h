@@ -17,5 +17,5 @@ public:
 	UPROPERTY();
 	int Currency = 0;
 	UPROPERTY();
-	TArray<FString> UnlockedUpgrades{};
+	TSet<FString> UnlockedUpgrades{};
 };

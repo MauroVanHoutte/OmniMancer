@@ -47,11 +47,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemoveUnlockedUpgrade(const FString& tag);
 	UFUNCTION(BlueprintCallable)
-	TArray<FString>& GetUnlockedUpgrades();
+	TSet<FString>& GetUnlockedUpgrades();
 
 private:
 	int Currency = 500;
-	TArray<FString> UnlockedUpgrades{};
+	TSet<FString> UnlockedUpgrades{};
 	WizardElement Selected = WizardElement::Fire;
 
 	//TArray<FSkillData> FireSkills;
