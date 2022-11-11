@@ -7,6 +7,7 @@
 #include "UpgradeButton.generated.h"
 
 class UUpgradeConnection;
+class UCanvasPanel;
 /**
  * 
  */
@@ -15,14 +16,17 @@ class UNREALPROJECT_API UUpgradeButton : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	virtual bool Initialize() override;
+	virtual void NativeConstruct() override;
 	virtual void SynchronizeProperties() override;
 
 	void SetLocked();
 	void SetBuyable();
 	void SetBought();
-	bool GetBuyable();
-	bool GetBought();
+	bool GetBuyable() const;
+	bool GetBought() const;
+
+	void SetConnectionCanvas(UCanvasPanel* canvas);
+	void SetConnections() const;
 
 	const FString& GetName() const;
 	TArray<UUpgradeConnection*>& GetConnectionWidgetsRef();
@@ -31,6 +35,15 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetPreOwned();
+
+protected:
+	int32 NativePaint(const FPaintArgs& Args,
+		const FGeometry& AllottedGeometry,
+		const FSlateRect& MyCullingRect,
+		FSlateWindowElementList& OutDrawElements,
+		int32 LayerId,
+		const FWidgetStyle& InWidgetStyle,
+		bool bParentEnabled) const override;
 private:
 	UFUNCTION()
 	FEventReply ButtonMouseDown(FGeometry& geometry, FPointerEvent mouseEvent);
@@ -55,8 +68,17 @@ private:
 	bool Bought = false;
 	UPROPERTY(EditAnywhere)
 	TArray<UUpgradeButton*> Prerequisites;
-	TArray<UUpgradeConnection*> ConnectionWidgets;
 	TArray<UUpgradeButton*> Dependents;
+	TArray<UUpgradeConnection*> ConnectionWidgets;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUpgradeConnection> ConnectionType;
+	UCanvasPanel* ConnectionCanvas;
+	UPROPERTY(EditAnywhere)
+	FLinearColor BoughtColor;
+	UPROPERTY(EditAnywhere)
+	FLinearColor BuyableColor;
+	UPROPERTY(EditAnywhere)
+	FLinearColor LockedColor;
 
 	UPROPERTY( meta = (BindWidget))
 	class UTextBlock* Name;
