@@ -43,11 +43,6 @@ AWizardCharacter::AWizardCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>("TopDownCamera");
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 
-	WizardMesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	UStaticMesh* cubeMesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'")).Object;
-	WizardMesh->SetStaticMesh(cubeMesh);
-	WizardMesh->SetupAttachment(RootComponent);
-
 	CurrentElements.Init(WizardElement::Fire, MaxElements);
 
 	FirstElementBillboard = CreateDefaultSubobject<UBillboardComponent>("First Element");
@@ -171,7 +166,10 @@ void AWizardCharacter::Tick(float DeltaTime)
 	controller->DeprojectMousePositionToWorld(mousePosWorld, mouseDirWorld);
 	mousePosWorld = FMath::RayPlaneIntersection(mousePosWorld, mouseDirWorld, FPlane(GetActorLocation(), FVector(0.f, 0.f, 1.f))); //screen position raycast to plane at actor height
 
-	WizardMesh->SetRelativeRotation((mousePosWorld - GetActorLocation()).Rotation()); //character looks towards cursor
+	auto desiredRotation = (mousePosWorld - GetActorLocation()).Rotation();
+	desiredRotation.Yaw -= 90.f;
+
+	GetMesh()->SetRelativeRotation(desiredRotation); //character looks towards cursor
 
 	//player can zoom camera in and out to see the level layout
 	if (!FMath::IsNearlyEqual(SpringArm->TargetArmLength, TargetSpringArmLength))

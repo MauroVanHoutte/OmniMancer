@@ -88,6 +88,7 @@ public:
 	void RemoveUpgrade(const FString& tag);
 
 	//Getters/Setters
+	const FVector& GetDesiredDirection() const;
 	void SetExplosionVariables(float damage, float radius, bool explode);
 	void GetExplosionVariables(float& damageOut, float& radiusOut) const;
 	void SetSpread(int spread);
@@ -188,10 +189,6 @@ private:
 	USpringArmComponent* SpringArm;
 	UPROPERTY(EditDefaultsOnly)
 	UCameraComponent* Camera;
-
-	//Mesh
-	UPROPERTY(EditDefaultsOnly)
-	UStaticMeshComponent* WizardMesh;
 
 	//Active elements
 	UPROPERTY(EditDefaultsOnly, Category = "Elements")
