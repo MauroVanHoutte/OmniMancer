@@ -45,7 +45,7 @@ void AFirePool::BeginPlay()
 
 	GetWorld()->GetTimerManager().SetTimer(ApplicationTimer, [this]()
 		{
-			if (this == nullptr || !IsValidLowLevel() || IsPendingKill())
+			if (this == nullptr || !IsValidLowLevel())
 				return;
 
 			TArray<AActor*> overlappingActors{};

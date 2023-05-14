@@ -62,7 +62,7 @@ void UUpgradeButton::SynchronizeProperties()
 		}
 		else
 		{
-			ConnectionWidgets[ConnectionWidgets.Num() - 1]->RemoveFromViewport();
+			ConnectionWidgets[ConnectionWidgets.Num() - 1]->RemoveFromParent();
 			ConnectionWidgets.RemoveAt(ConnectionWidgets.Num() - 1);
 		}
 		difference += sign * -1;

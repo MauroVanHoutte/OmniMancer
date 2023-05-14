@@ -530,7 +530,7 @@ void AWaveFunctionCollapse::PlaceClouds() const
 	{
 		for (currentY; currentY < endY; currentY += CloudSpacing)
 		{
-			GetWorld()->SpawnActor<AActor>(CloudActor, FVector( currentX, currentY, BotLeft.Z ), FRotator( 0, FMath::FRandRange(0, 360), 0));
+			GetWorld()->SpawnActor<AActor>(CloudActor, FVector( currentX, currentY, BotLeft.Z ), FRotator( 0.f, FMath::FRandRange(0.f, 360.f), 0.f));
 		}
 		currentY = BotLeft.Y - TileSize;
 	}

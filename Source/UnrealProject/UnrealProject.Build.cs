@@ -7,7 +7,6 @@ public class UnrealProject : ModuleRules
 	public UnrealProject(ReadOnlyTargetRules Target) : base(Target)
 	{
 		MinFilesUsingPrecompiledHeaderOverride = 1;
-		bFasterWithoutUnity = true;
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem", "UMG", "Niagara", "Json", "JsonUtilities", "GameplayTasks", "SlateCore" });
 
 		// Uncomment if you are using Slate UI

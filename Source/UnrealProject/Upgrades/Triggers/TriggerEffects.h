@@ -81,7 +81,7 @@ public:
 		if (baseProjectile == nullptr)
 			return;
 
-		float rand = FMath::FRandRange(0, 1);
+		float rand = FMath::FRandRange(0.f, 1.f);
 		if (rand < Chance)
 			caster->LowerCooldowns(Amount);
 	};

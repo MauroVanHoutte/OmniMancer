@@ -45,7 +45,7 @@ public:
 		
 		GetWorld()->GetTimerManager().SetTimer(EffectTimer, [wizard, this]()
 			{
-				if (wizard->IsPendingKill() || !wizard->IsValidLowLevel())
+				if (!wizard->IsValidLowLevel())
 					return;
 
 				AFirePool* pool;

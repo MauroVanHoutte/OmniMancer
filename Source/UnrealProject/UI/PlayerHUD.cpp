@@ -1,7 +1,7 @@
+#include "PlayerHUD.h"
 #include <Components/Image.h>
 #include <Components/TextBlock.h>
 #include <Components/ProgressBar.h>
-#include "PlayerHUD.h"
 #include "../OmnimancerGameInstance.h"
 #include "../WizardCharacter.h"
 
