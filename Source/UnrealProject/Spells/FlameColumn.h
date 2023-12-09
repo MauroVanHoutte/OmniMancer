@@ -17,8 +17,7 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard) override;
-	
+	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
 
 protected:
 	virtual void BeginPlay() override;

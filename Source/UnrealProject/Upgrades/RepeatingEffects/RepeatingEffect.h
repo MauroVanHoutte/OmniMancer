@@ -37,7 +37,7 @@ public:
 			for (int i = 0; i < NrPools; i++)
 			{
 				AFirePool* pool = GetWorld()->SpawnActor<AFirePool>(*FirePoolClass);
-				pool->InitSpell(wizard->GetActorLocation(), FVector(), wizard);
+				pool->InitSpell(wizard->GetActorLocation(), wizard);
 				pool->SetBurnCause(this); // different pool burns dont stack
 				FirePools.Enqueue(pool);
 			}
@@ -50,7 +50,7 @@ public:
 
 				AFirePool* pool;
 				FirePools.Dequeue(pool);
-				pool->InitSpell(wizard->GetActorLocation(), FVector(), wizard);
+				pool->InitSpell(wizard->GetActorLocation(), wizard);
 				FirePools.Enqueue(pool);
 			}, Interval, true);
 	}

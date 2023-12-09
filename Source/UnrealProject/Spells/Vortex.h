@@ -18,7 +18,7 @@ class UNREALPROJECT_API AVortex : public ABaseSpell
 public:
 	AVortex();
 
-	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard) override;
+	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
 
 	void SetRadius(float radius);
 

@@ -30,11 +30,11 @@ private:
 	void PostGenerationLevelSetup(ANavigationData* data);
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AWizardCharacter> FireWizardBlueprint;
+	TSubclassOf<ACharacter> FireWizardBlueprint;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AWizardCharacter> FrostWizardBlueprint;
+	TSubclassOf<ACharacter> FrostWizardBlueprint;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AWizardCharacter> WindWizardBlueprint;
+	TSubclassOf<ACharacter> WindWizardBlueprint;
 
 	AEnemyPlacer* EnemyPlacer = nullptr;
 	AWaveFunctionCollapse* WaveFunctionCollapse = nullptr;

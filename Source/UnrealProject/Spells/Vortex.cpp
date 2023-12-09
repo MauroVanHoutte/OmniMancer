@@ -17,9 +17,9 @@ AVortex::AVortex()
 	CylinderMesh->SetCollisionProfileName("OverlapAllDynamic");
 }
 
-void AVortex::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
+void AVortex::InitSpell(const FVector& targetLocation, APawn* caster)
 {
-	Super::InitSpell(targetLocation, projectileDirection, wizard);
+	Super::InitSpell(targetLocation, caster);
 
 	SetActorLocation(targetLocation);
 	SetRadius(Radius);

@@ -15,23 +15,28 @@ AShockwave::AShockwave()
 	StaticMeshComponent->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 
 	RootComponent = StaticMeshComponent;
-
 }
 
 void AShockwave::Tick(float deltaTime)
 {
 	auto scale = StaticMeshComponent->GetRelativeScale3D();
-	scale.X += deltaTime * ScaleGrowth;
-	scale.Y += deltaTime * ScaleGrowth;
+	
+	scale.X = scale.Y += FMath::Min(deltaTime * ScaleGrowth, MaxScale);
+
+	if (scale.X >= MaxScale)
+	{
+		scale.X = scale.Y = MaxScale;
+		SetActorTickEnabled(false);
+	}
 
 	StaticMeshComponent->SetRelativeScale3D(scale);
 }
 
-void AShockwave::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
+void AShockwave::InitSpell(const FVector& targetLocation, APawn* caster)
 {
-	Super::InitSpell(targetLocation, projectileDirection, wizard);
+	Super::InitSpell(targetLocation, caster);
 
-	SetActorLocation(wizard->GetActorLocation());
+	SetActorLocation(caster->GetActorLocation());
 	SetStunParams(true, StunDuration + StunDurationPerFrostLevel * FrostLevel);
 	Damage = InitialDamage + DamagePerWindLevel * WindLevel;
 	KnockbackAmount += KnockbackPerWindLevel * WindLevel;

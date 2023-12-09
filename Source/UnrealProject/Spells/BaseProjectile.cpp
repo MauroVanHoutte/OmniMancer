@@ -67,14 +67,15 @@ void ABaseProjectile::Tick(float DeltaTime)
 
 }
 
-void ABaseProjectile::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
+void ABaseProjectile::InitSpell(const FVector& targetLocation, APawn* caster)
 {
-	Super::InitSpell(targetLocation, projectileDirection, wizard);
+	Super::InitSpell(targetLocation, caster);
 
-	SetDamageMultiplier(wizard->GetBaseProjecileDamageMultiplier() * wizard->GetSpellDamageMultiplier());
-	TotalBounces = wizard->GetBounces();
-	SetActorLocationAndRotation(wizard->GetActorLocation(), projectileDirection.Rotation());
-	FireInDirection(projectileDirection);
+	//SetDamageMultiplier(wizard->GetBaseProjecileDamageMultiplier() * wizard->GetSpellDamageMultiplier());
+	//TotalBounces = wizard->GetBounces();
+	FVector LaunchDirection = (targetLocation - caster->GetActorLocation()).GetSafeNormal();
+	SetActorLocationAndRotation(caster->GetActorLocation(), LaunchDirection.Rotation());
+	FireInDirection(LaunchDirection);
 }
 
 void ABaseProjectile::FireInDirection(const FVector& direction)

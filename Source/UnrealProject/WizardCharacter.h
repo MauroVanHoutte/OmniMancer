@@ -6,17 +6,19 @@
 #include "Enemies/BaseCharacter.h"
 #include "GenericPlatform/GenericPlatformMisc.h" 
 #include "Upgrades/CharacterUpgrades.h"
+#include "SpellCasting/Elements.h"
 
 #include "WizardCharacter.generated.h"
 
-UENUM(BlueprintType)
-enum class WizardElement : uint8
-{
-	// x = 2^n - 1
-	Fire = 0,
-	Frost = 1,
-	Wind = 3
-};
+//UENUM(BlueprintType)
+//enum class WizardElement : uint8
+//{
+//	// x = 2^n - 1
+//	Fire = 0,
+//	Frost = 1,
+//	Wind = 3
+//};
+
 UENUM(BlueprintType)
 enum class TriggerCondition : uint8
 {
@@ -159,6 +161,8 @@ private:
 	void InitProjectile(ABaseProjectile* projectile, const FVector& direction);
 	void CastSpell();
 
+	void ExecuteTriggerEffects(const TriggerCondition& condition, AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target);
+
 	void Dash();
 
 	void UpdatePowerups(float deltaTime);
@@ -226,9 +230,9 @@ private:
 	float DamageReductionPerFrost = 0.1f;
 	
 	//Active element visuals
-	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visuals", meta = (AllowPrivateAccess = true))
 	UBillboardComponent* FirstElementBillboard = nullptr; 
-	UPROPERTY(EditDefaultsOnly, Category = "Visuals")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visuals", meta = (AllowPrivateAccess = true))
 	UBillboardComponent* SecondElementBillboard = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Visuals")

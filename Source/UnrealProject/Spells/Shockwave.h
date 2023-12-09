@@ -20,7 +20,7 @@ public:
 
 	void Tick(float deltaTime) override;
 
-	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard) override;
+	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
 
 protected:
 	void BeginPlay() override;
@@ -34,6 +34,8 @@ private:
 	float InitialDamage = 5.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float ScaleGrowth = 5.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
+	float MaxScale = 20.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float KnockbackAmount = 500.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")

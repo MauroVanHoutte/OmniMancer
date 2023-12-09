@@ -17,7 +17,7 @@ class UNREALPROJECT_API AFirePool : public ABaseSpell
 public:
 	AFirePool();
 
-	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard) override;
+	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
 
 	void SetRadius(float radius);
 

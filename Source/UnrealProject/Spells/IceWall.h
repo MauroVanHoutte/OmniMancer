@@ -23,7 +23,7 @@ public:
 
 	virtual void Tick(float deltaTime) override;
 
-	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard) override;
+	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
 
 private:
 	UPROPERTY(EditDefaultsOnly)

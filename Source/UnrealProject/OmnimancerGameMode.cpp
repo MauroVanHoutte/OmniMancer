@@ -34,18 +34,18 @@ void AOmnimancerGameMode::BeginPlay()
 		auto gameInstance = GetGameInstance<UOmnimancerGameInstance>();
 		WizardElement wizardType = gameInstance->GetSelectedType();
 
-		AWizardCharacter* player = nullptr;
+		ACharacter* player = nullptr;
 
 		switch (wizardType)
 		{
 		case WizardElement::Fire:
-			player = GetWorld()->SpawnActor<AWizardCharacter>(FireWizardBlueprint.Get(), SpawnPoint->GetTransform());
+			player = GetWorld()->SpawnActor<ACharacter>(FireWizardBlueprint.Get(), SpawnPoint->GetTransform());
 			break;
 		case WizardElement::Frost:
-			player = GetWorld()->SpawnActor<AWizardCharacter>(FrostWizardBlueprint.Get(), SpawnPoint->GetTransform());
+			player = GetWorld()->SpawnActor<ACharacter>(FrostWizardBlueprint.Get(), SpawnPoint->GetTransform());
 			break;
 		case WizardElement::Wind:
-			player = GetWorld()->SpawnActor<AWizardCharacter>(WindWizardBlueprint.Get(), SpawnPoint->GetTransform());
+			player = GetWorld()->SpawnActor<ACharacter>(WindWizardBlueprint.Get(), SpawnPoint->GetTransform());
 			break;
 		default:
 			break;

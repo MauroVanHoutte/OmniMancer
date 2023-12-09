@@ -111,7 +111,6 @@ void AWizardCharacter::BeginPlay()
 		PlayerHud->Setup();
 
 		controller->SetShowMouseCursor(true);
-
 	}
 
 	SetupUpgrades();
@@ -138,11 +137,7 @@ void AWizardCharacter::OnTakeHit(AActor* cause)
 	if (caster->IsValidLowLevel())
 		caster->AddStatusEffects(ReflectEffects);
 
-	for (auto& trigger : TriggerEffects)
-	{
-		if (trigger->Condition == TriggerCondition::OnTakeHit)
-			trigger->OnTrigger(this, nullptr, caster);
-	}
+	ExecuteTriggerEffects(TriggerCondition::OnTakeHit, this, nullptr, nullptr);
 }
 
 void AWizardCharacter::OnDeath()
@@ -191,14 +186,14 @@ void AWizardCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	InputComponent = PlayerInputComponent;
 
-	PlayerInputComponent->BindAxis("MoveUp", this, &AWizardCharacter::MoveUp);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AWizardCharacter::MoveRight);
-	PlayerInputComponent->BindAction("Space", IE_Pressed, this, &AWizardCharacter::Dash);
+	//PlayerInputComponent->BindAxis("MoveUp", this, &AWizardCharacter::MoveUp);
+	//PlayerInputComponent->BindAxis("MoveRight", this, &AWizardCharacter::MoveRight);
+	//PlayerInputComponent->BindAction("Space", IE_Pressed, this, &AWizardCharacter::Dash);
 	PlayerInputComponent->BindAxis("LMB", this, &AWizardCharacter::Fire); //IE_Repeat doesnt work with mouse buttons
-	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AWizardCharacter::CastSpell);
-	PlayerInputComponent->BindAction<FAddElementDelegate>("FireElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Fire);
-	PlayerInputComponent->BindAction<FAddElementDelegate>("FrostElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Frost);
-	PlayerInputComponent->BindAction<FAddElementDelegate>("WindElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Wind);
+	//PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AWizardCharacter::CastSpell);
+	//PlayerInputComponent->BindAction<FAddElementDelegate>("FireElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Fire);
+	//PlayerInputComponent->BindAction<FAddElementDelegate>("FrostElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Frost);
+	//PlayerInputComponent->BindAction<FAddElementDelegate>("WindElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Wind);
 	auto& action = PlayerInputComponent->BindAction("Pause", IE_Pressed, this, &AWizardCharacter::Pause);
 	action.bExecuteWhenPaused = true;
 	PlayerInputComponent->BindAction("OpenMap", IE_Pressed, this, &AWizardCharacter::ShowMap);
@@ -207,11 +202,7 @@ void AWizardCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void AWizardCharacter::OnSpellHitEnemy( ABaseSpell* spell, ABaseCharacter* enemy)
 {
-	for (auto& trigger : TriggerEffects)
-	{
-		if (trigger->Condition == TriggerCondition::OnHit)
-		trigger->OnTrigger(this, spell, enemy);
-	}
+	ExecuteTriggerEffects(TriggerCondition::OnHit, this, spell, enemy);
 }
 
 const TArray<WizardElement>& AWizardCharacter::GetCurrentElements() const
@@ -535,12 +526,12 @@ void AWizardCharacter::HideMap()
 
 void AWizardCharacter::MoveUp(float value)
 {
-	AddMovementInput(FVector(1.f, 0.f, 0.f), value);
+	//AddMovementInput(FVector(1.f, 0.f, 0.f), value);
 }
 
 void AWizardCharacter::MoveRight(float value)
 {
-	AddMovementInput(FVector(0.f, 1.f, 0.f), value);
+	//AddMovementInput(FVector(0.f, 1.f, 0.f), value);
 }
 
 void AWizardCharacter::AddElement(WizardElement element)
@@ -667,7 +658,8 @@ void AWizardCharacter::InitProjectile(ABaseProjectile* projectile, const FVector
 			projectile->AddStatusEffect(effect);
 		}
 
-		projectile->InitSpell(FVector(), direction, this);
+		projectile->InitSpell(FVector(), this);
+		projectile->FireInDirection(direction);
 
 		if (ExplosiveBaseAttack)
 		{
@@ -696,7 +688,7 @@ void AWizardCharacter::CastSpell()
 	int spellID{};
 	for ( auto element : CurrentElements)
 	{
-		spellID += int(element);
+		spellID += static_cast<int>(element);
 	}
 
 	if (GetWorld()->GetTimerManager().IsTimerActive(CooldownTimers[spellID])) //spell is on cooldown
@@ -712,11 +704,16 @@ void AWizardCharacter::CastSpell()
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	auto spell = GetWorld()->SpawnActor<ABaseSpell>(*spellType, spawnParams);
 	if (spell != nullptr)
-		spell->InitSpell(raycastHit.Location, projectileDirection, this); //virtual init overriden in derived spells
+		spell->InitSpell(raycastHit.Location, this); //virtual init overriden in derived spells
 
+	ExecuteTriggerEffects(TriggerCondition::OnCast, this, spell, nullptr);
+}
+
+void AWizardCharacter::ExecuteTriggerEffects(const TriggerCondition& condition, AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target)
+{
 	for (auto& trigger : TriggerEffects)
-		if (trigger->Condition == TriggerCondition::OnCast)
-			trigger->OnTrigger(this, nullptr, nullptr);
+		if (trigger->Condition == condition)
+			trigger->OnTrigger(this, spell, target);
 }
 
 void AWizardCharacter::Dash()

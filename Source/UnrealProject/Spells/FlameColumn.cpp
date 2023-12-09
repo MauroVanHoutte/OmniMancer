@@ -30,7 +30,7 @@ void AFlameColumn::OnDeath()
 	if (FireLevel > 3) // flame columns with fire level 4 or higher spawn a new one on death with adjusted levels
 	{
 		auto spell = GetWorld()->SpawnActor<AFlameColumn>(GetClass()); 
-		spell->InitSpell(GetActorLocation(), FVector(), GetOwner<AWizardCharacter>()); 
+		spell->InitSpell(GetActorLocation(), GetOwner<AWizardCharacter>()); 
 		spell->FireLevel /= 2; // less damage
 		spell->WindLevel *= 3; // bigger area
 	}
@@ -50,9 +50,9 @@ void AFlameColumn::Tick(float DeltaTime)
 	}
 }
 
-void AFlameColumn::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
+void AFlameColumn::InitSpell(const FVector& targetLocation, APawn* caster)
 {
-	Super::InitSpell(targetLocation, projectileDirection, wizard);
+	Super::InitSpell(targetLocation, caster);
 
 	Damage = InitialDamage + DamagePerFireLevel * FireLevel;
 	SetActorLocation(targetLocation);

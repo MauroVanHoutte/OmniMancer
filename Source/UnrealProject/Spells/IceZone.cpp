@@ -54,9 +54,9 @@ void AIceZone::OnDeath()
 	GetWorld()->GetTimerManager().ClearTimer(ApplicationTimer);
 }
 
-void AIceZone::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
+void AIceZone::InitSpell(const FVector& targetLocation, APawn* caster)
 {
-	Super::InitSpell(targetLocation, projectileDirection, wizard);
+	Super::InitSpell(targetLocation, caster);
 
 	SetActorLocation(targetLocation);
 	SetBurnParams(ApplyBurn, BurnDamage + DamagePerFireLevel * FireLevel, BurnInterval, EffectLingerDuration + DurationPerFrostLevel * FrostLevel);

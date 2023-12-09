@@ -129,17 +129,17 @@ void ABaseSpell::SetCurseParams(bool applyCurse, float damage, float range, floa
 	}
 }
 
-void ABaseSpell::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
+void ABaseSpell::InitSpell(const FVector& targetLocation, APawn* caster)
 {
-	SetOwner(wizard);
-	SetInstigator(wizard);
-	FireLevel = wizard->GetCurrentElementLevel(WizardElement::Fire);
+	SetOwner(caster);
+	SetInstigator(caster);
+	/*FireLevel = wizard->GetCurrentElementLevel(WizardElement::Fire);
 	FrostLevel = wizard->GetCurrentElementLevel(WizardElement::Frost);
 	WindLevel = wizard->GetCurrentElementLevel(WizardElement::Wind);
 	SlowDurationMultiplier = wizard->GetSlowDurationMultiplier();
 	StunDurationMultiplier = wizard->GetStunDurationMultiplier();
 	BurnDurationMultiplier = wizard->GetBurnDurationMultiplier();
-	DamageMultiplier = wizard->GetSpellDamageMultiplier();
+	DamageMultiplier = wizard->GetSpellDamageMultiplier();*/
 }
 
 void ABaseSpell::SetDamage(float damage)

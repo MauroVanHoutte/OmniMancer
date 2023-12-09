@@ -30,7 +30,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetCurseParams(bool applyCurse, float damage, float range, float duration);
 
-	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard);
+	virtual void InitSpell(const FVector& targetLocation, APawn* caster);
 
 	virtual void Tick(float DeltaTime) override;
 

@@ -49,7 +49,7 @@ void ABlizzard::SetWizard(AWizardCharacter* wizard)
 
 void ABlizzard::ApplyWizardStats()
 {
-	InitSpell(FVector(), FVector(), Wizard);
+	InitSpell(FVector(), Wizard);
 	SetSlowParams(true, SlowAmount, TickInterval);
 	Damage = DamagePerTick;
 }

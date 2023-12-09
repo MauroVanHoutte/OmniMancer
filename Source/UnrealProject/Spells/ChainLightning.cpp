@@ -11,13 +11,13 @@ AChainLightning::AChainLightning()
 {
 }
 
-void AChainLightning::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
+void AChainLightning::InitSpell(const FVector& targetLocation, APawn* caster)
 {
-	Super::InitSpell(targetLocation, projectileDirection, wizard);
+	Super::InitSpell(targetLocation, caster);
 
 	TotalBounces = NrOfBounces + WindLevel;
-	SetActorLocation(wizard->GetActorLocation());
-	FireInDirection(projectileDirection);
+	SetActorLocation(caster->GetActorLocation());
+	FireInDirection((targetLocation - caster->GetActorLocation()).GetSafeNormal());
 	Damage = InitialDamage + DamagePerWindLevel * WindLevel;
 	SetStunParams(true, StunDuration + DurationPerFrost * FrostLevel);
 }
@@ -61,7 +61,8 @@ void AChainLightning::OnHit(ABaseCharacter* hitActor)
 		{
 			auto secondBolt = GetWorld()->SpawnActor<AChainLightning>(GetClass());
 			secondBolt->AddHitActor(hitActor);
-			secondBolt->InitSpell( actors[i]->GetActorLocation(), (actors[i]->GetActorLocation() - GetActorLocation()).GetSafeNormal(), GetOwner<AWizardCharacter>()); //Split on hit
+			secondBolt->InitSpell( actors[i]->GetActorLocation(), GetOwner<APawn>()); //Split on hit
+			secondBolt->FireInDirection((actors[i]->GetActorLocation() - GetActorLocation()).GetSafeNormal());
 			secondBolt->AddHitActors(GetHitActors());
 			secondBolt->BounceCount = BounceCount;
 			auto pos = secondBolt->GetActorLocation();

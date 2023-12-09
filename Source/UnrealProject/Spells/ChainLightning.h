@@ -20,7 +20,7 @@ class UNREALPROJECT_API AChainLightning : public ABaseProjectile
 public:
 	AChainLightning();
 
-	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard) override;
+	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
 	virtual void OnHit(ABaseCharacter* hitActor) override;
 protected:
 	virtual void BeginPlay() override;

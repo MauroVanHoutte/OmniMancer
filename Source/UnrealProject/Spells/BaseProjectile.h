@@ -22,7 +22,7 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	virtual void InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard);
+	virtual void InitSpell(const FVector& targetLocation, APawn* caster);
 	UFUNCTION(BlueprintCallable)
 	void FireInDirection(const FVector& direction);
 
@@ -42,7 +42,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	void Explode();	
-
 
 	USphereComponent* CollisionComponent;
 	UPROPERTY(EditAnywhere)
@@ -69,8 +68,6 @@ protected:
 	float ExplosionDamage = 0;
 	UPROPERTY(EditDefaultsOnly)
 	UNiagaraSystem* ExplosionParticle;
-
-
 	UPROPERTY(EditDefaultsOnly)
 	UNiagaraSystem* HitParticle;
 };

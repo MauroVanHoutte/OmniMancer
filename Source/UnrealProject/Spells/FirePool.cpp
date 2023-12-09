@@ -14,9 +14,9 @@ AFirePool::AFirePool()
 	CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 }
 
-void AFirePool::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
+void AFirePool::InitSpell(const FVector& targetLocation, APawn* caster)
 {
-	ABaseSpell::InitSpell(targetLocation, projectileDirection, wizard);
+	ABaseSpell::InitSpell(targetLocation, caster);
 
 	SetActorLocation(targetLocation);
 	SetBurnParams(ApplyBurn, BurnDamage + BurnDamagePerFireLevel * FireLevel, BurnInterval, EffectLingerDuration);

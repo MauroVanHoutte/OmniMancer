@@ -39,12 +39,12 @@ void ATornado::FireInDirection(const FVector& direction)
 	ProjectileMovement->Velocity = direction * ProjectileMovement->InitialSpeed;
 }
 
-void ATornado::InitSpell(const FVector& targetLocation, const FVector& projectileDirection, AWizardCharacter* wizard)
+void ATornado::InitSpell(const FVector& targetLocation, APawn* caster)
 {
-	Super::InitSpell(targetLocation, projectileDirection, wizard);
+	Super::InitSpell(targetLocation, caster);
 
-	SetActorLocation(wizard->GetActorLocation());
-	FireInDirection(projectileDirection);
+	SetActorLocation(caster->GetActorLocation());
+	FireInDirection((targetLocation - caster->GetActorLocation()).GetSafeNormal());
 
 	Damage = BaseDamage + DamagePerFireLevel * FireLevel;
 	ScaleGrowth += ScaleGrowthPerWindLevel * WindLevel;
@@ -77,7 +77,8 @@ void ATornado::ShootLightning(AActor* targetActor)
 	auto lightning = GetWorld()->SpawnActor<AChainLightning>(Lightning);
 	FVector caster = GetActorLocation();
 	caster.Z += 100.f;
-	lightning->InitSpell(targetActor->GetActorLocation(), (targetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal(), Cast<AWizardCharacter>(GetInstigator()));
+	lightning->InitSpell(targetActor->GetActorLocation(), Cast<AWizardCharacter>(GetInstigator()));
+	lightning->FireInDirection((targetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal());
 	lightning->SetDamageMultiplier(0.5f); //weaker damage
 }
 
