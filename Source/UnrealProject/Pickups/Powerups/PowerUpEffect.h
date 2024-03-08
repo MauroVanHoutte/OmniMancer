@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "../WizardCharacter.h"
+#include "WizardCharacter.h"
 
 #include "PowerUpEffect.generated.h"
 /**

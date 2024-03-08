@@ -2,7 +2,7 @@
 
 
 #include "PowerUp.h"
-#include "../WizardCharacter.h"
+#include "WizardCharacter.h"
 
 TArray<TSubclassOf<UPowerUpEffect>> APowerUp::AllEffects{};
 bool APowerUp::EffectsInitialized{ false };
