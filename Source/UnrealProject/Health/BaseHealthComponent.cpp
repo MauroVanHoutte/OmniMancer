@@ -2,6 +2,9 @@
 
 
 #include "BaseHealthComponent.h"
+#include "FloatingTextActor.h"
+#include "Healthbar.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values for this component's properties
 UBaseHealthComponent::UBaseHealthComponent()
@@ -35,6 +38,9 @@ void UBaseHealthComponent::BeginPlay()
 		bIsDepleted = true;
 		CurrentHealth = 0;
 	}
+
+	if (BoundHealthbar)
+		BoundHealthbar->SetHealthPercentage(CurrentHealth / MaxHealth);
 }
 
 
@@ -46,18 +52,37 @@ void UBaseHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	// ...
 }
 
+void UBaseHealthComponent::BindHealthbar(UWidgetComponent* Healthbar)
+{
+	BoundHealthbar = Cast<UHealthbar>(Healthbar->GetWidget());
+	ensure(BoundHealthbar);
+}
+
 void UBaseHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	CurrentHealth -= Damage;
-	DamageTakenDelegate.Broadcast(this, Damage, DamageType, InstigatedBy, DamageCauser);
+	SpawnDamageText(Damage);
+	OnDamageTakenDelegate.Broadcast(this, Damage, DamageType, InstigatedBy, DamageCauser);
 
-	if (CurrentHealth < 0)
+	if (BoundHealthbar)
+		BoundHealthbar->SetHealthPercentage(CurrentHealth / MaxHealth);
+
+	if (CurrentHealth <= 0)
 	{
 		const float OverkillDamage = -1 * CurrentHealth;
 		CurrentHealth = 0.f;
 		bIsDepleted = true;
-		FatalDamageTakenDelegate.Broadcast(this, Damage, OverkillDamage, DamageType, InstigatedBy, DamageCauser);
+		OnFatalDamageTakenDelegate.Broadcast(this, Damage, OverkillDamage, DamageType, InstigatedBy, DamageCauser);
 	}
+}
+
+void UBaseHealthComponent::SpawnDamageText(float damage)
+{
+	if (FloatingTextClass == nullptr || FMath::IsNearlyEqual(damage, 0.f))
+		return;
+	AFloatingTextActor* TextActor = GetWorld()->SpawnActor<AFloatingTextActor>(FloatingTextClass);
+	TextActor->Initialize(FText::FromString(FString::SanitizeFloat(FMath::RoundHalfToZero(damage * 100) / 100.f)));
+	TextActor->SetActorLocation(GetOwner()->GetActorLocation());
 }
 
 float UBaseHealthComponent::GetMaxHealth() const
@@ -103,8 +128,8 @@ void UBaseHealthComponent::Kill(const UDamageType* DamageType, AController* Inst
 {
 	CurrentHealth = 0;
 	bIsDepleted = true;
-	DamageTakenDelegate.Broadcast(this, -1, DamageType, InstigatedBy, DamageCauser);
-	FatalDamageTakenDelegate.Broadcast(this, -1, -1, DamageType, InstigatedBy, DamageCauser);
+	OnDamageTakenDelegate.Broadcast(this, -1, DamageType, InstigatedBy, DamageCauser);
+	OnFatalDamageTakenDelegate.Broadcast(this, -1, -1, DamageType, InstigatedBy, DamageCauser);
 }
 
 bool UBaseHealthComponent::IsDepleted() const

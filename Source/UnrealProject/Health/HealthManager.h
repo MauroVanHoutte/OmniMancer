@@ -34,9 +34,9 @@ public:
 	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	UPROPERTY(BlueprintAssignable)
-	FManagerDamageTakenSignature DamageTakenDelegate;
+	FManagerDamageTakenSignature OnDamageTakenDelegate;
 	UPROPERTY(BlueprintAssignable)
-	FManagerFatalDamageTakenSignature FatalDamageTakenDelegate;
+	FManagerFatalDamageTakenSignature OnFatalDamageTakenDelegate;
 
 private:
 	UPROPERTY(Transient)

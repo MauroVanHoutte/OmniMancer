@@ -27,8 +27,12 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION(BlueprintCallable)
+	void BindHealthbar(class UWidgetComponent* Healthbar);
+
 	UFUNCTION()
 	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	void SpawnDamageText(float damage);
 
 	float GetMaxHealth() const;
 	void SetMaxHealth(float NewMaxHealth);
@@ -56,9 +60,9 @@ public:
 	bool GetOverflows() const;
 
 	UPROPERTY(BlueprintAssignable)
-	FDamageTakenSignature DamageTakenDelegate;
+	FDamageTakenSignature OnDamageTakenDelegate;
 	UPROPERTY(BlueprintAssignable)
-	FFatalDamageTakenSignature FatalDamageTakenDelegate;
+	FFatalDamageTakenSignature OnFatalDamageTakenDelegate;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -69,6 +73,13 @@ protected:
 	float CurrentHealth = 100.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	bool bStartDepleted = false;
+	UPROPERTY(EditDefaultsOnly)
+	bool bSpawnDamageText = true;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class AFloatingTextActor> FloatingTextClass = nullptr;
+	UPROPERTY(BlueprintReadWrite)
+	class UHealthbar* BoundHealthbar = nullptr;
+
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsDepleted = false;
 

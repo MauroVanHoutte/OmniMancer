@@ -1,4 +1,5 @@
 #include "BaseDashComponent.h"
+#include "Upgrades/StatUpgrades/StatComponent.h"
 // Fill out your copyright notice in the Description page of ProjecDas.h"
 
 // Sets default values for this component's properties
@@ -11,6 +12,12 @@ UBaseDashComponent::UBaseDashComponent()
 	// ...
 }
 
+void UBaseDashComponent::Initialize(UCharacterMovementComponent* CharacterMovementComponent, UStatComponent* StatComponent)
+{
+	CharacterMovement = CharacterMovementComponent;
+	Stats = StatComponent;
+}
+
 void UBaseDashComponent::TryExecuteDash()
 {
 	FTimerManager* TimerManager = &GetWorld()->GetTimerManager();
@@ -18,6 +25,11 @@ void UBaseDashComponent::TryExecuteDash()
 	{
 		ExecuteDash();
 		ExecuteDashBP();
-		TimerManager->SetTimer(CooldownTimer, Cooldown, false);
+		TimerManager->SetTimer(CooldownTimer, CalculateCooldown(), false);
 	}
+}
+
+float UBaseDashComponent::CalculateCooldown() const
+{
+	return Cooldown * (Stats ? Stats->GetDashCooldownMultiplier() : 1.f);
 }

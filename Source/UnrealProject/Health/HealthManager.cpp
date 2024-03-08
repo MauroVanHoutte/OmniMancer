@@ -34,7 +34,7 @@ void UHealthManager::BeginPlay()
 	{
 		//All damage is routed through the health manager
 		Owner->OnTakeAnyDamage.RemoveAll(HealthComponent);
-		HealthComponent->FatalDamageTakenDelegate.AddDynamic(this, &UHealthManager::OnHealthComponentFatalDamage);
+		HealthComponent->OnFatalDamageTakenDelegate.AddDynamic(this, &UHealthManager::OnHealthComponentFatalDamage);
 	}
 }
 
@@ -54,7 +54,7 @@ void UHealthManager::OnHealthComponentFatalDamage(UBaseHealthComponent* HealthCo
 	}
 	else
 	{
-		FatalDamageTakenDelegate.Broadcast(HealthComponent, Damage, OverkillDamage, DamageType, InstigatedBy, DamageCauser);
+		OnFatalDamageTakenDelegate.Broadcast(HealthComponent, Damage, OverkillDamage, DamageType, InstigatedBy, DamageCauser);
 	}
 }
 
@@ -73,7 +73,7 @@ void UHealthManager::TakeDamage(AActor* DamagedActor, float Damage, const UDamag
 		if (!HealthComponents[i]->IsDepleted())
 		{
 			HealthComponents[i]->TakeDamage(DamagedActor, Damage, DamageType, InstigatedBy, DamageCauser);
-			DamageTakenDelegate.Broadcast(HealthComponents[i], Damage, DamageType, InstigatedBy, DamageCauser);
+			OnDamageTakenDelegate.Broadcast(HealthComponents[i], Damage, DamageType, InstigatedBy, DamageCauser);
 			if (HealthComponents[i]->GetBlocksDamage())
 			{
 				return;

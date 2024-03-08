@@ -3,6 +3,7 @@
 
 #include "ElementManipulationComponent.h"
 #include <Components/BillboardComponent.h>
+#include "Upgrades/StatUpgrades/StatComponent.h"
 
 
 // Sets default values for this component's properties
@@ -16,9 +17,10 @@ UElementManipulationComponent::UElementManipulationComponent()
 	// ...
 }
 
-void UElementManipulationComponent::Initialize(APlayerController* PlayerController, UBillboardComponent* FirstBillboard, UBillboardComponent* SecondBillboard)
+void UElementManipulationComponent::Initialize(APlayerController* PlayerController, UBillboardComponent* FirstBillboard, UBillboardComponent* SecondBillboard, UStatComponent* StatComponent)
 {
 	Controller = PlayerController;
+	Stats = StatComponent;
 	FirstElementBillboard = FirstBillboard;
 	SecondElementBillboard = SecondBillboard;
 
@@ -40,7 +42,7 @@ void UElementManipulationComponent::AddElement(WizardElement Element)
 	if (SecondElementBillboard)
 		SecondElementBillboard->SetSprite(*ElementTextures.Find(CurrentElements[1]));
 
-	OnElementAdded.Broadcast(OldElement, Element);
+	OnElementAddedDelegate.Broadcast(OldElement, Element);
 }
 
 void UElementManipulationComponent::TryCastSpell()
@@ -52,20 +54,49 @@ void UElementManipulationComponent::TryCastSpell()
 	if (!SpellClass || TimerManager.IsTimerActive(*CooldownTimers.Find(*SpellClass)))
 		return;
 	
-	TimerManager.SetTimer(*CooldownTimers.Find(*SpellClass), *Cooldowns.Find(*SpellClass), false);
+	TimerManager.SetTimer(*CooldownTimers.Find(*SpellClass), CalculateSpellCooldown(SpellClass), false);
 
 	FVector MousePosAtActorHeight;
 	FHitResult RaycastHit;
 	RaycastMouseOnLevel(MousePosAtActorHeight, RaycastHit);
-	const FVector ProjectileDirection = (MousePosAtActorHeight - GetOwner()->GetActorLocation()).GetSafeNormal(); // direction for projectile spells
 
 	FActorSpawnParameters spawnParams{};
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	auto Spell = GetWorld()->SpawnActor<ABaseSpell>(*SpellClass, spawnParams);
 	if (Spell != nullptr)
+	{
 		Spell->InitSpell(MousePosAtActorHeight, GetOwner<APawn>()); //virtual init overriden in derived spells
+		Spell->OnSpellHitDelegate.AddDynamic(this, &UElementManipulationComponent::OnSpellHit);
+	}
 
-	OnSpellCasted.Broadcast(GetOwner(), Spell);
+	OnSpellCastedDelegate.Broadcast(GetOwner(), Spell);
+}
+
+void UElementManipulationComponent::TryCastBasicAttack()
+{
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	FTimerHandle* CooldownTimer = CooldownTimers.Find(BasicAttack);
+
+	if (!BasicAttack || !CooldownTimer || TimerManager.IsTimerActive(*CooldownTimer))
+		return;
+
+	TimerManager.SetTimer(*CooldownTimer, CalculateBaseAttackCooldown(), false);
+
+	FVector MousePosAtActorHeight;
+	FHitResult RaycastHit;
+	RaycastMouseOnLevel(MousePosAtActorHeight, RaycastHit);
+
+	FActorSpawnParameters spawnParams{};
+	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	auto Spell = GetWorld()->SpawnActor<ABaseSpell>(BasicAttack, spawnParams);
+
+	if (Spell != nullptr)
+	{
+		Spell->InitSpell(MousePosAtActorHeight, GetOwner<APawn>());
+		Spell->OnSpellHitDelegate.AddDynamic(this, &UElementManipulationComponent::OnBasicAttackHit);
+	}
+
+	OnBasicAttackCastedDelegate.Broadcast(GetOwner(), Spell);
 }
 
 // Called when the game starts
@@ -94,12 +125,35 @@ void UElementManipulationComponent::SetupSpells()
 		{
 			Cooldowns.Add(SpellConfig.Spell, 1);
 		}
+	}
 
-		CooldownTimers.Add(SpellConfig.Spell);
+	for (TTuple<TSubclassOf<ABaseSpell>, float>& kvp : Cooldowns)
+	{
+		CooldownTimers.Add(kvp.Key);
 	}
 
 	for (size_t i = 0; i < CurrentElements.Num(); i++)
 	{
-		OnElementAdded.Broadcast(WizardElement::None, CurrentElements[i]);
+		OnElementAddedDelegate.Broadcast(WizardElement::None, CurrentElements[i]);
 	}
+}
+
+void UElementManipulationComponent::OnSpellHit(ABaseSpell* Spell, AActor* HitActor)
+{
+	OnSpellHitDelegate.Broadcast(Spell, HitActor);
+}
+
+void UElementManipulationComponent::OnBasicAttackHit(ABaseSpell* Spell, AActor* HitActor)
+{
+	OnBasicAttackHitDelegate.Broadcast(Spell, HitActor);
+}
+
+float UElementManipulationComponent::CalculateBaseAttackCooldown()
+{
+	return *Cooldowns.Find(BasicAttack) * (Stats ? Stats->GetBaseAttackCooldownMultiplier() : 1.f);
+}
+
+float UElementManipulationComponent::CalculateSpellCooldown(const TSubclassOf<class ABaseSpell>* Spell)
+{
+	return *Cooldowns.Find(*Spell) * (Stats ? Stats->GetSpellCooldownMultiplier() : 1.f);
 }

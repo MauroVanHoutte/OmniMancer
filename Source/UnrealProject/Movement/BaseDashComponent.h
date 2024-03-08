@@ -17,6 +17,9 @@ public:
 	UBaseDashComponent();
 
 	UFUNCTION(BlueprintCallable)
+	void Initialize(class UCharacterMovementComponent* CharacterMovement, class UStatComponent* StatComponent);
+
+	UFUNCTION(BlueprintCallable)
 	void TryExecuteDash();
 
 protected:
@@ -24,10 +27,13 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ExecuteDashBP();
 
-	UPROPERTY(Transient, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
-	class UCharacterMovementComponent* CharacterMovementComponent = nullptr;
-
+	UPROPERTY(Transient)
+	class UCharacterMovementComponent* CharacterMovement = nullptr;
+	UPROPERTY(Transient)
+	class UStatComponent* Stats = nullptr;
 private:
+	float CalculateCooldown() const;
+
 	UPROPERTY(EditDefaultsOnly)
 	float Cooldown;
 	FTimerHandle CooldownTimer;

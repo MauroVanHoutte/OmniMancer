@@ -3,6 +3,7 @@
 
 #include "DashComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Upgrades/StatUpgrades/StatComponent.h"
 
 
 UDashComponent::UDashComponent()
@@ -13,7 +14,8 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	if (bDashing)
 	{
-		CharacterMovementComponent->AddForce(DashDirection * DashSpeed * CharacterMovementComponent->Mass);
+		FVector Force = DashDirection * DashSpeed * CharacterMovement->Mass * (IsValid(Stats) ? Stats->GetDashForceMultiplier() : 1.f);
+		CharacterMovement->AddForce(Force);
 		DashTimer += DeltaTime;
 		if (DashTimer > DashDuration)
 		{
@@ -26,5 +28,5 @@ void UDashComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 void UDashComponent::ExecuteDash()
 {
 	bDashing = true;
-	DashDirection = CharacterMovementComponent->GetLastInputVector();
+	DashDirection = CharacterMovement->GetLastInputVector().GetSafeNormal();
 }
