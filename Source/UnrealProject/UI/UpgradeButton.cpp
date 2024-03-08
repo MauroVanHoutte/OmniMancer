@@ -4,7 +4,7 @@
 #include "UpgradeButton.h"
 #include <Components/Image.h>
 #include <Components/TextBlock.h>
-#include "../OmnimancerGameInstance.h"
+#include "OmnimancerGameInstance.h"
 #include "UpgradeConnection.h"
 #include <Components/CanvasPanel.h>
 #include <Components/CanvasPanelSlot.h>

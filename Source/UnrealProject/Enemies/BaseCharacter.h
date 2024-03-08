@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "../StatusEffect.h"
+#include "StatusEffects/StatusEffect.h"
 
 #include "BaseCharacter.generated.h"
 
@@ -22,9 +22,9 @@ class UNREALPROJECT_API ABaseCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ABaseCharacter();
-	virtual void ReapplyStatusEffects(const TArray<FStatusEffect>& statusEffects);
-	virtual void AddStatusEffect(const FStatusEffect& effect);
-	virtual void AddStatusEffects(const TArray<FStatusEffect>& statusEffects);
+	//virtual void ReapplyStatusEffects(const TArray<FStatusEffect>& statusEffects);
+	//virtual void AddStatusEffect(const FStatusEffect& effect);
+	//virtual void AddStatusEffects(const TArray<FStatusEffect>& statusEffects);
 
 	virtual void Knockup();
 	virtual void Push(const FVector& force);
@@ -79,10 +79,10 @@ protected:
 	void SpawnPowerup() const;
 	void SpawnCoins() const;
 
-	void UpdateStatusEffects(float deltaTime);
+	//void UpdateStatusEffects(float deltaTime);
 
-	UPROPERTY(VisibleAnywhere)
-	TArray<FStatusEffect> CurrentStatusEffects{};
+	//UPROPERTY(VisibleAnywhere)
+	//TArray<FStatusEffect> CurrentStatusEffects{};
 
 	UPROPERTY(VisibleAnywhere)
 	float Health;
@@ -127,6 +127,6 @@ protected:
 	TSubclassOf<ACoin> CoinBP;
 
 private:
-	void SpreadCurse(const FStatusEffect& curseEffect);
+	//void SpreadCurse(const FStatusEffect& curseEffect);
 
 };

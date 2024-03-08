@@ -3,15 +3,15 @@
 
 #include "BaseCharacter.h"
 #include <Components/CapsuleComponent.h>
-#include "../Spells/BaseSpell.h"
+#include "SpellCasting/Spells/BaseSpell.h"
 #include <GameFramework/CharacterMovementComponent.h>
 #include <AIController.h>
-#include "../Powerups/PowerUp.h"
+#include "Pickups/Powerups/PowerUp.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
-#include "../FloatingTextActor.h"
+#include "FloatingTextActor.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "../Coin.h"
+#include "Pickups/Coin.h"
 
 
 
@@ -63,7 +63,7 @@ void ABaseCharacter::Heal(float hp)
 	if (FloatingTextClass == nullptr)
 		return;
 	auto text = GetWorld()->SpawnActor(FloatingTextClass);
-	Cast<AFloatingTextActor>(text)->Initialize(FText::FromString(FString::SanitizeFloat(hp)), FColor::Green);
+	Cast<AFloatingTextActor>(text)->Initialize(FText::FromString(FString::SanitizeFloat(hp)));
 	text->SetActorLocation(GetActorLocation());
 }
 
@@ -99,18 +99,18 @@ void ABaseCharacter::OnDeath()
 
 void ABaseCharacter::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->GetInstigatorController<APlayerController>() != GetController<APlayerController>())
-	{
-		auto spell = Cast<ABaseSpell>(OtherActor);
-		if (spell != nullptr && !spell->WasActorHit(this))
-		{
-			spell->AddHitActor(this);
-			TakeSpellDamage(spell);
-			ReapplyStatusEffects(spell->GetStatusEffects());
-			//activates caster on hit trigger
-			spell->OnHit(this);
-		}
-	}
+	//if (OtherActor->GetInstigatorController<APlayerController>() != GetController<APlayerController>())
+	//{
+	//	auto spell = Cast<ABaseSpell>(OtherActor);
+	//	if (spell != nullptr && !spell->WasActorHit(this))
+	//	{
+	//		spell->AddHitActor(this);
+	//		TakeSpellDamage(spell);
+	//		ReapplyStatusEffects(spell->GetStatusEffects());
+	//		//activates caster on hit trigger
+	//		spell->OnHit(this);
+	//	}
+	//}
 }
 
 void ABaseCharacter::OnTakeHit(AActor* cause)
@@ -146,20 +146,20 @@ void ABaseCharacter::TakeTickDamage(float damage)
 	CheckDeath();
 }
 
-void ABaseCharacter::AddStatusEffects(const TArray<FStatusEffect>& statusEffects)
-{
-	for (const auto& effect : statusEffects)
-	{
-		AddStatusEffect(effect);
-	}
-}
+//void ABaseCharacter::AddStatusEffects(const TArray<FStatusEffect>& statusEffects)
+//{
+//	for (const auto& effect : statusEffects)
+//	{
+//		AddStatusEffect(effect);
+//	}
+//}
 
 void ABaseCharacter::SpawnDamageText(float damage)
 {
 	if (FloatingTextClass == nullptr || FMath::IsNearlyEqual(damage, 0.f))
 		return;
 	auto text = GetWorld()->SpawnActor(FloatingTextClass);
-	Cast<AFloatingTextActor>(text)->Initialize(FText::FromString(FString::SanitizeFloat(FMath::RoundHalfToZero(damage * 100)/100.f)), DamageTextColor);
+	Cast<AFloatingTextActor>(text)->Initialize(FText::FromString(FString::SanitizeFloat(FMath::RoundHalfToZero(damage * 100)/100.f)));
 	text->SetActorLocation(GetActorLocation());
 }
 
@@ -194,90 +194,90 @@ void ABaseCharacter::SpawnCoins() const
 	}
 }
 
-void ABaseCharacter::UpdateStatusEffects(float deltaTime) //todo move logic into statuseffect
-{
-	for (int32 i = 0; i < CurrentStatusEffects.Num(); i++)
-	{
-		CurrentStatusEffects[i].Timer += deltaTime;
-		if (CurrentStatusEffects[i].EffectType == Type::Damage)
-		{
-			if (CurrentStatusEffects[i].Timer > CurrentStatusEffects[i].Interval)
-			{
-				CurrentStatusEffects[i].Timer -= CurrentStatusEffects[i].Interval;
-				TakeTickDamage(CurrentStatusEffects[i].Value);
-				CurrentStatusEffects[i].Duration -= CurrentStatusEffects[i].Interval;
-				if (CurrentStatusEffects[i].Duration < CurrentStatusEffects[i].Interval)
-				{
-					CurrentStatusEffects.RemoveAt(i);
-					i--;
+//void ABaseCharacter::UpdateStatusEffects(float deltaTime) //todo move logic into statuseffect
+//{
+//	for (int32 i = 0; i < CurrentStatusEffects.Num(); i++)
+//	{
+//		CurrentStatusEffects[i].Timer += deltaTime;
+//		if (CurrentStatusEffects[i].EffectType == Type::Damage)
+//		{
+//			if (CurrentStatusEffects[i].Timer > CurrentStatusEffects[i].Interval)
+//			{
+//				CurrentStatusEffects[i].Timer -= CurrentStatusEffects[i].Interval;
+//				TakeTickDamage(CurrentStatusEffects[i].Value);
+//				CurrentStatusEffects[i].Duration -= CurrentStatusEffects[i].Interval;
+//				if (CurrentStatusEffects[i].Duration < CurrentStatusEffects[i].Interval)
+//				{
+//					CurrentStatusEffects.RemoveAt(i);
+//					i--;
+//
+//					auto otherBurnEffect = CurrentStatusEffects.FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Damage; });
+//					if (otherBurnEffect == nullptr && NiagaraComponent != nullptr)
+//						NiagaraComponent->SetVariableFloat(TEXT("Burning"), 0.f);
+//
+//					continue;
+//				}
+//			}
+//		}
+//		else
+//		{
+//			if (CurrentStatusEffects[i].Timer > CurrentStatusEffects[i].Duration)
+//			{
+//				if (CurrentStatusEffects[i].EffectType == Type::Slow)
+//				{
+//					SlowAmount -= CurrentStatusEffects[i].Value;
+//					CharacterMovement->MaxWalkSpeed /= (1 - CurrentStatusEffects[i].Value);
+//				}
+//				if (CurrentStatusEffects[i].EffectType == Type::Stun)
+//				{
+//					auto otherStunEffect = CurrentStatusEffects.FilterByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Stun; });
+//					if (otherStunEffect.Num() < 2)
+//					{
+//						Stunned = false;
+//						OnStunnedEnd();
+//						if (NiagaraComponent != nullptr)
+//							NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 0.f);
+//					}
+//				}
+//				if (CurrentStatusEffects[i].EffectType == Type::Curse)
+//				{
+//					TakeTickDamage(CurrentStatusEffects[i].Value);
+//					if (IsPendingKillPending())
+//					{
+//						SpreadCurse(CurrentStatusEffects[i]);
+//					}
+//
+//					if (NiagaraComponent != nullptr)
+//						NiagaraComponent->SetVariableFloat(TEXT("Cursed"), 0.f);
+//				}
+//				CurrentStatusEffects.RemoveAt(i);
+//				i--;
+//				continue;
+//			}
+//		}
+//	}
+//}
 
-					auto otherBurnEffect = CurrentStatusEffects.FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Damage; });
-					if (otherBurnEffect == nullptr && NiagaraComponent != nullptr)
-						NiagaraComponent->SetVariableFloat(TEXT("Burning"), 0.f);
-
-					continue;
-				}
-			}
-		}
-		else
-		{
-			if (CurrentStatusEffects[i].Timer > CurrentStatusEffects[i].Duration)
-			{
-				if (CurrentStatusEffects[i].EffectType == Type::Slow)
-				{
-					SlowAmount -= CurrentStatusEffects[i].Value;
-					CharacterMovement->MaxWalkSpeed /= (1 - CurrentStatusEffects[i].Value);
-				}
-				if (CurrentStatusEffects[i].EffectType == Type::Stun)
-				{
-					auto otherStunEffect = CurrentStatusEffects.FilterByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Stun; });
-					if (otherStunEffect.Num() < 2)
-					{
-						Stunned = false;
-						OnStunnedEnd();
-						if (NiagaraComponent != nullptr)
-							NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 0.f);
-					}
-				}
-				if (CurrentStatusEffects[i].EffectType == Type::Curse)
-				{
-					TakeTickDamage(CurrentStatusEffects[i].Value);
-					if (IsPendingKillPending())
-					{
-						SpreadCurse(CurrentStatusEffects[i]);
-					}
-
-					if (NiagaraComponent != nullptr)
-						NiagaraComponent->SetVariableFloat(TEXT("Cursed"), 0.f);
-				}
-				CurrentStatusEffects.RemoveAt(i);
-				i--;
-				continue;
-			}
-		}
-	}
-}
-
-void ABaseCharacter::SpreadCurse(const FStatusEffect& curseEffect)
-{
-	TArray<AActor*>ignoreActors{this};
-	TArray<AActor*>outActors{};
-	//get nearby enemies
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), curseEffect.Interval, TArray<TEnumAsByte<EObjectTypeQuery>>(), StaticClass(), ignoreActors, outActors); //range is stored in interval
-
-	//apply curse to one
-	for (AActor* actor : outActors)
-	{
-		if (!actor->IsA<AWizardCharacter>())
-		{
-			FStatusEffect curse = curseEffect;
-			curse.Timer = 0;
-			TArray<FStatusEffect> effects{curse};
-			Cast<ABaseCharacter>(actor)->AddStatusEffects(effects);
-			return;
-		}
-	}
-}
+//void ABaseCharacter::SpreadCurse(const FStatusEffect& curseEffect)
+//{
+//	TArray<AActor*>ignoreActors{this};
+//	TArray<AActor*>outActors{};
+//	//get nearby enemies
+//	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), curseEffect.Interval, TArray<TEnumAsByte<EObjectTypeQuery>>(), StaticClass(), ignoreActors, outActors); //range is stored in interval
+//
+//	//apply curse to one
+//	for (AActor* actor : outActors)
+//	{
+//		if (!actor->IsA<AWizardCharacter>())
+//		{
+//			FStatusEffect curse = curseEffect;
+//			curse.Timer = 0;
+//			TArray<FStatusEffect> effects{curse};
+//			Cast<ABaseCharacter>(actor)->AddStatusEffects(effects);
+//			return;
+//		}
+//	}
+//}
 
 void ABaseCharacter::Knockup()
 {
@@ -298,84 +298,84 @@ void ABaseCharacter::Push(const FVector& force)
 	}
 }
 
-void ABaseCharacter::ReapplyStatusEffects(const TArray<FStatusEffect>& statusEffects)
-{
-	for (const auto& effect : statusEffects)
-	{
-		FStatusEffect* existingEffect = CurrentStatusEffects.FindByPredicate([effect](const FStatusEffect& currEffect) {return effect.EffectType == currEffect.EffectType && effect.Cause == currEffect.Cause; });
-		if (existingEffect != nullptr) // refresh existing effect
-		{
-			switch (existingEffect->EffectType)
-			{
-			case Type::Damage:
-				existingEffect->Duration = effect.Duration;
-				existingEffect->Value = effect.Value;
-				break;
-			case Type::Slow:
-			case Type::Stun:
-				existingEffect->Timer = 0;
-				break;
-			default:
-				break;
-			}
-		}
-		else //add new effect
-		{
-			if (effect.EffectType == Type::Stun)
-			{
-				Stunned = true;
-				OnStunned();
-				if (NiagaraComponent != nullptr)
-					NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 1.f);
-			}
-			if (effect.EffectType == Type::Damage)
-			{
-				if (NiagaraComponent != nullptr)
-					NiagaraComponent->SetVariableFloat(TEXT("Burning"), 1.f);
-			}
-			if (effect.EffectType == Type::Slow)
-			{
-				SlowAmount += effect.Value;
-				CharacterMovement->MaxWalkSpeed *= (1 - effect.Value);
-			}
-			CurrentStatusEffects.Add(effect);
-		}	
-	}
-}
-
-void ABaseCharacter::AddStatusEffect(const FStatusEffect& effect)
-{
-	if (effect.EffectType == Type::Stun)
-	{
-		Stunned = true;
-		OnStunned();
-		if (NiagaraComponent != nullptr)
-			NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 1.f);
-	}
-	if (effect.EffectType == Type::Damage)
-	{
-		if (NiagaraComponent != nullptr)
-			NiagaraComponent->SetVariableFloat(TEXT("Burning"), 1.f);
-	}
-	if (effect.EffectType == Type::Slow)
-	{
-		SlowAmount += effect.Value;
-		CharacterMovement->MaxWalkSpeed *= (1 - effect.Value);
-	}
-	if (effect.EffectType == Type::Curse)
-	{
-		if (NiagaraComponent != nullptr)
-			NiagaraComponent->SetVariableFloat(TEXT("Cursed"), 1.f);
-	}
-	CurrentStatusEffects.Add(effect);
-}
+//void ABaseCharacter::ReapplyStatusEffects(const TArray<FStatusEffect>& statusEffects)
+//{
+//	for (const auto& effect : statusEffects)
+//	{
+//		FStatusEffect* existingEffect = CurrentStatusEffects.FindByPredicate([effect](const FStatusEffect& currEffect) {return effect.EffectType == currEffect.EffectType && effect.Cause == currEffect.Cause; });
+//		if (existingEffect != nullptr) // refresh existing effect
+//		{
+//			switch (existingEffect->EffectType)
+//			{
+//			case Type::Damage:
+//				existingEffect->Duration = effect.Duration;
+//				existingEffect->Value = effect.Value;
+//				break;
+//			case Type::Slow:
+//			case Type::Stun:
+//				existingEffect->Timer = 0;
+//				break;
+//			default:
+//				break;
+//			}
+//		}
+//		else //add new effect
+//		{
+//			if (effect.EffectType == Type::Stun)
+//			{
+//				Stunned = true;
+//				OnStunned();
+//				if (NiagaraComponent != nullptr)
+//					NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 1.f);
+//			}
+//			if (effect.EffectType == Type::Damage)
+//			{
+//				if (NiagaraComponent != nullptr)
+//					NiagaraComponent->SetVariableFloat(TEXT("Burning"), 1.f);
+//			}
+//			if (effect.EffectType == Type::Slow)
+//			{
+//				SlowAmount += effect.Value;
+//				CharacterMovement->MaxWalkSpeed *= (1 - effect.Value);
+//			}
+//			CurrentStatusEffects.Add(effect);
+//		}	
+//	}
+//}
+//
+//void ABaseCharacter::AddStatusEffect(const FStatusEffect& effect)
+//{
+//	if (effect.EffectType == Type::Stun)
+//	{
+//		Stunned = true;
+//		OnStunned();
+//		if (NiagaraComponent != nullptr)
+//			NiagaraComponent->SetVariableFloat(TEXT("Stunned"), 1.f);
+//	}
+//	if (effect.EffectType == Type::Damage)
+//	{
+//		if (NiagaraComponent != nullptr)
+//			NiagaraComponent->SetVariableFloat(TEXT("Burning"), 1.f);
+//	}
+//	if (effect.EffectType == Type::Slow)
+//	{
+//		SlowAmount += effect.Value;
+//		CharacterMovement->MaxWalkSpeed *= (1 - effect.Value);
+//	}
+//	if (effect.EffectType == Type::Curse)
+//	{
+//		if (NiagaraComponent != nullptr)
+//			NiagaraComponent->SetVariableFloat(TEXT("Cursed"), 1.f);
+//	}
+//	CurrentStatusEffects.Add(effect);
+//}
 
 // Called every frame
 void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UpdateStatusEffects(DeltaTime);
+	//UpdateStatusEffects(DeltaTime);
 	
 }
 

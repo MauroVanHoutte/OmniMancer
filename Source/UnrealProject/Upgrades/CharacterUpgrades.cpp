@@ -1,5 +1,5 @@
 #include "CharacterUpgrades.h"
-#include "../WizardCharacter.h"
+#include "WizardCharacter.h"
 #include "Triggers/TriggerEffects.h"
 #include "StatUpgrades/StatBoosts.h"
 #include "RepeatingEffects/RepeatingEffect.h"
@@ -44,7 +44,7 @@ void UBaseAttackStatusEffectUpgrade::Apply(AWizardCharacter* character)
 {
 	if (!Applied)
 	{
-		character->AddBaseAttackStatusEffect(StatusEffect);
+		//character->AddBaseAttackStatusEffect(StatusEffect);
 		Applied = true;
 	}
 }
@@ -53,7 +53,7 @@ void UBaseAttackStatusEffectUpgrade::Remove(AWizardCharacter* character)
 {
 	if (Applied)
 	{
-		character->RemoveBaseAttackStatusEffect(StatusEffect);
+		//character->RemoveBaseAttackStatusEffect(StatusEffect);
 		Applied = false;
 	}
 }
@@ -62,7 +62,7 @@ void UReflectStatusEffectUpgrade::Apply(AWizardCharacter* character)
 {
 	if (!Applied)
 	{
-		character->AddReflectStatusEffect(StatusEffect);
+		//character->AddReflectStatusEffect(StatusEffect);
 		Applied = true;
 	}
 }
@@ -71,7 +71,7 @@ void UReflectStatusEffectUpgrade::Remove(AWizardCharacter* character)
 {
 	if (Applied)
 	{
-		character->RemoveReflectStatusEffect(StatusEffect);
+		//character->RemoveReflectStatusEffect(StatusEffect);
 		Applied = false;
 	}
 }

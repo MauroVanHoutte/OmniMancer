@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../StatusEffect.h"
+#include "StatusEffects/StatusEffect.h"
 #include "CharacterUpgrades.generated.h"
 
 class AWizardCharacter;
@@ -68,8 +68,8 @@ public:
 	virtual void Remove(AWizardCharacter* character) override;
 
 private:
-	UPROPERTY(EditDefaultsOnly)
-	FStatusEffect StatusEffect;
+	//UPROPERTY(EditDefaultsOnly)
+	//FStatusEffect StatusEffect;
 };
 
 //Reflect status effect
@@ -82,8 +82,8 @@ public:
 	virtual void Remove(AWizardCharacter* character) override;
 
 private:
-	UPROPERTY(EditDefaultsOnly)
-	FStatusEffect StatusEffect;
+	//UPROPERTY(EditDefaultsOnly)
+	//FStatusEffect StatusEffect;
 };
 
 //Repeating effect

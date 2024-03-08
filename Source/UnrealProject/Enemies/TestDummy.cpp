@@ -2,7 +2,7 @@
 
 
 #include "TestDummy.h"
-#include "../Spells/BaseProjectile.h"
+#include "SpellCasting/Spells/BaseProjectile.h"
 
 // Sets default values
 ATestDummy::ATestDummy()

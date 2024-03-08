@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "../../WizardCharacter.h"
-#include "../../Spells/FirePool.h"
+#include "WizardCharacter.h"
+#include "SpellCasting/Spells/FirePool.h"
 
 #include "RepeatingEffect.generated.h"
 

@@ -2,8 +2,8 @@
 #include <Components/Image.h>
 #include <Components/TextBlock.h>
 #include <Components/ProgressBar.h>
-#include "../OmnimancerGameInstance.h"
-#include "../WizardCharacter.h"
+#include "OmnimancerGameInstance.h"
+#include "WizardCharacter.h"
 
 void UPlayerHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {

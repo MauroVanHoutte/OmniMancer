@@ -1,6 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "../CloudActor.h"
+#include "CloudActor.h"
 #include "NavMesh/NavMeshBoundsVolume.h" 
 
 #include "WaveFunctionCollapse.generated.h"

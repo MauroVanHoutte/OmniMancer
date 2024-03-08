@@ -2,7 +2,7 @@
 
 
 #include "UpgradeMenu.h"
-#include "../OmnimancerGameInstance.h"
+#include "OmnimancerGameInstance.h"
 #include "Blueprint/WidgetBlueprintLibrary.h" 
 #include "UpgradeButton.h"
 #include "UpgradeConnection.h"
