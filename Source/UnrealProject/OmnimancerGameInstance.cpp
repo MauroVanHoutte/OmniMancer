@@ -9,6 +9,7 @@
 
 void UOmnimancerGameInstance::Init()
 {
+	Super::Init();
 
 	//loading unlocks
 	UOmnimancerSaveGame* loadedSave;
@@ -65,6 +66,7 @@ void UOmnimancerGameInstance::Init()
 
 void UOmnimancerGameInstance::Shutdown()
 {
+	Super::Shutdown();
 	UOmnimancerSaveGame* save;
 	save = Cast<UOmnimancerSaveGame>(UGameplayStatics::CreateSaveGameObject(UOmnimancerSaveGame::StaticClass()));
 	save->Currency = Currency;

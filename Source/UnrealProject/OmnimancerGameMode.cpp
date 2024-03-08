@@ -10,6 +10,8 @@
 
 void AOmnimancerGameMode::BeginPlay()
 {
+	Super::BeginPlay();
+
 	UGameplayStatics::SetGamePaused(GetWorld(), true);
 
 	TArray<AActor*> wfcInstances;
