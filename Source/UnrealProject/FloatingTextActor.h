@@ -15,7 +15,7 @@ public:
 	AFloatingTextActor();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void Initialize(const FText& text, FColor color);
+	void Initialize(const FText& text);
 
 	inline const FVector& GetAnchorLocation() const { return AnchorLocation; };
 
@@ -23,6 +23,9 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FColor TextColor;
 
 private:
 	FVector AnchorLocation;
