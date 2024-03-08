@@ -3,22 +3,22 @@
 
 #include "WizardCharacter.h"
 #include <DrawDebugHelpers.h>
-#include "Spells/BaseProjectile.h"
+#include "SpellCasting/Spells/BaseProjectile.h"
 #include <GameFramework/CharacterMovementComponent.h>
 #include <Components/CapsuleComponent.h>
 #include <AIController.h>
-#include "Powerups/PowerUpEffect.h"
+#include "Pickups/Powerups/PowerUpEffect.h"
 #include "FloatingTextActor.h"
 #include <Components/BillboardComponent.h>
 #include <Camera/CameraComponent.h>
 #include <GameFramework/SpringArmComponent.h>
-#include "Spells/FlameColumn.h"
-#include "Spells/IceZone.h"
-#include "Spells/IceWall.h"
-#include "Spells/Tornado.h"
-#include "Spells/ChainLightning.h"
-#include "Spells/Shockwave.h"
-#include "Spells/BaseProjectile.h"
+#include "SpellCasting/Spells/FlameColumn.h"
+#include "SpellCasting/Spells/IceZone.h"
+#include "SpellCasting/Spells/IceWall.h"
+#include "SpellCasting/Spells/Tornado.h"
+#include "SpellCasting/Spells/ChainLightning.h"
+#include "SpellCasting/Spells/Shockwave.h"
+#include "SpellCasting/Spells/BaseProjectile.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Upgrades/Triggers/TriggerEffects.h"
@@ -134,8 +134,8 @@ void AWizardCharacter::TakeTickDamage(float damage)
 void AWizardCharacter::OnTakeHit(AActor* cause)
 {
 	auto caster = Cast<ABaseCharacter>(cause);
-	if (caster->IsValidLowLevel())
-		caster->AddStatusEffects(ReflectEffects);
+	/*if (caster->IsValidLowLevel())
+		caster->AddStatusEffects(ReflectEffects);*/
 
 	ExecuteTriggerEffects(TriggerCondition::OnTakeHit, this, nullptr, nullptr);
 }
@@ -186,23 +186,24 @@ void AWizardCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	InputComponent = PlayerInputComponent;
 
-	//PlayerInputComponent->BindAxis("MoveUp", this, &AWizardCharacter::MoveUp);
-	//PlayerInputComponent->BindAxis("MoveRight", this, &AWizardCharacter::MoveRight);
-	//PlayerInputComponent->BindAction("Space", IE_Pressed, this, &AWizardCharacter::Dash);
+	PlayerInputComponent->BindAxis("MoveUp", this, &AWizardCharacter::MoveUp);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AWizardCharacter::MoveRight);
+	PlayerInputComponent->BindAction("Space", IE_Pressed, this, &AWizardCharacter::Dash);
 	PlayerInputComponent->BindAxis("LMB", this, &AWizardCharacter::Fire); //IE_Repeat doesnt work with mouse buttons
-	//PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AWizardCharacter::CastSpell);
-	//PlayerInputComponent->BindAction<FAddElementDelegate>("FireElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Fire);
-	//PlayerInputComponent->BindAction<FAddElementDelegate>("FrostElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Frost);
-	//PlayerInputComponent->BindAction<FAddElementDelegate>("WindElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Wind);
+	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AWizardCharacter::CastSpell);
+	PlayerInputComponent->BindAction<FAddElementDelegate>("FireElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Fire);
+	PlayerInputComponent->BindAction<FAddElementDelegate>("FrostElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Frost);
+	PlayerInputComponent->BindAction<FAddElementDelegate>("WindElement", IE_Pressed, this, &AWizardCharacter::AddElement, WizardElement::Wind);
 	auto& action = PlayerInputComponent->BindAction("Pause", IE_Pressed, this, &AWizardCharacter::Pause);
 	action.bExecuteWhenPaused = true;
 	PlayerInputComponent->BindAction("OpenMap", IE_Pressed, this, &AWizardCharacter::ShowMap);
 	PlayerInputComponent->BindAction("OpenMap", IE_Released, this, &AWizardCharacter::HideMap);
 }
 
-void AWizardCharacter::OnSpellHitEnemy( ABaseSpell* spell, ABaseCharacter* enemy)
+void AWizardCharacter::OnSpellHitEnemy( ABaseSpell* spell, AActor* enemy)
 {
-	ExecuteTriggerEffects(TriggerCondition::OnHit, this, spell, enemy);
+	ABaseCharacter* Character = Cast<ABaseCharacter>(enemy);
+	ExecuteTriggerEffects(TriggerCondition::OnSpellHit, this, spell, Character);
 }
 
 const TArray<WizardElement>& AWizardCharacter::GetCurrentElements() const
@@ -414,30 +415,30 @@ void AWizardCharacter::SetDashForce(float newDashForce)
 	DashForce = newDashForce;
 }
 
-void AWizardCharacter::AddBaseAttackStatusEffect(const FStatusEffect& effect)
-{
-	BaseAttackEffects.Add(effect);
-}
-
-void AWizardCharacter::RemoveBaseAttackStatusEffect(const FStatusEffect& effect)
-{
-	BaseAttackEffects.Remove(effect);
-}
-
-void AWizardCharacter::AddReflectStatusEffect(const FStatusEffect& effect)
-{
-	ReflectEffects.Add(effect);
-}
-
-void AWizardCharacter::RemoveReflectStatusEffect(const FStatusEffect& effect)
-{
-	ReflectEffects.Remove(effect);
-}
-
-TArray<FStatusEffect>& AWizardCharacter::GetBaseAttackEffectsRef()
-{
-	return BaseAttackEffects;
-}
+//void AWizardCharacter::AddBaseAttackStatusEffect(const FStatusEffect& effect)
+//{
+//	BaseAttackEffects.Add(effect);
+//}
+//
+//void AWizardCharacter::RemoveBaseAttackStatusEffect(const FStatusEffect& effect)
+//{
+//	BaseAttackEffects.Remove(effect);
+//}
+//
+//void AWizardCharacter::AddReflectStatusEffect(const FStatusEffect& effect)
+//{
+//	ReflectEffects.Add(effect);
+//}
+//
+//void AWizardCharacter::RemoveReflectStatusEffect(const FStatusEffect& effect)
+//{
+//	ReflectEffects.Remove(effect);
+//}
+//
+//TArray<FStatusEffect>& AWizardCharacter::GetBaseAttackEffectsRef()
+//{
+//	return BaseAttackEffects;
+//}
 
 float AWizardCharacter::GetExperiencePercentage() const
 {
@@ -526,12 +527,12 @@ void AWizardCharacter::HideMap()
 
 void AWizardCharacter::MoveUp(float value)
 {
-	//AddMovementInput(FVector(1.f, 0.f, 0.f), value);
+	AddMovementInput(FVector(1.f, 0.f, 0.f), value);
 }
 
 void AWizardCharacter::MoveRight(float value)
 {
-	//AddMovementInput(FVector(0.f, 1.f, 0.f), value);
+	AddMovementInput(FVector(0.f, 1.f, 0.f), value);
 }
 
 void AWizardCharacter::AddElement(WizardElement element)
@@ -653,10 +654,10 @@ void AWizardCharacter::InitProjectile(ABaseProjectile* projectile, const FVector
 {
 	if (projectile)
 	{
-		for (const auto& effect : BaseAttackEffects)
+		/*for (const auto& effect : BaseAttackEffects)
 		{
 			projectile->AddStatusEffect(effect);
-		}
+		}*/
 
 		projectile->InitSpell(FVector(), this);
 		projectile->FireInDirection(direction);
@@ -706,14 +707,14 @@ void AWizardCharacter::CastSpell()
 	if (spell != nullptr)
 		spell->InitSpell(raycastHit.Location, this); //virtual init overriden in derived spells
 
-	ExecuteTriggerEffects(TriggerCondition::OnCast, this, spell, nullptr);
+	ExecuteTriggerEffects(TriggerCondition::OnSpellCast, this, spell, nullptr);
 }
 
-void AWizardCharacter::ExecuteTriggerEffects(const TriggerCondition& condition, AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target)
+void AWizardCharacter::ExecuteTriggerEffects(const TriggerCondition condition, AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target)
 {
 	for (auto& trigger : TriggerEffects)
 		if (trigger->Condition == condition)
-			trigger->OnTrigger(this, spell, target);
+			trigger->Trigger(this, spell, target);
 }
 
 void AWizardCharacter::Dash()

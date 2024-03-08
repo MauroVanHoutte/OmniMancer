@@ -19,14 +19,6 @@
 //	Wind = 3
 //};
 
-UENUM(BlueprintType)
-enum class TriggerCondition : uint8
-{
-	OnCast,
-	OnHit,
-	OnTakeHit
-};
-
 class UPowerUpEffect;
 class UBillboardComponent;
 class UCameraComponent;
@@ -42,7 +34,7 @@ class ABaseSpell;
 class UUserWidget;
 class UPlayerHUD;
 class UBaseTriggerEffect;
-
+enum class TriggerCondition : uint8;
 
 UCLASS()
 class UNREALPROJECT_API AWizardCharacter : public ABaseCharacter
@@ -61,7 +53,7 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void OnSpellHitEnemy( ABaseSpell* spell, ABaseCharacter* enemy);
+	void OnSpellHitEnemy( ABaseSpell* spell, AActor* enemy);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnAddElement();
@@ -115,11 +107,11 @@ public:
 	void SetStunDurationMultiplier(float newStunDurationMultiplier);
 	float GetDashForce() const;
 	void SetDashForce(float newDashForce);
-	void AddBaseAttackStatusEffect(const FStatusEffect& effect);
+	/*void AddBaseAttackStatusEffect(const FStatusEffect& effect);
 	void RemoveBaseAttackStatusEffect(const FStatusEffect& effect);
 	void AddReflectStatusEffect(const FStatusEffect& effect);
 	void RemoveReflectStatusEffect(const FStatusEffect& effect);
-	TArray<FStatusEffect>& GetBaseAttackEffectsRef();
+	TArray<FStatusEffect>& GetBaseAttackEffectsRef();*/
 	float GetExperiencePercentage() const;
 
 	void PickupExperience(int experience);
@@ -161,7 +153,7 @@ private:
 	void InitProjectile(ABaseProjectile* projectile, const FVector& direction);
 	void CastSpell();
 
-	void ExecuteTriggerEffects(const TriggerCondition& condition, AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target);
+	void ExecuteTriggerEffects(const TriggerCondition condition, AWizardCharacter* caster, ABaseSpell* spell, ABaseCharacter* target);
 
 	void Dash();
 
@@ -256,12 +248,12 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Active")
 	TArray<UPowerUpEffect*> PowerUpEffects;
 
-	UPROPERTY(VisibleAnywhere, Category = "Active")
-	TArray<FStatusEffect> BaseAttackEffects;
+	//UPROPERTY(VisibleAnywhere, Category = "Active")
+	//TArray<FStatusEffect> BaseAttackEffects;
 
 	//effects that are applied to attacker when wizard takes damage
-	UPROPERTY(VisibleAnywhere, Category = "Active")
-	TArray<FStatusEffect> ReflectEffects;
+	//UPROPERTY(VisibleAnywhere, Category = "Active")
+	//TArray<FStatusEffect> ReflectEffects;
 	//effects applied on hit, take hit and cast
 	TArray<UBaseTriggerEffect*> TriggerEffects;
 	UPROPERTY(EditAnywhere, Instanced)
