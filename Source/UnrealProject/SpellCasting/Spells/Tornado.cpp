@@ -3,8 +3,8 @@
 
 #include "Tornado.h"
 #include <GameFramework/ProjectileMovementComponent.h>
-#include "../Enemies/BaseCharacter.h"
-#include "../WizardCharacter.h"
+#include "Enemies/BaseCharacter.h"
+#include "WizardCharacter.h"
 #include "ChainLightning.h"
 
 ATornado::ATornado()
@@ -48,7 +48,7 @@ void ATornado::InitSpell(const FVector& targetLocation, APawn* caster)
 
 	Damage = BaseDamage + DamagePerFireLevel * FireLevel;
 	ScaleGrowth += ScaleGrowthPerWindLevel * WindLevel;
-	SetStunParams(true, StunDuration + StunDurationPerFrostLevel * FireLevel);
+	//SetStunParams(true, StunDuration + StunDurationPerFrostLevel * FireLevel);
 }
 
 void ATornado::BeginPlay()
@@ -59,11 +59,11 @@ void ATornado::BeginPlay()
 	Mesh->SetWorldScale3D(FVector(StartScale, StartScale, StartScale));
 }
 
-void ATornado::OnHit(ABaseCharacter* hitActor)
+void ATornado::OnHit(AActor* hitActor)
 {
 	Super::OnHit(hitActor);
 
-	hitActor->Knockup();
+	//hitActor->Knockup();
 
 	//Wind level 4 effect
 	if (WindLevel >= 4)

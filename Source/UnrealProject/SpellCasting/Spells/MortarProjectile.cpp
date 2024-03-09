@@ -2,7 +2,7 @@
 
 
 #include "MortarProjectile.h"
-#include "../WizardCharacter.h"
+#include "WizardCharacter.h"
 #include <GameFramework/ProjectileMovementComponent.h>
 #include <Components/SphereComponent.h>
 

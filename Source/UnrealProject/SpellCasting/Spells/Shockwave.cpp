@@ -2,8 +2,8 @@
 
 
 #include "Shockwave.h"
-#include "../Enemies/BaseCharacter.h"
-#include "../WizardCharacter.h"
+#include "Enemies/BaseCharacter.h"
+#include "WizardCharacter.h"
 
 AShockwave::AShockwave()
 {
@@ -37,7 +37,7 @@ void AShockwave::InitSpell(const FVector& targetLocation, APawn* caster)
 	Super::InitSpell(targetLocation, caster);
 
 	SetActorLocation(caster->GetActorLocation());
-	SetStunParams(true, StunDuration + StunDurationPerFrostLevel * FrostLevel);
+	//SetStunParams(true, StunDuration + StunDurationPerFrostLevel * FrostLevel);
 	Damage = InitialDamage + DamagePerWindLevel * WindLevel;
 	KnockbackAmount += KnockbackPerWindLevel * WindLevel;
 }
@@ -47,7 +47,7 @@ void AShockwave::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AShockwave::OnHit(ABaseCharacter* hitActor)
+void AShockwave::OnHit(AActor* hitActor)
 {
 	Super::OnHit(hitActor);
 
@@ -56,7 +56,7 @@ void AShockwave::OnHit(ABaseCharacter* hitActor)
 
 	auto direcrion = (hitActor->GetActorLocation() - spellOrigin).GetSafeNormal();
 
-	hitActor->Push(direcrion*KnockbackAmount);
+	//hitActor->Push(direcrion*KnockbackAmount);
 }
 
 

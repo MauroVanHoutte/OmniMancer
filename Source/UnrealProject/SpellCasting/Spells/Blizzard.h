@@ -37,6 +37,7 @@ private:
 	float SlowAmount = 0.2f;
 	UPROPERTY(EditAnywhere, Category = "BaseParameter")
 	float DamagePerTick = 0.4f;
+
 	FTimerHandle ApplicationTimer;
 	AWizardCharacter* Wizard;
 };

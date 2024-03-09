@@ -3,9 +3,9 @@
 
 #include "BaseProjectile.h"
 #include <Kismet/KismetSystemLibrary.h>
-#include "../Enemies/BaseCharacter.h"
+#include "Enemies/BaseCharacter.h"
 #include <Kismet/GameplayStatics.h>
-#include "../WizardCharacter.h"
+#include "WizardCharacter.h"
 #include <Components/SphereComponent.h>
 #include <GameFramework/ProjectileMovementComponent.h>
 #include "NiagaraFunctionLibrary.h"
@@ -46,7 +46,7 @@ void ABaseProjectile::BeginPlay()
 	Super::BeginPlay();
 	
 	//interrupt ai movement to allow knowback
-	SetStunParams(true, 0.1f);
+	//SetStunParams(true, 0.1f);
 }
 
 void ABaseProjectile::Explode()
@@ -84,11 +84,11 @@ void ABaseProjectile::FireInDirection(const FVector& direction)
 	SetActorRotation(direction.Rotation());
 }
 
-void ABaseProjectile::OnHit(ABaseCharacter* hitActor)
+void ABaseProjectile::OnHit(AActor* hitActor)
 {
 	Super::OnHit(hitActor);
 
-	hitActor->Push(ProjectileMovement->Velocity.GetSafeNormal() * PushbackForce);
+	//hitActor->Push(ProjectileMovement->Velocity.GetSafeNormal() * PushbackForce);
 
 	if (Explosive)
 	{

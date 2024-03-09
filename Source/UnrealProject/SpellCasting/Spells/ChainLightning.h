@@ -21,7 +21,7 @@ public:
 	AChainLightning();
 
 	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
-	virtual void OnHit(ABaseCharacter* hitActor) override;
+	virtual void OnHit(AActor* hitActor) override;
 protected:
 	virtual void BeginPlay() override;
 

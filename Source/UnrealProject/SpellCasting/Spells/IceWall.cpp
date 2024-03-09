@@ -2,7 +2,8 @@
 
 
 #include "IceWall.h"
-#include "../WizardCharacter.h"
+#include "WizardCharacter.h"
+#include "StatusEffects/StatusEffect.h"
 
 AIceWall::AIceWall()
 {
@@ -38,11 +39,12 @@ void AIceWall::Tick(float deltaTime)
 void AIceWall::InitSpell(const FVector& targetLocation, APawn* caster)
 {
 	Super::InitSpell(targetLocation, caster);
-	SetSlowParams(true, SlowValue + SlowPerFrostLevel * FrostLevel, SlowDuration + DurationPerFrostLevel * FrostLevel);
+	//SetSlowParams(true, SlowValue + SlowPerFrostLevel * FrostLevel, SlowDuration + DurationPerFrostLevel * FrostLevel);
+
 	Damage = Damage + DamagePerFrostLevel * FrostLevel;
 
-	if (FrostLevel > 3)
-		SetCurseParams(true, 15, 500, 5);
+	//if (FrostLevel > 3)
+	//	SetCurseParams(true, 15, 500, 5);
 
 	FVector startLocation = targetLocation;
 	startLocation.Z -= (WallHeight*100)/2; //lower wall into floor

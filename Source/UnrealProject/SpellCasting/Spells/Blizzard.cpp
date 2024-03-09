@@ -3,15 +3,16 @@
 
 #include "Blizzard.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "../Enemies/BaseCharacter.h"
-#include "../WizardCharacter.h"
+#include "Enemies/BaseCharacter.h"
+#include "WizardCharacter.h"
+#include "StatusEffects/StatusEffect.h"
+#include "StatusEffects/StatusEffectHandlingComponent.h"
 
 ABlizzard::ABlizzard()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-
 	CylinderMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shape"));
 	CylinderMesh->SetupAttachment(RootComponent);
 	auto mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder")).Object;
@@ -22,17 +23,13 @@ void ABlizzard::TickBlizzard()
 {
 	ApplyWizardStats();
 
-	TArray<AActor*> overlappingActors;
-	GetOverlappingActors(overlappingActors, ABaseCharacter::StaticClass());
-	for (AActor* actor : overlappingActors)
+	TArray<AActor*> OverlappingActors;
+	GetOverlappingActors(OverlappingActors, ABaseCharacter::StaticClass());
+	for (AActor* Actor : OverlappingActors)
 	{
-		ABaseCharacter* character = Cast<ABaseCharacter>(actor);
-		if (!character->IsA<AWizardCharacter>())
-		{
-			character->TakeSpellDamage(this);
-			character->ReapplyStatusEffects(GetStatusEffects());
-			OnHit(character);
-		}
+		FDamageEvent DamageEvent;
+		Actor->TakeDamage(DamagePerTick, DamageEvent, GetInstigatorController(), this);
+		OnHit(Actor);
 	}
 }
 
@@ -50,8 +47,6 @@ void ABlizzard::SetWizard(AWizardCharacter* wizard)
 void ABlizzard::ApplyWizardStats()
 {
 	InitSpell(FVector(), Wizard);
-	SetSlowParams(true, SlowAmount, TickInterval);
-	Damage = DamagePerTick;
 }
 
 void ABlizzard::Activate()

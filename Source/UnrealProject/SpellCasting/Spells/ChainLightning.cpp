@@ -3,8 +3,8 @@
 
 #include "ChainLightning.h"
 #include <Kismet/GameplayStatics.h>
-#include "../Enemies/BaseCharacter.h"
-#include "../WizardCharacter.h"
+#include "Enemies/BaseCharacter.h"
+#include "WizardCharacter.h"
 
 AChainLightning::AChainLightning()
 	: ABaseProjectile()
@@ -19,7 +19,7 @@ void AChainLightning::InitSpell(const FVector& targetLocation, APawn* caster)
 	SetActorLocation(caster->GetActorLocation());
 	FireInDirection((targetLocation - caster->GetActorLocation()).GetSafeNormal());
 	Damage = InitialDamage + DamagePerWindLevel * WindLevel;
-	SetStunParams(true, StunDuration + DurationPerFrost * FrostLevel);
+	//SetStunParams(true, StunDuration + DurationPerFrost * FrostLevel);
 }
 
 void AChainLightning::BeginPlay()
@@ -39,7 +39,7 @@ void AChainLightning::AddHitActors(const TArray<AActor*>& actors)
 	HitActors.Append(actors);
 }
 
-void AChainLightning::OnHit(ABaseCharacter* hitActor)
+void AChainLightning::OnHit(AActor* hitActor)
 {
 	Super::OnHit(hitActor);
 

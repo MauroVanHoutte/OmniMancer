@@ -2,8 +2,10 @@
 
 
 #include "FlameColumn.h"
-#include "../Enemies/BaseCharacter.h"
-#include "../WizardCharacter.h"
+#include "Enemies/BaseCharacter.h"
+#include "WizardCharacter.h"
+#include "StatusEffects/StatusEffectPoolingSubsystem.h"
+#include "StatusEffects/StatusEffectHandlingComponent.h"
 
 // Sets default values
 AFlameColumn::AFlameColumn()
@@ -14,7 +16,6 @@ AFlameColumn::AFlameColumn()
 	RootComponent = CylinderMesh;
 	auto mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder")).Object;
 	CylinderMesh->SetStaticMesh(mesh);
-	
 }
 
 // Called when the game starts or when spawned
@@ -50,15 +51,19 @@ void AFlameColumn::Tick(float DeltaTime)
 	}
 }
 
-void AFlameColumn::InitSpell(const FVector& targetLocation, APawn* caster)
+void AFlameColumn::InitSpell(const FVector& TargetLocation, APawn* Caster)
 {
-	Super::InitSpell(targetLocation, caster);
+	Super::InitSpell(TargetLocation, Caster);
 
 	Damage = InitialDamage + DamagePerFireLevel * FireLevel;
-	SetActorLocation(targetLocation);
-	SetBurnParams(ApplyBurn, BurnDamage + BurnDamagePerFireLevel * FireLevel, BurnInterval, (BurnDuration + DurationPerFrostLevel * FrostLevel));
+	SetActorLocation(TargetLocation);
 	CylinderMesh->SetRelativeScale3D(FVector(CircleScale + ScalePerWindLevel * WindLevel, CircleScale + ScalePerWindLevel * WindLevel, 1.f));
 	SetLifeTime(ImpactDelay + VisualLinger);
+}
+
+void AFlameColumn::OnHit(AActor* HitActor)
+{
+	Super::OnHit(HitActor);
 }
 
 

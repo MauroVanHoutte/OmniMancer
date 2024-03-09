@@ -19,6 +19,8 @@ public:
 
 	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
 
+	virtual void OnHit(AActor* hitActor) override;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnDeath() override;
@@ -60,5 +62,4 @@ private:
 	UStaticMeshComponent* CylinderMesh;
 	UPROPERTY(EditAnywhere)
 	FTimerHandle DoubleCast;
-
 };

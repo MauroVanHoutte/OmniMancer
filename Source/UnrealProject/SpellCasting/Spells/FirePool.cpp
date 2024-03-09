@@ -2,7 +2,8 @@
 
 
 #include "FirePool.h"
-#include "../Enemies/BaseCharacter.h"
+#include "Enemies/BaseCharacter.h"
+#include "StatusEffects/StatusEffect.h"
 
 AFirePool::AFirePool()
 {
@@ -12,6 +13,7 @@ AFirePool::AFirePool()
 	auto mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("/Game/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder")).Object;
 	CylinderMesh->SetStaticMesh(mesh);
 	CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	Damage = 1.f;
 }
 
 void AFirePool::InitSpell(const FVector& targetLocation, APawn* caster)
@@ -19,7 +21,6 @@ void AFirePool::InitSpell(const FVector& targetLocation, APawn* caster)
 	ABaseSpell::InitSpell(targetLocation, caster);
 
 	SetActorLocation(targetLocation);
-	SetBurnParams(ApplyBurn, BurnDamage + BurnDamagePerFireLevel * FireLevel, BurnInterval, EffectLingerDuration);
 	SetRadius(CircleScale + ScalePerFireLevel * FireLevel);
 }
 
@@ -31,14 +32,6 @@ void AFirePool::SetRadius(float radius)
 	CylinderMesh->SetRelativeScale3D(scale);
 }
 
-void AFirePool::SetBurnCause(UObject* cause)
-{
-	for (FStatusEffect& effect : StatusEffects)
-	{
-		effect.Cause = cause;
-	}
-}
-
 void AFirePool::BeginPlay()
 {
 	Super::BeginPlay();
@@ -48,16 +41,14 @@ void AFirePool::BeginPlay()
 			if (this == nullptr || !IsValidLowLevel())
 				return;
 
-			TArray<AActor*> overlappingActors{};
-			GetOverlappingActors(overlappingActors, ABaseCharacter::StaticClass());
+			TArray<AActor*> OverlappingActors{};
+			GetOverlappingActors(OverlappingActors, ABaseCharacter::StaticClass());
 
-			for (auto& actor : overlappingActors)
+			for (AActor* Actor : OverlappingActors)
 			{
-				auto instigatorController = Cast<APlayerController>(GetInstigatorController());
-				auto baseEnemy = Cast<ABaseCharacter>(actor);
-				auto actorController = Cast<APlayerController>(baseEnemy->GetController());
-				if (baseEnemy && instigatorController != actorController)
-					baseEnemy->ReapplyStatusEffects(StatusEffects);
+				FDamageEvent DamageEvent;
+				Actor->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
+				OnHit(Actor);
 			}
 		}, ApplicationInterval, true);
 }

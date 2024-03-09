@@ -2,9 +2,9 @@
 
 
 #include "Vortex.h"
-#include "../Enemies/BaseCharacter.h"
+#include "Enemies/BaseCharacter.h"
 #include <GameFramework/CharacterMovementComponent.h>
-#include "../WizardCharacter.h"
+#include "WizardCharacter.h"
 #include <AIController.h>
 
 
