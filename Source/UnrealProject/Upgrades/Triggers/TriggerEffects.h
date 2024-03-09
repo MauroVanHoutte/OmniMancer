@@ -3,22 +3,39 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../../WizardCharacter.h"
-#include "../../Spells/BaseSpell.h"
-#include "../../Spells/BaseProjectile.h"
-#include "../../Spells/Blizzard.h"
-#include "../../Spells/Vortex.h"
+#include "WizardCharacter.h"
+#include "SpellCasting/Spells/BaseSpell.h"
+#include "SpellCasting/Spells/BaseProjectile.h"
+#include "SpellCasting/Spells/Blizzard.h"
+#include "SpellCasting/Spells/Vortex.h"
+#include "StatusEffects/StatusEffect.h"
+#include "StatusEffects/StatusEffectHandlingComponent.h"
+#include "ModularTriggerTargetting/ModularTriggerTargetting.h"
+#include "ModularTriggerEffect/ModularTriggerEffects.h"
+#include "ModularExtraConditions/ModularExtraConditions.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include "TriggerEffects.generated.h"
+
+UENUM(BlueprintType)
+enum class TriggerCondition : uint8
+{
+	OnSpellCast,
+	OnBasicAttackCast,
+	OnSpellHit,
+	OnBasicAttackHit,
+	OnTakeHit
+};
 
 UCLASS(Abstract, EditInlineNew)
 class UBaseTriggerEffect : public UObject
 {
 	GENERATED_BODY()
 public:
-	virtual void OnTrigger(AWizardCharacter* triggerOwner, ABaseSpell* spell, ABaseCharacter* target) {};
+	virtual void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target) {};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TriggerCondition Condition{};
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	class APawn* Instigator;
 };
 
 UCLASS(Abstract, Blueprintable, EditInlineNew)
@@ -26,22 +43,73 @@ class UBPBaseTriggerEffect : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* triggerOwner, ABaseSpell* spell, ABaseCharacter* target) override
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target) override
 	{
 		BP_OnTrigger(triggerOwner, spell, target);
 	};
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void BP_OnTrigger(AWizardCharacter* triggerOwner, ABaseSpell* spell, ABaseCharacter* target);
+	void BP_OnTrigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target);
+};
+
+UCLASS(Blueprintable, BlueprintType, EditInlineNew)
+class UModularTriggerEffect : public UBaseTriggerEffect
+{
+	GENERATED_BODY()
+public:
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target) override
+	{
+		if (!IsValid(EffectModule) ||
+			IsValid(ConditionsModule) && !ConditionsModule->CheckCondition(triggerOwner, spell, target))
+		{
+			return;
+		}
+
+		TArray<FVector> targetLocations;
+		TArray<AActor*> targetActors;
+		if (IsValid(TargettingModule))
+		{
+			TargettingModule->GatherTargets(triggerOwner, spell, target, targetLocations, targetActors);
+		}
+		EffectModule->ExecuteEffect(targetLocations, targetActors, Instigator);
+	}
+
+private:
+	UPROPERTY(EditDefaultsOnly, Instanced)
+	class UModularExtraConditionsBase* ConditionsModule;
+	UPROPERTY(EditDefaultsOnly, Instanced)
+	class UModularTriggerTargettingBase* TargettingModule;
+	UPROPERTY(EditDefaultsOnly, Instanced)
+	class UModularTriggerEffectBase* EffectModule;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UStatusEffectTrigger : public UBaseTriggerEffect
+{
+	GENERATED_BODY()
+public:
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target) override
+	{
+		UStatusEffectHandlingComponent* StatusEffectHandler = target->GetComponentByClass<UStatusEffectHandlingComponent>();
+
+		if (StatusEffectHandler)
+		{
+			StatusEffectHandler->ApplyStatusEffect(StatusEffect);
+		}
+	};
+
+private:
+	UPROPERTY(EditDefaultsOnly, Instanced)
+	UBaseStatusEffect* StatusEffect;
 };
 
 //Slow enemies in radius around caster
 UCLASS(BlueprintType, EditInlineNew)
-class UAoeSlowTrigger : public UBaseTriggerEffect
+class UAoeStatusEffectTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* triggerOwner, ABaseSpell* spell, ABaseCharacter* target) override
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target) override
 	{
 		TArray<AActor*> ignore{ triggerOwner };
 		TArray<AActor*> outActors;
@@ -49,8 +117,8 @@ public:
 		for (AActor* actor : outActors)
 		{
 			auto enemy = Cast<ABaseCharacter>(actor);
-			if (IsValid(enemy))
-				enemy->AddStatusEffect(FStatusEffect{ Type::Slow, -1, Slow , Duration, triggerOwner });
+			//if (IsValid(enemy))
+				//enemy->AddStatusEffect(FStatusEffect{ Type::Slow, -1, Slow , Duration, triggerOwner });
 		}
 	};
 
@@ -69,9 +137,9 @@ class USpeedBuffTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* triggerOwner, ABaseSpell* spell, ABaseCharacter* target) override
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target) override
 	{
-		triggerOwner->AddStatusEffect(FStatusEffect{ Type::Slow, -1, -Speed, Duration, triggerOwner });
+		//triggerOwner->AddStatusEffect(FStatusEffect{ Type::Slow, -1, -Speed, Duration, triggerOwner });
 	};
 
 private:
@@ -87,7 +155,7 @@ class UBaseAttackLowerCooldownTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* triggerOwner, ABaseSpell* spell, ABaseCharacter* target) override
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target) override
 	{
 		//only execute if base projectile
 		auto baseProjectile = Cast<ABaseProjectile>(spell);
@@ -95,8 +163,8 @@ public:
 			return;
 
 		float rand = FMath::FRandRange(0.f, 1.f);
-		if (rand < Chance)
-			triggerOwner->LowerCooldowns(Amount);
+		//if (rand < Chance)
+			//triggerOwner->LowerCooldowns(Amount);
 	};
 
 private:
@@ -112,22 +180,22 @@ class UBaseAttackTempFireRateTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* triggerOwner, ABaseSpell* spell, ABaseCharacter* target) override
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target) override
 	{
 		//only execute if base projectile
 		auto baseProjectile = Cast<ABaseProjectile>(spell);
 		if (baseProjectile == nullptr)
 			return;
 
-		float currentCooldown = triggerOwner->GetBasicAttackCooldown();
-		triggerOwner->SetBasicAttackCooldown(currentCooldown / FireRateMultiplier);
+		//float currentCooldown = triggerOwner->GetBasicAttackCooldown();
+		//triggerOwner->SetBasicAttackCooldown(currentCooldown / FireRateMultiplier);
 
 		//undo buff after duration
 		FTimerHandle handle;
 		triggerOwner->GetWorld()->GetTimerManager().SetTimer(handle, [triggerOwner, this]()
 			{
-				float currentCooldown = triggerOwner->GetBasicAttackCooldown();
-				triggerOwner->SetBasicAttackCooldown(currentCooldown * FireRateMultiplier);
+				//float currentCooldown = triggerOwner->GetBasicAttackCooldown();
+				//triggerOwner->SetBasicAttackCooldown(currentCooldown * FireRateMultiplier);
 			}, Duration, false);
 	};
 
@@ -145,21 +213,21 @@ class USpellDamageOnKillTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* triggerOwner, ABaseSpell* spell, ABaseCharacter* target) override
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target) override
 	{
 		//only execute if target died
 		if (target == nullptr || !target->IsActorBeingDestroyed())
 			return;
 
-		float currentSpellDamageMultiplier = triggerOwner->GetSpellDamageMultiplier();
-		triggerOwner->SetSpellDamageMultiplier(currentSpellDamageMultiplier * SpellDamageBoost);
+		//float currentSpellDamageMultiplier = triggerOwner->GetSpellDamageMultiplier();
+		//triggerOwner->SetSpellDamageMultiplier(currentSpellDamageMultiplier * SpellDamageBoost);
 
 		//undo buff after duration
 		FTimerHandle handle;
 		triggerOwner->GetWorld()->GetTimerManager().SetTimer(handle, [triggerOwner, this]()
 			{
-				float currentSpellDamageMultiplier = triggerOwner->GetSpellDamageMultiplier();
-				triggerOwner->SetSpellDamageMultiplier(currentSpellDamageMultiplier / SpellDamageBoost);
+				//float currentSpellDamageMultiplier = triggerOwner->GetSpellDamageMultiplier();
+				//triggerOwner->SetSpellDamageMultiplier(currentSpellDamageMultiplier / SpellDamageBoost);
 			}, Duration, false);
 	};
 
@@ -176,7 +244,7 @@ class UBlizzardOnSlowTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* triggerOwner, ABaseSpell* spell, ABaseCharacter* target) override
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target) override
 	{
 		//slows from blizzard itself dont count
 		ABlizzard* blizzard = Cast<ABlizzard>(spell);
@@ -186,11 +254,11 @@ public:
 		if (!Initialized)
 		{
 			Blizzard = GetWorld()->SpawnActor<ABlizzard>(*BlizzardClass);
-			Blizzard->SetWizard(triggerOwner);
+			//Blizzard->SetWizard(triggerOwner);
 			Initialized = true;
 		}
 
-		auto slowEffect = spell->GetStatusEffects().FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Slow; });
+		/*auto slowEffect = spell->GetStatusEffects().FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Slow; });
 		if (slowEffect != nullptr)
 		{
 			CurrentSlowsActive++;
@@ -211,7 +279,7 @@ public:
 					GetWorld()->GetTimerManager().SetTimer(DeactivationTimer, Blizzard, &ABlizzard::Deactivate, LingerDuration);
 					UE_LOG(LogTemp, Warning, TEXT("Blizzard deactivates soon"));
 				}}, slowEffect->Duration, false);
-		}
+		}*/
 	};
 
 private:
@@ -234,14 +302,14 @@ class UDamageReductionTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* triggerOwner, ABaseSpell* spell, ABaseCharacter* target) override
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target) override
 	{
-		triggerOwner->SetDamageTakenMultiplier(triggerOwner->GetDamageTakenMultiplier() * Amount);
+		//triggerOwner->SetDamageTakenMultiplier(triggerOwner->GetDamageTakenMultiplier() * Amount);
 			
 		FTimerHandle handle;
-		triggerOwner->GetWorld()->GetTimerManager().SetTimer(handle, [triggerOwner, this]() {
-			triggerOwner->SetDamageTakenMultiplier(triggerOwner->GetDamageTakenMultiplier() / Amount);
-			}, Duration, false);
+	//	triggerOwner->GetWorld()->GetTimerManager().SetTimer(handle, [triggerOwner, this]() {
+	//		triggerOwner->SetDamageTakenMultiplier(triggerOwner->GetDamageTakenMultiplier() / Amount);
+	//		}, Duration, false);
 	};
 
 private:
@@ -257,7 +325,7 @@ class UVortexOnKillTrigger : public UBaseTriggerEffect
 {
 	GENERATED_BODY()
 public:
-	void OnTrigger(AWizardCharacter* triggerOwner, ABaseSpell* spell, ABaseCharacter* target) override
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target) override
 	{
 		//only execute if target died
 		if (target == nullptr || !target->IsActorBeingDestroyed())
@@ -267,7 +335,7 @@ public:
 			return;
 
 		AVortex* vortex = GetWorld()->SpawnActor<AVortex>(*VortexClass);
-		vortex->InitSpell(target->GetActorLocation(), triggerOwner);
+		//vortex->InitSpell(target->GetActorLocation(), triggerOwner);
 	};
 
 private:
