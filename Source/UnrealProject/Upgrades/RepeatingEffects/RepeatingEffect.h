@@ -38,7 +38,6 @@ public:
 			{
 				AFirePool* pool = GetWorld()->SpawnActor<AFirePool>(*FirePoolClass);
 				pool->InitSpell(wizard->GetActorLocation(), wizard);
-				pool->SetBurnCause(this); // different pool burns dont stack
 				FirePools.Enqueue(pool);
 			}
 		}

@@ -67,5 +67,9 @@ void UStatusEffectHandlingComponent::ApplyStatusEffect(UBaseStatusEffect* Status
 	{
 		ActiveStatusEffects.Add(StatusEffectInstance);
 	}
+	else
+	{
+		StatusEffectPooling->ReturnStatusEffectInstance(StatusEffectInstance);
+	}
 }
 
