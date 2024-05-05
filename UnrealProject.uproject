@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.2",
+	"EngineAssociation": "{85E53BE3-4F7C-4E83-486F-2F9FE26C50E1}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -15,6 +15,16 @@
 				"Niagara",
 				"CoreUObject"
 			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
 		}
 	]
 }
