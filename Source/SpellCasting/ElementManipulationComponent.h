@@ -36,7 +36,7 @@ public:
 	UElementManipulationComponent();
 
 	UFUNCTION(BlueprintCallable)
-	void Initialize(class APlayerController* Controller, class UBillboardComponent* FirstElementBillboard, class UBillboardComponent* SecondElementBillboard, class UStatComponent* StatComponent);
+	void Initialize(class APlayerController* Controller, class UNiagaraComponent* LeftParticle, class UNiagaraComponent* RightParticle, class UStatComponent* StatComponent);
 
 	UFUNCTION(BlueprintCallable)
 	void AddElement(WizardElement Element);
@@ -46,6 +46,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void TryCastBasicAttack();
+
+	class USceneComponent* GetBasicAttackOrigin() const;
+	void SetBasicAttackOrigin(class USceneComponent* NewBasicAttackOrigin);
 
 	UPROPERTY(BlueprintAssignable)
 	FElementAddedSignature OnElementAddedDelegate;
@@ -75,7 +78,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpellConfig> SpellConfiguration;
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TMap<int, TSubclassOf<class ABaseSpell>> Spells;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class ABaseSpell> BasicAttack;
@@ -83,6 +86,11 @@ private:
 	TMap<TSubclassOf<class ABaseSpell>, float> Cooldowns{};
 	UPROPERTY(VisibleAnywhere)
 	TMap<TSubclassOf<class ABaseSpell>, FTimerHandle> CooldownTimers{};
+
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	USceneComponent* BasicAttackOriginPoint;
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	USceneComponent* SpellOriginPoint;
 
 	UPROPERTY(Transient)
 	class APlayerController* Controller;
@@ -92,9 +100,12 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<WizardElement> CurrentElements;
 	UPROPERTY(EditDefaultsOnly)
-	TMap<WizardElement, class UTexture2D*> ElementTextures;
+	TMap<WizardElement, FLinearColor> ElementColors;
+	UPROPERTY(EditDefaultsOnly)
+	FName ColorVariableName;
 	UPROPERTY(Transient, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
-	class UBillboardComponent* FirstElementBillboard;
+	class UNiagaraComponent* LeftHandElementParticle;
 	UPROPERTY(Transient, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
-	class UBillboardComponent* SecondElementBillboard;
+	class UNiagaraComponent* RightHandElementParticle;
+	bool bAddingElementLeft;
 };

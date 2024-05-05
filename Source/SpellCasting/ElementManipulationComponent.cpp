@@ -2,7 +2,7 @@
 
 
 #include "ElementManipulationComponent.h"
-#include <Components/BillboardComponent.h>
+#include "NiagaraComponent.h" 
 #include "Upgrades/StatUpgrades/StatComponent.h"
 
 
@@ -17,17 +17,17 @@ UElementManipulationComponent::UElementManipulationComponent()
 	// ...
 }
 
-void UElementManipulationComponent::Initialize(APlayerController* PlayerController, UBillboardComponent* FirstBillboard, UBillboardComponent* SecondBillboard, UStatComponent* StatComponent)
+void UElementManipulationComponent::Initialize(APlayerController* PlayerController, UNiagaraComponent* LeftParticle, UNiagaraComponent* RightParticle, UStatComponent* StatComponent)
 {
 	Controller = PlayerController;
 	Stats = StatComponent;
-	FirstElementBillboard = FirstBillboard;
-	SecondElementBillboard = SecondBillboard;
+	LeftHandElementParticle = LeftParticle;
+	RightHandElementParticle = RightParticle;
 
-	if (FirstElementBillboard)
-		FirstElementBillboard->SetSprite(*ElementTextures.Find(CurrentElements[0]));
-	if (SecondElementBillboard)
-		SecondElementBillboard->SetSprite(*ElementTextures.Find(CurrentElements[1]));
+	if (LeftHandElementParticle)
+		LeftHandElementParticle->SetVariableLinearColor(ColorVariableName, *ElementColors.Find(CurrentElements[0]));
+	if (RightHandElementParticle)
+		RightHandElementParticle->SetVariableLinearColor(ColorVariableName, *ElementColors.Find(CurrentElements[1]));
 
 	SetupSpells();
 }
@@ -37,10 +37,12 @@ void UElementManipulationComponent::AddElement(WizardElement Element)
 	CurrentElements.Insert(Element, 0);
 	WizardElement OldElement = CurrentElements.Pop();
 
-	if (FirstElementBillboard)
-		FirstElementBillboard->SetSprite(*ElementTextures.Find(CurrentElements[0]));
-	if (SecondElementBillboard)
-		SecondElementBillboard->SetSprite(*ElementTextures.Find(CurrentElements[1]));
+	if (bAddingElementLeft)
+		LeftHandElementParticle->SetVariableLinearColor(ColorVariableName, *ElementColors.Find(Element));
+	else
+		RightHandElementParticle->SetVariableLinearColor(ColorVariableName, *ElementColors.Find(Element));
+
+	bAddingElementLeft = !bAddingElementLeft;
 
 	OnElementAddedDelegate.Broadcast(OldElement, Element);
 }
@@ -62,7 +64,9 @@ void UElementManipulationComponent::TryCastSpell()
 
 	FActorSpawnParameters spawnParams{};
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	auto Spell = GetWorld()->SpawnActor<ABaseSpell>(*SpellClass, spawnParams);
+	FVector SpawnLocation = IsValid(SpellOriginPoint) ? SpellOriginPoint->GetComponentLocation() : GetOwner()->GetActorLocation();
+	auto Spell = GetWorld()->SpawnActor<ABaseSpell>(*SpellClass, SpawnLocation, FRotator(), spawnParams);
+	
 	if (Spell != nullptr)
 	{
 		Spell->InitSpell(MousePosAtActorHeight, GetOwner<APawn>()); //virtual init overriden in derived spells
@@ -78,7 +82,10 @@ void UElementManipulationComponent::TryCastBasicAttack()
 	FTimerHandle* CooldownTimer = CooldownTimers.Find(BasicAttack);
 
 	if (!BasicAttack || !CooldownTimer || TimerManager.IsTimerActive(*CooldownTimer))
+	{
+		GEngine->AddOnScreenDebugMessage(191991, 2, FColor::Red, FString::SanitizeFloat(TimerManager.GetTimerRemaining(*CooldownTimer)));
 		return;
+	}
 
 	TimerManager.SetTimer(*CooldownTimer, CalculateBaseAttackCooldown(), false);
 
@@ -88,7 +95,8 @@ void UElementManipulationComponent::TryCastBasicAttack()
 
 	FActorSpawnParameters spawnParams{};
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	auto Spell = GetWorld()->SpawnActor<ABaseSpell>(BasicAttack, spawnParams);
+	FVector SpawnLocation = IsValid(BasicAttackOriginPoint) ? BasicAttackOriginPoint->GetComponentLocation() : GetOwner()->GetActorLocation();
+	auto Spell = GetWorld()->SpawnActor<ABaseSpell>(BasicAttack, SpawnLocation, FRotator(), spawnParams);
 
 	if (Spell != nullptr)
 	{
@@ -97,6 +105,16 @@ void UElementManipulationComponent::TryCastBasicAttack()
 	}
 
 	OnBasicAttackCastedDelegate.Broadcast(GetOwner(), Spell);
+}
+
+USceneComponent* UElementManipulationComponent::GetBasicAttackOrigin() const
+{
+	return BasicAttackOriginPoint;
+}
+
+void UElementManipulationComponent::SetBasicAttackOrigin(USceneComponent* NewBasicAttackOrigin)
+{
+	BasicAttackOriginPoint = NewBasicAttackOrigin;
 }
 
 // Called when the game starts
