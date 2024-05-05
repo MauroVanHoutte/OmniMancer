@@ -28,36 +28,36 @@ void AOmnimancerGameMode::BeginPlay()
 
 	SetupGeneratedLevel();
 
-	TArray<AActor*> taggedActors; //find spawnpoint and spawn selected wizard type
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("MainSpawnPoint"), taggedActors);
-	if (taggedActors.Num() > 0)
-	{
-		SpawnPoint = taggedActors[0];
-		auto gameInstance = GetGameInstance<UOmnimancerGameInstance>();
-		WizardElement wizardType = gameInstance->GetSelectedType();
+	//TArray<AActor*> taggedActors; //find spawnpoint and spawn selected wizard type
+	//UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("MainSpawnPoint"), taggedActors);
+	//if (taggedActors.Num() > 0)
+	//{
+	//	SpawnPoint = taggedActors[0];
+	//	auto gameInstance = GetGameInstance<UOmnimancerGameInstance>();
+	//	WizardElement wizardType = gameInstance->GetSelectedType();
 
-		ACharacter* player = nullptr;
+	//	ACharacter* player = nullptr;
 
-		switch (wizardType)
-		{
-		case WizardElement::Fire:
-			player = GetWorld()->SpawnActor<ACharacter>(FireWizardBlueprint.Get(), SpawnPoint->GetTransform());
-			break;
-		case WizardElement::Frost:
-			player = GetWorld()->SpawnActor<ACharacter>(FrostWizardBlueprint.Get(), SpawnPoint->GetTransform());
-			break;
-		case WizardElement::Wind:
-			player = GetWorld()->SpawnActor<ACharacter>(WindWizardBlueprint.Get(), SpawnPoint->GetTransform());
-			break;
-		default:
-			break;
-		}
+	//	switch (wizardType)
+	//	{
+	//	case WizardElement::Fire:
+	//		player = GetWorld()->SpawnActor<ACharacter>(FireWizardBlueprint.Get(), SpawnPoint->GetTransform());
+	//		break;
+	//	case WizardElement::Frost:
+	//		player = GetWorld()->SpawnActor<ACharacter>(FrostWizardBlueprint.Get(), SpawnPoint->GetTransform());
+	//		break;
+	//	case WizardElement::Wind:
+	//		player = GetWorld()->SpawnActor<ACharacter>(WindWizardBlueprint.Get(), SpawnPoint->GetTransform());
+	//		break;
+	//	default:
+	//		break;
+	//	}
 
-		if (player != nullptr)
-		{
-			GetWorld()->GetFirstPlayerController()->Possess(player);
-		}
-	}
+	//	if (player != nullptr)
+	//	{
+	//		GetWorld()->GetFirstPlayerController()->Possess(player);
+	//	}
+	//}
 }
 
 void AOmnimancerGameMode::NextRoom()
