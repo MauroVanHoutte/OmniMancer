@@ -73,7 +73,9 @@ void ABaseProjectile::InitSpell(const FVector& targetLocation, APawn* caster)
 
 	//SetDamageMultiplier(wizard->GetBaseProjecileDamageMultiplier() * wizard->GetSpellDamageMultiplier());
 	//TotalBounces = wizard->GetBounces();
-	FVector LaunchDirection = (targetLocation - GetActorLocation()).GetSafeNormal();
+	FVector LaunchDirection = (targetLocation - GetActorLocation());
+	LaunchDirection.Z = 0;
+	LaunchDirection.Normalize();
 	FireInDirection(LaunchDirection);
 }
 
