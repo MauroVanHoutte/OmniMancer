@@ -118,8 +118,8 @@ void AWizardCharacter::BeginPlay()
 
 void AWizardCharacter::TakeSpellDamage(ABaseSpell* spell)
 {
-	Health -= spell->GetDamage() * DamageTakenMultiplier;
-	SpawnDamageText(spell->GetDamage() * DamageTakenMultiplier);
+	Health -= spell->GetFinalDamage() * DamageTakenMultiplier;
+	SpawnDamageText(spell->GetFinalDamage() * DamageTakenMultiplier);
 	OnTakeHit(spell->GetInstigator());
 	CheckDeath();
 }

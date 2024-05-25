@@ -68,7 +68,7 @@ public:
 	UPROPERTY()
 	class APawn* Instigator;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float TotalDuration = 3.f;
 	UPROPERTY(VisibleAnywhere)
 	float RemainingDuration = TotalDuration;
@@ -110,11 +110,11 @@ public:
 	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 	virtual void Update(float DeltaTime, AActor* Target) override;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float Interval = 0.5f;
 	UPROPERTY()
 	float Timer = 0.f;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float Damage = 2.f;
 };
 

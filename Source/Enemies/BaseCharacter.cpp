@@ -119,10 +119,10 @@ void ABaseCharacter::OnTakeHit(AActor* cause)
 
 void ABaseCharacter::TakeSpellDamage(ABaseSpell* spell)
 {
-	Health -= spell->GetDamage();
+	Health -= spell->GetFinalDamage();
 	OnTakeHit(spell->GetInstigator());
 	OnTakeHitBP();
-	SpawnDamageText(spell->GetDamage());
+	SpawnDamageText(spell->GetFinalDamage());
 	CheckDeath();
 	//Ai damage perception
 	PerceiveDamage(spell->GetInstigator(), spell->GetActorLocation());

@@ -34,7 +34,7 @@ void ATestDummy::Tick(float DeltaTime)
 
 void ATestDummy::TakeSpellDamage(ABaseSpell* spell)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Damage taken %f"), spell->GetDamage());
+	UE_LOG(LogTemp, Warning, TEXT("Damage taken %f"), spell->GetFinalDamage());
 }
 
 void ATestDummy::TakeTickDamage(float damage)

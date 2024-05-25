@@ -61,6 +61,7 @@ protected:
 
 	virtual void CheckDeath();
 
+	UFUNCTION(BlueprintCallable)
 	virtual void OnDeath();
 
 	UFUNCTION()

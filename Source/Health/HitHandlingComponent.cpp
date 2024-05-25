@@ -47,7 +47,7 @@ void UHitHandlingComponent::OnColliderOverlap(UPrimitiveComponent* OverlappedCom
 		&& !spell->WasActorHit(GetOwner()))
 	{
 		spell->AddHitActor(GetOwner());
-		GetOwner()->TakeDamage(spell->GetDamage(), FDamageEvent{}, spell->GetInstigatorController(), spell);
+		GetOwner()->TakeDamage(spell->GetFinalDamage(), FDamageEvent{}, spell->GetInstigatorController(), spell);
 		//ReapplyStatusEffects(spell->GetStatusEffects());
 		//activates caster on hit trigger
 		spell->OnHit(GetOwner());

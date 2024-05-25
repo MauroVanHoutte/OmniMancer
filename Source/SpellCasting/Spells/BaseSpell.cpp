@@ -151,9 +151,24 @@ void ABaseSpell::InitSpell(const FVector& targetLocation, APawn* caster)
 	DamageMultiplier = wizard->GetSpellDamageMultiplier();*/
 }
 
-void ABaseSpell::SetDamage(float damage)
+void ABaseSpell::SetBaseDamage(float damage)
 {
 	Damage = damage;
+}
+
+float ABaseSpell::GetBaseDamage()
+{
+	return Damage;
+}
+
+void ABaseSpell::SetDamageMultiplier(float damageMultiplier)
+{
+	DamageMultiplier = damageMultiplier;
+}
+
+float ABaseSpell::GetDamageMultiplier()
+{
+	return DamageMultiplier;
 }
 
 // Called when the game starts or when spawned
@@ -178,20 +193,25 @@ void ABaseSpell::Tick(float DeltaTime)
 
 }
 
-float ABaseSpell::GetDamage() const
+float ABaseSpell::GetFinalDamage() const
 {
 	return Damage*DamageMultiplier;
+}
+
+TArray<UBaseStatusEffect*>& ABaseSpell::GetStatusEffectsRef()
+{
+	return StatusEffects;
+}
+
+TArray<AActor*>& ABaseSpell::GetHitActorsRef()
+{
+	return HitActors;
 }
 
 //const TArray<FStatusEffect>& ABaseSpell::GetStatusEffects() const
 //{
 //	return StatusEffects;
 //}
-
-void ABaseSpell::SetDamageMultiplier(float damageMultiplier)
-{
-	DamageMultiplier = damageMultiplier;
-}
 
 void ABaseSpell::AddHitActor( AActor* actor)
 {

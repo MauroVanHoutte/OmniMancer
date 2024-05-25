@@ -21,6 +21,7 @@ public:
 
 	void SetCurrency(int currency);
 
+	UFUNCTION(BlueprintCallable)
 	void SetExperiencePercentage(float expPercentage);
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))

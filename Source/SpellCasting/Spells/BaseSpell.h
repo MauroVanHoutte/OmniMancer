@@ -22,26 +22,28 @@ public:
 
 	virtual void Destroy();
 
-	/*void AddStatusEffect(const FStatusEffect& effect);
-	UFUNCTION(BlueprintCallable)
-	void SetBurnParams(bool applyBurns, float tickDamage, float tickInterval, float duration);
-	UFUNCTION(BlueprintCallable)
-	void SetSlowParams(bool applySlow, float value, float duration);
-	UFUNCTION(BlueprintCallable)
-	void SetStunParams(bool applyStun, float duration);
-	UFUNCTION(BlueprintCallable)
-	void SetCurseParams(bool applyCurse, float damage, float range, float duration);*/
-
 	UFUNCTION(BlueprintCallable)
 	virtual void InitSpell(const FVector& targetLocation, APawn* caster);
 
 	virtual void Tick(float DeltaTime) override;
-
-	virtual float GetDamage() const;
+	
 	//virtual const TArray<FStatusEffect>& GetStatusEffects() const;
 	UFUNCTION(BlueprintCallable)
-	void SetDamage(float damage);
+	void SetBaseDamage(float damage);
+	UFUNCTION(BlueprintCallable)
+	float GetBaseDamage();
+	UFUNCTION(BlueprintCallable)
 	virtual void SetDamageMultiplier(float damageMultiplier);
+	UFUNCTION(BlueprintCallable)
+	float GetDamageMultiplier();
+	UFUNCTION(BlueprintCallable)
+	virtual float GetFinalDamage() const;
+
+	UFUNCTION(BlueprintCallable)
+	TArray<UBaseStatusEffect*>& GetStatusEffectsRef();
+
+	UFUNCTION(BlueprintCallable)
+	TArray<AActor*>& GetHitActorsRef();
 
 	void AddHitActor(AActor* actor);
 	bool WasActorHit(AActor* actor) const;
