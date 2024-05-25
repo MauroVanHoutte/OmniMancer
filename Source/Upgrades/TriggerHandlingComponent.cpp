@@ -57,17 +57,17 @@ void UTriggerHandlingComponent::BeginPlay()
 
 void UTriggerHandlingComponent::TriggerSpellCasted(AActor* Caster, ABaseSpell* Spell)
 {
-	if (ensure(IsValid(Spell)))
+	if (ensure(Spell))
 	{
-		TriggerTriggerEffects(TriggerCondition::OnSpellCast, Spell, nullptr, Spell->GetDamage());
+		TriggerTriggerEffects(TriggerCondition::OnSpellCast, Spell, nullptr, Spell->GetFinalDamage());
 	}
 }
 
 void UTriggerHandlingComponent::TriggerBasicAttackCasted(AActor* Caster, ABaseSpell* Spell)
 {
-	if (ensure(IsValid(Spell)))
+	if (ensure(Spell))
 	{
-		TriggerTriggerEffects(TriggerCondition::OnBasicAttackCast, Spell, nullptr, Spell->GetDamage());
+		TriggerTriggerEffects(TriggerCondition::OnBasicAttackCast, Spell, nullptr, Spell->GetFinalDamage());
 	}
 }
 
@@ -75,7 +75,7 @@ void UTriggerHandlingComponent::TriggerSpellHit(ABaseSpell* Spell, AActor* HitAc
 {
 	if (ensure(IsValid(Spell)))
 	{
-		TriggerTriggerEffects(TriggerCondition::OnSpellHit, Spell, HitActor, Spell->GetDamage());
+		TriggerTriggerEffects(TriggerCondition::OnSpellHit, Spell, HitActor, Spell->GetFinalDamage());
 	}
 }
 
@@ -83,7 +83,7 @@ void UTriggerHandlingComponent::TriggerBasicAttackHit(ABaseSpell* Spell, AActor*
 {
 	if (ensure(IsValid(Spell)))
 	{
-		TriggerTriggerEffects(TriggerCondition::OnBasicAttackHit, Spell, HitActor, Spell->GetDamage());
+		TriggerTriggerEffects(TriggerCondition::OnBasicAttackHit, Spell, HitActor, Spell->GetFinalDamage());
 	}
 }
 
