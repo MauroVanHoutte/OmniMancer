@@ -34,17 +34,20 @@ void UElementManipulationComponent::Initialize(APlayerController* PlayerControll
 
 void UElementManipulationComponent::AddElement(WizardElement Element)
 {
-	CurrentElements.Insert(Element, 0);
-	WizardElement OldElement = CurrentElements.Pop();
+	if (LearnedElements.Contains(Element))
+	{
+		CurrentElements.Insert(Element, 0);
+		WizardElement OldElement = CurrentElements.Pop();
 
-	if (bAddingElementLeft)
-		LeftHandElementParticle->SetVariableLinearColor(ColorVariableName, *ElementColors.Find(Element));
-	else
-		RightHandElementParticle->SetVariableLinearColor(ColorVariableName, *ElementColors.Find(Element));
+		if (bAddingElementLeft)
+			LeftHandElementParticle->SetVariableLinearColor(ColorVariableName, *ElementColors.Find(Element));
+		else
+			RightHandElementParticle->SetVariableLinearColor(ColorVariableName, *ElementColors.Find(Element));
 
-	bAddingElementLeft = !bAddingElementLeft;
+		bAddingElementLeft = !bAddingElementLeft;
 
-	OnElementAddedDelegate.Broadcast(OldElement, Element);
+		OnElementAddedDelegate.Broadcast(OldElement, Element);
+	}
 }
 
 void UElementManipulationComponent::TryCastSpell()
@@ -105,6 +108,16 @@ void UElementManipulationComponent::TryCastBasicAttack()
 	}
 
 	OnBasicAttackCastedDelegate.Broadcast(GetOwner(), Spell);
+}
+
+const TSet<WizardElement>& UElementManipulationComponent::GetLearnedElements() const
+{
+	return LearnedElements;
+}
+
+void UElementManipulationComponent::LearnElement(WizardElement Element)
+{
+	LearnedElements.FindOrAdd(Element);
 }
 
 USceneComponent* UElementManipulationComponent::GetBasicAttackOrigin() const

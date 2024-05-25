@@ -47,6 +47,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void TryCastBasicAttack();
 
+	UFUNCTION(BlueprintCallable)
+	const TSet<WizardElement>& GetLearnedElements() const;
+
+	UFUNCTION(BlueprintCallable)
+	void LearnElement(WizardElement Element);
+
 	class USceneComponent* GetBasicAttackOrigin() const;
 	void SetBasicAttackOrigin(class USceneComponent* NewBasicAttackOrigin);
 
@@ -75,6 +81,9 @@ private:
 	void OnBasicAttackHit(ABaseSpell* Spell, AActor* HitActor);
 	float CalculateBaseAttackCooldown();
 	float CalculateSpellCooldown(const TSubclassOf<class ABaseSpell>* Spell);
+
+	UPROPERTY(EditDefaultsOnly)
+	TSet<WizardElement> LearnedElements { WizardElement::Fire };
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpellConfig> SpellConfiguration;
