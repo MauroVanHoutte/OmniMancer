@@ -6,6 +6,7 @@
 #include "OmnimancerGameInstance.h"
 #include <GameFramework/ProjectileMovementComponent.h>
 #include <Components/SphereComponent.h>
+#include "Upgrades/ExperienceComponent.h"
 
 // Sets default values
 ACoin::ACoin()
@@ -70,6 +71,11 @@ int ACoin::GetValue()
 
 void ACoin::OnTriggeredByPlayer_Implementation(AActor* Player)
 {
+	UExperienceComponent* ExperienceComponent = Player->GetComponentByClass<UExperienceComponent>();
+	
+	if (IsValid(ExperienceComponent))
+		ExperienceComponent->AddExperience(Value);
+
 	Destroy();
 }
 
