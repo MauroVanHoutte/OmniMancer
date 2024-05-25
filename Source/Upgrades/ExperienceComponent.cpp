@@ -14,9 +14,36 @@ UExperienceComponent::UExperienceComponent()
 void UExperienceComponent::AddExperience(int AddedExperience)
 {
 	Experience += AddedExperience;
+
+	if (Experience >= ExperienceToNextLevel)
+	{
+		Experience -= ExperienceToNextLevel;
+		Level++;
+		OnLevelledUpDelegate.Broadcast(this, Level);
+		CalculateExperienceForNextLevel();
+		if (Experience >= ExperienceToNextLevel)
+		{
+			FSimpleDelegate Delegate;
+			Delegate.BindUObject(this, &UExperienceComponent::AddExperience, 0);
+			FTimerHandle Handle;
+			GetWorld()->GetTimerManager().SetTimer(Handle, Delegate, 0.1, false);
+		}
+	}
+
+	OnExperienceAddedDelegate.Broadcast(this, AddedExperience, Experience, ExperienceToNextLevel);
 }
 
 int UExperienceComponent::GetExperience()
 {
 	return Experience;
+}
+
+int UExperienceComponent::GetLevel()
+{
+	return Level;
+}
+
+void UExperienceComponent::CalculateExperienceForNextLevel_Implementation()
+{
+	ExperienceToNextLevel = int(10 * FMath::Pow(1.4, Level));
 }
