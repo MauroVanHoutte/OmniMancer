@@ -46,7 +46,9 @@ void AIceWall::InitSpell(const FVector& targetLocation, APawn* caster)
 	//if (FrostLevel > 3)
 	//	SetCurseParams(true, 15, 500, 5);
 
-	FVector startLocation = targetLocation;
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByChannel(Hit, targetLocation, targetLocation + FVector(0, 0, -500), ECollisionChannel::ECC_WorldStatic);
+	FVector startLocation = Hit.bBlockingHit ? Hit.ImpactPoint : targetLocation;
 	startLocation.Z -= (WallHeight*100)/2; //lower wall into floor
 
 	TargetLocation = targetLocation;

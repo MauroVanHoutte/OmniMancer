@@ -21,7 +21,10 @@ void AVortex::InitSpell(const FVector& targetLocation, APawn* caster)
 {
 	Super::InitSpell(targetLocation, caster);
 
-	SetActorLocation(targetLocation);
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByChannel(Hit, targetLocation, targetLocation + FVector(0, 0, -500), ECollisionChannel::ECC_WorldStatic);
+	SetActorLocation(Hit.bBlockingHit ? Hit.ImpactPoint : targetLocation);
+
 	SetRadius(Radius);
 }
 
