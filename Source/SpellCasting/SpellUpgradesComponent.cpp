@@ -23,7 +23,7 @@ USpellUpgradesComponent::USpellUpgradesComponent()
 		SpellCastingComponent->OnSpellCastedDelegate.AddDynamic(this, &USpellUpgradesComponent::ApplyUpgradesToSpell);
  }
 
- void USpellUpgradesComponent::RegisterSpellUpgrade(UClass* SpellToApplyTo, UBaseSpellUpgrade* Upgrade)
+ void USpellUpgradesComponent::RegisterSpellUpgrade(TSubclassOf<class ABaseSpell> SpellToApplyTo, UBaseSpellUpgrade* Upgrade)
  {
 	 SpellUpgrades.FindOrAdd(SpellToApplyTo).UpgradesArray.Add(Upgrade);
  }
@@ -36,19 +36,23 @@ USpellUpgradesComponent::USpellUpgradesComponent()
 
  void USpellUpgradesComponent::ApplyUpgradesToSpell(AActor* Caster, ABaseSpell* Spell)
  {
-	 FUpgradesArray* Upgrades = SpellUpgrades.Find(Spell->GetClass());
-	 if (Upgrades)
+	 if (IsValid(Spell))
 	 {
-		 TArray<TObjectPtr<UBaseSpellUpgrade>>& Array = Upgrades->UpgradesArray;
-		 Array.Sort([](const UBaseSpellUpgrade& r, const UBaseSpellUpgrade& l)
-			 {
-				 return r.GetPriority() < l.GetPriority();
-			 });
-		 for (int i = 0; i < Array.Num(); i++)
+		 for (TPair<UClass*, FUpgradesArray> kvp : SpellUpgrades)
 		 {
-			 if (IsValid(Array[i]))
+			 if (Spell->IsA(kvp.Key))
 			 {
-				 Array[i]->ApplyToSpell(Spell);
+				 kvp.Value.UpgradesArray.Sort([](const UBaseSpellUpgrade& r, const UBaseSpellUpgrade& l)
+					 {
+						 return r.GetPriority() < l.GetPriority();
+					 });
+				 for (UBaseSpellUpgrade* SpellUpgrade : kvp.Value.UpgradesArray)
+				 {
+					 if (IsValid(SpellUpgrade))
+					 {
+						 SpellUpgrade->ApplyToSpell(Spell);
+					 }
+				 }
 			 }
 		 }
 	 }

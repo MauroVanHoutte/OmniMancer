@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS(Abstract)
+UCLASS(Abstract, BlueprintType, EditInlineNew)
 class UNREALPROJECT_API UBaseSpellUpgrade : public UObject
 {
 	GENERATED_BODY()

@@ -28,7 +28,7 @@ public:
 	void Initialize(class UElementManipulationComponent* SpellCastingComponent);
 
 	UFUNCTION(BlueprintCallable)
-	void RegisterSpellUpgrade(class UClass* SpellToApplyTo, class UBaseSpellUpgrade* Upgrade);
+	void RegisterSpellUpgrade(TSubclassOf<class ABaseSpell> SpellToApplyTo, class UBaseSpellUpgrade* Upgrade);
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyUpgradesToSpell(class AActor* Caster, class ABaseSpell* Spell);
