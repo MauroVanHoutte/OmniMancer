@@ -42,8 +42,8 @@ void AFlameColumn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	ImpactDelay -= DeltaTime;
-	if (ImpactDelay < 0 && !SetOff)
+	ImpactTimer -= DeltaTime;
+	if (ImpactTimer < 0 && !SetOff)
 	{
 		CylinderMesh->SetRelativeScale3D(FVector(CircleScale + ScalePerWindLevel * WindLevel, CircleScale + ScalePerWindLevel * WindLevel, 100.f));
 		CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
@@ -62,6 +62,7 @@ void AFlameColumn::InitSpell(const FVector& TargetLocation, APawn* Caster)
 	SetActorLocation(Hit.bBlockingHit ? Hit.ImpactPoint : TargetLocation);	
 	CylinderMesh->SetRelativeScale3D(FVector(CircleScale + ScalePerWindLevel * WindLevel, CircleScale + ScalePerWindLevel * WindLevel, 1.f));
 
+	ImpactTimer = ImpactDelay;
 	SetLifeTime(ImpactDelay + VisualLinger);
 }
 

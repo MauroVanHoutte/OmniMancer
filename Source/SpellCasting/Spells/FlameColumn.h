@@ -40,6 +40,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float ImpactDelay = 0.8f;
+	float ImpactTimer = 0.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float VisualLinger = 0.5f;
