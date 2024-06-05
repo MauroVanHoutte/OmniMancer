@@ -6,13 +6,13 @@
 #include "Components/ActorComponent.h"
 #include "SpellUpgradesComponent.generated.h"
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FUpgradesArray
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
-	TArray<TObjectPtr<UBaseSpellUpgrade>> UpgradesArray;
+	UPROPERTY(BlueprintReadWrite)
+	TArray<TObjectPtr<class USpellUpgradeData>> UpgradesArray;
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -27,8 +27,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Initialize(class UElementManipulationComponent* SpellCastingComponent);
 
+	//Stores and returns a duplicate of the upgrade template
 	UFUNCTION(BlueprintCallable)
-	void RegisterSpellUpgrade(TSubclassOf<class ABaseSpell> SpellToApplyTo, class UBaseSpellUpgrade* Upgrade);
+	void RegisterSpellUpgrade(TSubclassOf<class ABaseSpell> SpellToApplyTo, class USpellUpgradeData* Upgrade);
+
+	UFUNCTION(BlueprintCallable)
+	class USpellUpgradeSet* GetUpgradeSetForElement(WizardElement Element);
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyUpgradesToSpell(class AActor* Caster, class ABaseSpell* Spell);
@@ -36,9 +40,12 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
-	UPROPERTY(Transient)
-	TMap<class UClass*, FUpgradesArray> SpellUpgrades;
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	TMap<class UClass*, FUpgradesArray> AppliedSpellUpgrades;
 
 	UPROPERTY(Transient)
 	class UElementManipulationComponent* SpellCastingComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	TMap<WizardElement, class USpellUpgradeSet*> AvailableSpellUpgrades;
 };

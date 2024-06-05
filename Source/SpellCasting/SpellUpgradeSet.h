@@ -10,25 +10,11 @@
  * 
  */
 
-UCLASS(BlueprintType, EditInlineNew)
-class USpellUpgrade : public UObject
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditDefaultsOnly, Instanced)
-	class UBaseSpellUpgrade* Upgrade;
-	UPROPERTY(EditDefaultsOnly)
-	TArray<TSubclassOf<class ABaseSpell>> ApplicableSpells;
-	UPROPERTY(EditDefaultsOnly)
-	int Limit = 1;
-};
-
-UCLASS()
+UCLASS(BlueprintType)
 class UNREALPROJECT_API USpellUpgradeSet : public UDataAsset
 {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Instanced)
-	TArray<USpellUpgrade*> AvailableUpgrades;
+	TArray<class USpellUpgradeData*> AvailableUpgrades;
 };
