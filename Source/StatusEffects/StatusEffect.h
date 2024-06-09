@@ -49,7 +49,7 @@ enum class Type : uint8
 //	UObject* Cause{};
 //};
 
-UCLASS(BlueprintType)
+UCLASS(Abstract, BlueprintType)
 class UBaseStatusEffect : public UObject
 {
 	GENERATED_BODY()
@@ -78,7 +78,7 @@ public:
 	bool bRefreshDuration = true;
 };
 
-UCLASS(BlueprintType)
+UCLASS(Abstract)
 class UBaseStackingStatusEffect : public UBaseStatusEffect
 {
 	GENERATED_BODY()
@@ -97,7 +97,7 @@ public:
 	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly)
 	float SpeedMultiplier = 0.5f;
 };
 
