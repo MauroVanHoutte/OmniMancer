@@ -24,6 +24,8 @@ public:
 	// Sets default values for this component's properties
 	USpellUpgradesComponent();
 
+	void BeginPlay() override;
+
 	UFUNCTION(BlueprintCallable)
 	void Initialize(class UElementManipulationComponent* SpellCastingComponent);
 
@@ -32,7 +34,7 @@ public:
 	void RegisterSpellUpgrade(TSubclassOf<class ABaseSpell> SpellToApplyTo, class USpellUpgradeData* Upgrade);
 
 	UFUNCTION(BlueprintCallable)
-	class USpellUpgradeSet* GetUpgradeSetForElement(WizardElement Element);
+	FUpgradesArray GetUpgradeSetForElement(WizardElement Element);
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyUpgradesToSpell(class AActor* Caster, class ABaseSpell* Spell);
@@ -46,6 +48,9 @@ private:
 	UPROPERTY(Transient)
 	class UElementManipulationComponent* SpellCastingComponent;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	TMap<WizardElement, class USpellUpgradeSet*> AvailableSpellUpgrades;
+	UPROPERTY(Transient, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	TMap<WizardElement, FUpgradesArray> AvailableSpellUpgrades;
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<WizardElement, class USpellUpgradeSet*> SpellUpgradeSets;
 };

@@ -2,6 +2,7 @@
 
 
 #include "SpellCasting/SpellUpgradesComponent.h"
+#include "SpellCasting/SpellUpgradeSet.h"
 #include "BaseSpelUpgrade.h"
 #include "ElementManipulationComponent.h"
 
@@ -13,6 +14,26 @@ USpellUpgradesComponent::USpellUpgradesComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
+}
+
+void USpellUpgradesComponent::BeginPlay()
+{
+
+	for (TPair<WizardElement, USpellUpgradeSet*> kvp : SpellUpgradeSets)
+	{
+		FUpgradesArray Array;
+		for (USpellUpgradeData* SpellUpgradeData : kvp.Value->AvailableUpgrades)
+		{
+			if (IsValid(SpellUpgradeData))
+			{
+				Array.UpgradesArray.Add(DuplicateObject(SpellUpgradeData, this));
+			}
+		}
+
+		AvailableSpellUpgrades.Add(kvp.Key, Array);
+	}
+
+	Super::BeginPlay();
 }
 
  void USpellUpgradesComponent::Initialize(UElementManipulationComponent* ElementManipulationComponent)
@@ -28,7 +49,7 @@ USpellUpgradesComponent::USpellUpgradesComponent()
 	 AppliedSpellUpgrades.FindOrAdd(SpellToApplyTo).UpgradesArray.Add(Upgrade);
  }
 
- USpellUpgradeSet* USpellUpgradesComponent::GetUpgradeSetForElement(WizardElement Element)
+ FUpgradesArray USpellUpgradesComponent::GetUpgradeSetForElement(WizardElement Element)
  {
 	 return AvailableSpellUpgrades.FindOrAdd(Element);
  }
@@ -49,14 +70,15 @@ USpellUpgradesComponent::USpellUpgradesComponent()
 			 {
 				 kvp.Value.UpgradesArray.Sort([](const USpellUpgradeData& r, const USpellUpgradeData& l)
 					 {
-						 return r.Upgrade->GetPriority() < l.Upgrade->GetPriority();
+						 return r.Priority < l.Priority;
 					 });
 				 for (USpellUpgradeData* SpellUpgrade : kvp.Value.UpgradesArray)
 				 {
-					 if (IsValid(SpellUpgrade) && IsValid(SpellUpgrade->Upgrade))
-					 {
-						 SpellUpgrade->Upgrade->ApplyToSpell(Spell);
-					 }
+					if (IsValid(SpellUpgrade) && IsValid(SpellUpgrade->Upgrade))
+					{
+						SpellUpgrade->Upgrade->ApplyToSpell(Spell);
+						Spell->TrackAppliedUpgrade(SpellUpgrade);
+					}
 				 }
 			 }
 		 }

@@ -38,6 +38,15 @@ public:
 	float GetDamageMultiplier();
 	UFUNCTION(BlueprintCallable)
 	virtual float GetFinalDamage() const;
+	UFUNCTION(BlueprintCallable)
+	virtual void SetScale(float NewScale) {};
+	UFUNCTION(BlueprintCallable)
+	virtual float GetScale() const { return 0; };
+
+	UFUNCTION(BLueprintCallable)
+	void TrackAppliedUpgrade(class USpellUpgradeData* SpellUpgrade) { AppliedSpellUpgrades.Add(SpellUpgrade); };
+	UFUNCTION(BlueprintCallable)
+	TArray<class USpellUpgradeData*>& GetAppliedSpellUpgrades() { return AppliedSpellUpgrades; };
 
 	UFUNCTION(BlueprintCallable)
 	TArray<UBaseStatusEffect*>& GetStatusEffectsRef();
@@ -66,6 +75,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Instanced)
 	TArray<UBaseStatusEffect*> StatusEffects{}; //status effects get applied to entities hit
 
+	TArray<class USpellUpgradeData*> AppliedSpellUpgrades;
+
 	UPROPERTY(EditDefaultsOnly)
 	float LifeSpan = 5;
 
@@ -88,5 +99,6 @@ private:
 	float BurnDurationMultiplier = 1;
 	UPROPERTY(VisibleAnywhere)
 	float StunDurationMultiplier = 1;
+
 
 };

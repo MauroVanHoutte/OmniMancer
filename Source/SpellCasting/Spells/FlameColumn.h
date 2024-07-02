@@ -19,6 +19,9 @@ public:
 
 	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
 
+	virtual void SetScale(float NewScale) override { CircleScale = NewScale; };
+	virtual float GetScale() const override { return CircleScale; };
+
 	virtual void OnHit(AActor* hitActor) override;
 
 protected:
@@ -34,9 +37,6 @@ private:
 	float BurnInterval = 0.4f;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float BurnDuration = 2.f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float InitialDamage = 5.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float ImpactDelay = 0.8f;

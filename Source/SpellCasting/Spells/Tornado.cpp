@@ -62,9 +62,9 @@ void ATornado::OnHit(AActor* HitActor)
 {
 	Super::OnHit(HitActor);
 
-	//hitActor->Knockup();
 	UForceApplicationComponent* ForceComponent = HitActor->GetComponentByClass<UForceApplicationComponent>();
-	ForceComponent->ApplyImpulse(FVector(0, 0, 50000));
+	if (IsValid(ForceComponent))
+		ForceComponent->ApplyImpulse(FVector(0, 0, 50000));
 
 	//Wind level 4 effect
 	if (WindLevel >= 4)

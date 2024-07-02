@@ -29,22 +29,19 @@ protected:
 private:
 
 	UPROPERTY(EditDefaultsOnly)
-	UStaticMeshComponent* StaticMeshComponent;
+	class UStaticMeshComponent* StaticMeshComponent;
+	UPROPERTY(EditDefaultsOnly)
+	class USphereComponent* CollisionComponent;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float InitialDamage = 5.f;
+	float GrowthDuration = 1.f;
+	float GrowthTimer = 0;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float ScaleGrowth = 5.f;
+	float InitialRadius = 50;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float MaxScale = 20.f;
+	float MaxScaleMultiplier = 20.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float KnockbackAmount = 500.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float StunDuration = 0.5f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float DamagePerWindLevel = 1.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float KnockbackPerWindLevel = 150.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float StunDurationPerFrostLevel = 0.5f;
 };

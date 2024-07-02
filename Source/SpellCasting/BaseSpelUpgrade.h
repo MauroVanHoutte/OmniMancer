@@ -25,6 +25,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TSubclassOf<class ABaseSpell>> ApplicableSpells;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int Priority = 0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int Limit = 1;
 };
 
@@ -35,10 +37,4 @@ class UNREALPROJECT_API UBaseSpellUpgrade : public UObject
 	
 public:
 	virtual void ApplyToSpell(class ABaseSpell* Spell) {};
-
-	int GetPriority() const { return Priority; };
-
-private:
-	UPROPERTY(EditDefaultsOnly)
-	int Priority = 0;
 };

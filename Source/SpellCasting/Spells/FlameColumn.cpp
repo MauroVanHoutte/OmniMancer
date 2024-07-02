@@ -23,7 +23,6 @@ void AFlameColumn::BeginPlay()
 {
 	Super::BeginPlay();
 	CylinderMesh->SetCollisionProfileName(TEXT("NoCollision"));
-
 }
 
 void AFlameColumn::OnDeath()
@@ -45,7 +44,7 @@ void AFlameColumn::Tick(float DeltaTime)
 	ImpactTimer -= DeltaTime;
 	if (ImpactTimer < 0 && !SetOff)
 	{
-		CylinderMesh->SetRelativeScale3D(FVector(CircleScale + ScalePerWindLevel * WindLevel, CircleScale + ScalePerWindLevel * WindLevel, 100.f));
+		CylinderMesh->SetRelativeScale3D(FVector(CircleScale, CircleScale, 100.f));
 		CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 		SetOff = true;
 	}
@@ -55,12 +54,11 @@ void AFlameColumn::InitSpell(const FVector& TargetLocation, APawn* Caster)
 {
 	Super::InitSpell(TargetLocation, Caster);
 
-	Damage = InitialDamage + DamagePerFireLevel * FireLevel;
-
 	FHitResult Hit;
 	GetWorld()->LineTraceSingleByChannel(Hit, TargetLocation, TargetLocation + FVector(0, 0, -500), ECollisionChannel::ECC_WorldStatic);
 	SetActorLocation(Hit.bBlockingHit ? Hit.ImpactPoint : TargetLocation);	
-	CylinderMesh->SetRelativeScale3D(FVector(CircleScale + ScalePerWindLevel * WindLevel, CircleScale + ScalePerWindLevel * WindLevel, 1.f));
+
+	CylinderMesh->SetRelativeScale3D(FVector(CircleScale, CircleScale, 1.f));
 
 	ImpactTimer = ImpactDelay;
 	SetLifeTime(ImpactDelay + VisualLinger);

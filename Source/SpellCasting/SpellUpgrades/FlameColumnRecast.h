@@ -19,4 +19,12 @@ public:
 private:
 	UFUNCTION()
 	void OnFlameColumnDestroyed(AActor* DestroyedActor);
+
+	UPROPERTY(Transient)
+	TMap<AActor*, AActor*> OriginalToRecast;
+
+	UPROPERTY(EditDefaultsOnly)
+	float SizeMultiplier = 1.75f;
+	UPROPERTY(EditDefaultsOnly)
+	float DamageMultiplier = 0.5f;
 };
