@@ -78,6 +78,19 @@ public:
 	bool bRefreshDuration = true;
 };
 
+UCLASS(BlueprintType, EditInlineNew)
+class UStunStatusEffect : public UBaseStatusEffect
+{
+	GENERATED_BODY()
+
+public:
+	bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+	void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+
+private:
+	FName BlackboardKey = TEXT("Stunned");
+};
+
 UCLASS(Abstract)
 class UBaseStackingStatusEffect : public UBaseStatusEffect
 {

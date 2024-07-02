@@ -3,6 +3,9 @@
 
 #include "StatusEffect.h"
 #include "Health\AffiliationComponent.h"
+#include <AIModule\Classes\AIController.h>
+#include "Enemies\BaseCharacter.h"
+#include "BehaviorTree\BlackboardComponent.h"
 #include "Upgrades\StatUpgrades\StatComponent.h"
 
 //FStatusEffect::FStatusEffect(Type type, float interval, float value, float duration, UObject* cause)
@@ -160,5 +163,46 @@ void UMovementSpeedStatusEffect::Remove(AActor* Target, TArray<UBaseStatusEffect
 	if (IsValid(Stats))
 	{
 		Stats->SetSpeedMultiplier(Stats->GetSpeedMultiplier() / SpeedMultiplier);
+	}
+}
+
+bool UStunStatusEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	bool bNotRefreshed = Super::Apply(Target, ActiveEffects);
+
+	if (bNotRefreshed)
+	{
+		APawn* Pawn = Cast<APawn>(Target);
+		if (IsValid(Pawn))
+		{
+			AAIController* Controller = Pawn->GetController<AAIController>();
+			if (IsValid(Controller))
+			{
+				UBlackboardComponent* Blackboard = Controller->GetBlackboardComponent();
+				Blackboard->SetValueAsBool(BlackboardKey, true);
+			}
+		}
+	}
+
+	return bNotRefreshed;
+}
+
+void UStunStatusEffect::Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	UBaseStatusEffect** OtherStunEffect = ActiveEffects.FindByPredicate([this](const UBaseStatusEffect* Effect)
+		{ return Effect->IsA<UStunStatusEffect>() && Effect != this; });
+
+	if (!OtherStunEffect || !IsValid(*OtherStunEffect))
+	{
+		APawn* Pawn = Cast<APawn>(Target);
+		if (IsValid(Pawn))
+		{
+			AAIController* Controller = Pawn->GetController<AAIController>();
+			if (IsValid(Controller))
+			{
+				UBlackboardComponent* Blackboard = Controller->GetBlackboardComponent();
+				Blackboard->SetValueAsBool(BlackboardKey, false);
+			}
+		}
 	}
 }
