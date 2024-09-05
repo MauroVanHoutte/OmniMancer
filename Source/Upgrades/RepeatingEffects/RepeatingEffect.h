@@ -17,8 +17,8 @@ class UNREALPROJECT_API UBaseRepeatingEffect : public UObject
 {
 	GENERATED_BODY()
 public:
-	virtual void Apply(AWizardCharacter*) {};
-	virtual void Remove(AWizardCharacter*) {};
+	virtual void Apply(AActor*) {};
+	virtual void Remove(AActor*) {};
 protected:
 	FTimerHandle EffectTimer;
 	UPROPERTY(EditDefaultsOnly)
@@ -30,14 +30,14 @@ class UNREALPROJECT_API UFireTrail : public UBaseRepeatingEffect
 {
 	GENERATED_BODY()
 public:
-	virtual void Apply(AWizardCharacter* wizard) override
+	virtual void Apply(AActor* wizard) override
 	{
 		if (FirePools.IsEmpty())
 		{
 			for (int i = 0; i < NrPools; i++)
 			{
 				AFirePool* pool = GetWorld()->SpawnActor<AFirePool>(*FirePoolClass);
-				pool->InitSpell(wizard->GetActorLocation(), wizard);
+				pool->InitSpell(wizard->GetActorLocation(), Cast<APawn>(wizard));
 				FirePools.Enqueue(pool);
 			}
 		}
@@ -49,12 +49,12 @@ public:
 
 				AFirePool* pool;
 				FirePools.Dequeue(pool);
-				pool->InitSpell(wizard->GetActorLocation(), wizard);
+				pool->InitSpell(wizard->GetActorLocation(), Cast<APawn>(wizard));
 				FirePools.Enqueue(pool);
 			}, Interval, true);
 	}
 
-	virtual void Remove(AWizardCharacter* wizard) override
+	virtual void Remove(AActor* wizard) override
 	{
 		GetWorld()->GetTimerManager().ClearTimer(EffectTimer);
 	}
