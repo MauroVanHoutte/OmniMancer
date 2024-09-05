@@ -121,6 +121,7 @@ class UDamageOverTimeStatusEffect : public UBaseStatusEffect
 
 public:
 	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 	virtual void Update(float DeltaTime, AActor* Target) override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -146,3 +147,60 @@ public:
 	float SpreadRange;
 };
 
+UCLASS(BlueprintType, EditInlineNew)
+class USpellMark : public UBaseStatusEffect
+{
+	GENERATED_BODY()
+
+public:
+	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+
+private:
+	UFUNCTION()
+	void OnHitTaken(AActor* HittingObject, AActor* HitActor);
+
+	UPROPERTY(EditDefaultsOnly)
+	float Damage = 5;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class ABaseSpell> TriggerSpell;
+	UPROPERTY(EditDefaultsOnly)
+	bool bRemoveOnTrigger = true;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UTempCooldownReduction : public UBaseStatusEffect
+{
+	GENERATED_BODY()
+
+public:
+	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TArray<TSubclassOf<ABaseSpell>> ApplicableSpells;
+	UPROPERTY(EditDefaultsOnly)
+	float CooldownMultiplier = 0.5f;
+	UPROPERTY(Transient)
+	class UElementManipulationComponent* SpellCasting;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UExecuteEffect : public UBaseStatusEffect
+{
+	GENERATED_BODY()
+
+public:
+	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+
+private:
+	UFUNCTION()
+	void OnDamageTaken(class UBaseHealthComponent* DamagedComponent, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
+	UPROPERTY(EditDefaultsOnly)
+	float ExecutionThreshold = 0.2f;
+	UPROPERTY(Transient)
+	class UHealthManager* HealthManager;
+};

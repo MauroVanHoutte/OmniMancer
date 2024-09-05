@@ -2,11 +2,16 @@
 
 
 #include "StatusEffect.h"
-#include "Health\AffiliationComponent.h"
-#include <AIModule\Classes\AIController.h>
-#include "Enemies\BaseCharacter.h"
-#include "BehaviorTree\BlackboardComponent.h"
-#include "Upgrades\StatUpgrades\StatComponent.h"
+#include <AIModule/Classes/AIController.h>
+#include "BehaviorTree/BlackboardComponent.h"
+#include "Enemies/BaseCharacter.h"
+#include "Health/AffiliationComponent.h"
+#include "Health/BaseHealthComponent.h"
+#include "Health/HealthManager.h"
+#include "Health/HitHandlingComponent.h"
+#include <NiagaraComponent.h>
+#include "Upgrades/StatUpgrades/StatComponent.h"
+#include "SpellCasting/ElementManipulationComponent.h"
 
 //FStatusEffect::FStatusEffect(Type type, float interval, float value, float duration, UObject* cause)
 //	: EffectType{type}
@@ -92,9 +97,31 @@ bool UDamageOverTimeStatusEffect::Apply(AActor* Target, TArray<UBaseStatusEffect
 	{
 		FDamageEvent DamageEvent;
 		Target->TakeDamage(Damage, DamageEvent, IsValid(Instigator) ? Instigator->Controller : nullptr, Instigator);
+		UNiagaraComponent* Niagara = Target->GetComponentByClass<UNiagaraComponent>();
+		if (IsValid(Niagara))
+		{
+			Niagara->SetVariableFloat(TEXT("Burning"), 1.f);
+		}
 	}
 
 	return bNotRefreshed;
+}
+
+void UDamageOverTimeStatusEffect::Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	UNiagaraComponent* Niagara = Target->GetComponentByClass<UNiagaraComponent>();
+	if (IsValid(Niagara))
+	{
+		UBaseStatusEffect** OtherBurnEffect = ActiveEffects.FindByPredicate([this](const UBaseStatusEffect* OtherEffect)
+			{
+				return OtherEffect->IsA<UDamageOverTimeStatusEffect>()
+					&& this != OtherEffect;
+			});
+		if (!OtherBurnEffect)
+		{
+			Niagara->SetVariableFloat(TEXT("Burning"), 0.f);
+		}
+	}
 }
 
 void UDamageOverTimeStatusEffect::Update(float DeltaTime, AActor* Target)
@@ -182,6 +209,12 @@ bool UStunStatusEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& Active
 				Blackboard->SetValueAsBool(BlackboardKey, true);
 			}
 		}
+
+		UNiagaraComponent* Niagara = Target->GetComponentByClass<UNiagaraComponent>();
+		if (IsValid(Niagara))
+		{
+			Niagara->SetVariableFloat(TEXT("Stunned"), 1.f);
+		}
 	}
 
 	return bNotRefreshed;
@@ -204,5 +237,111 @@ void UStunStatusEffect::Remove(AActor* Target, TArray<UBaseStatusEffect*>& Activ
 				Blackboard->SetValueAsBool(BlackboardKey, false);
 			}
 		}
+
+		UNiagaraComponent* Niagara = Target->GetComponentByClass<UNiagaraComponent>();
+		if (IsValid(Niagara))
+		{
+			Niagara->SetVariableFloat(TEXT("Stunned"), 0.f);
+		}
+	}
+}
+
+bool USpellMark::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	bool bNotRefreshed = Super::Apply(Target, ActiveEffects);
+	
+	if (bNotRefreshed)
+	{
+		UHitHandlingComponent* HitHandling = Target->GetComponentByClass<UHitHandlingComponent>();
+		if (IsValid(HitHandling))
+			HitHandling->OnHitRegisteredDelegate.AddDynamic(this, &USpellMark::OnHitTaken);
+	}
+
+	return bNotRefreshed;
+}
+
+void USpellMark::Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	UHitHandlingComponent* HitHandling = Target->GetComponentByClass<UHitHandlingComponent>();
+	if (IsValid(HitHandling))
+		HitHandling->OnHitRegisteredDelegate.RemoveDynamic(this, &USpellMark::OnHitTaken);
+}
+
+void USpellMark::OnHitTaken(AActor* HittingObject, AActor* HitActor)
+{
+	if (HittingObject->IsA(TriggerSpell))
+	{
+		FDamageEvent DamageEvent;
+		HitActor->TakeDamage(Damage, DamageEvent, HittingObject->GetInstigatorController(), HittingObject);
+		if (bRemoveOnTrigger)
+		{
+			RemainingDuration = 0;
+		}
+	}
+}
+
+bool UTempCooldownReduction::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	bool bNotRefreshed = Super::Apply(Target, ActiveEffects);
+
+	if (bNotRefreshed)
+	{
+		if (!IsValid(SpellCasting))
+		{
+			SpellCasting = Target->GetComponentByClass<UElementManipulationComponent>();
+		}
+
+		if (IsValid(SpellCasting))
+		{
+			for (TSubclassOf<ABaseSpell> SpellType : ApplicableSpells)
+			{
+				SpellCasting->AddCooldownMultiplier(SpellType, CooldownMultiplier);
+			}
+		}
+	}
+
+	return bNotRefreshed;
+}
+
+void UTempCooldownReduction::Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	if (IsValid(SpellCasting))
+	{
+		for (TSubclassOf<ABaseSpell> SpellType : ApplicableSpells)
+		{
+			SpellCasting->AddCooldownMultiplier(SpellType, 1.f / CooldownMultiplier);
+		}
+	}
+}
+
+bool UExecuteEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	bool bNotRefreshed = Super::Apply(Target, ActiveEffects);
+
+	if (bNotRefreshed)
+	{
+		HealthManager = Target->GetComponentByClass<UHealthManager>();
+		if (IsValid(HealthManager))
+		{
+			HealthManager->OnDamageTakenDelegate.AddDynamic(this, &UExecuteEffect::OnDamageTaken);
+		}
+	}
+
+	return bNotRefreshed;
+}
+
+void UExecuteEffect::Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	if (IsValid(HealthManager))
+	{
+		HealthManager->OnDamageTakenDelegate.RemoveDynamic(this, &UExecuteEffect::OnDamageTaken);
+	}
+}
+
+void UExecuteEffect::OnDamageTaken(UBaseHealthComponent* DamagedComponent, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (!DamagedComponent->IsDepleted() && HealthManager->GetLiveHealthComponentCount() == 1 && DamagedComponent->GetHealthPercentage() < ExecutionThreshold)
+	{
+		DamagedComponent->Kill(DamageType, Instigator ? Instigator->GetController() : nullptr, DamageCauser);
 	}
 }
