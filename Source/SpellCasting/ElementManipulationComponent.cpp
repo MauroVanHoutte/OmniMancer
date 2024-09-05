@@ -59,7 +59,7 @@ void UElementManipulationComponent::TryCastSpell()
 	if (!SpellClass || TimerManager.IsTimerActive(*CooldownTimers.Find(*SpellClass)))
 		return;
 	
-	TimerManager.SetTimer(*CooldownTimers.Find(*SpellClass), CalculateSpellCooldown(SpellClass), false);
+	TimerManager.SetTimer(*CooldownTimers.Find(*SpellClass), CalculateSpellCooldown(*SpellClass), false);
 
 	FVector MousePosAtActorHeight;
 	FHitResult RaycastHit;
@@ -90,7 +90,7 @@ void UElementManipulationComponent::TryCastBasicAttack()
 		return;
 	}
 
-	TimerManager.SetTimer(*CooldownTimer, CalculateBaseAttackCooldown(), false);
+	TimerManager.SetTimer(*CooldownTimer, CalculateSpellCooldown(BasicAttack), false);
 
 	FVector MousePosAtActorHeight;
 	FHitResult RaycastHit;
@@ -110,14 +110,70 @@ void UElementManipulationComponent::TryCastBasicAttack()
 	OnBasicAttackCastedDelegate.Broadcast(GetOwner(), Spell);
 }
 
+ABaseSpell* UElementManipulationComponent::TriggeredCast(TSubclassOf<ABaseSpell> SpellClass, bool SendSpellCastedEvent)
+{
+	FActorSpawnParameters spawnParams{};
+	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	FVector SpawnLocation = GetOwner()->GetActorLocation();
+	ABaseSpell* Spell = GetWorld()->SpawnActor<ABaseSpell>(SpellClass, SpawnLocation, FRotator(), spawnParams);
+
+	if (Spell != nullptr)
+	{
+		Spell->InitSpell(SpawnLocation, GetOwner<APawn>());
+	}
+
+	if (SendSpellCastedEvent)
+	{
+		OnTriggeredSpellCastedDelegate.Broadcast(GetOwner(), Spell);
+	}
+
+	return Spell;
+}
+
 const TSet<WizardElement>& UElementManipulationComponent::GetLearnedElements() const
 {
 	return LearnedElements;
 }
 
+const TArray<WizardElement>& UElementManipulationComponent::GetActiveElements() const
+{
+	return CurrentElements;
+}
+
 void UElementManipulationComponent::LearnElement(WizardElement Element)
 {
 	LearnedElements.FindOrAdd(Element);
+	OnElementLearnedDelegate.Broadcast(Element);
+}
+
+const TArray<FSpellConfig>& UElementManipulationComponent::GetSpellConfig()
+{
+	return SpellConfiguration;
+}
+
+void UElementManipulationComponent::AddCooldownMultiplier(TSubclassOf<ABaseSpell> ApplicableSpell, float CooldownMultiplier)
+{
+	Cooldowns[ApplicableSpell] *= CooldownMultiplier;
+}
+
+void UElementManipulationComponent::AddCooldownMultiplierForElement(WizardElement Element, float CooldownMultiplier)
+{
+	TArray<FSpellConfig> SpellsWithElement = SpellConfiguration.FilterByPredicate([Element](const FSpellConfig& Config) {return Config.ElementCombination.Contains(Element); });
+	
+	for (const FSpellConfig& Spell : SpellsWithElement)
+	{
+		Cooldowns[Spell.Spell] *= CooldownMultiplier;
+	}
+}
+
+TMap<TSubclassOf<class ABaseSpell>, float>& UElementManipulationComponent::GetSpellCooldowns()
+{
+	return Cooldowns;
+}
+
+TMap<TSubclassOf<class ABaseSpell>, FTimerHandle>& UElementManipulationComponent::GetSpellCooldownTimers()
+{
+	return CooldownTimers;
 }
 
 USceneComponent* UElementManipulationComponent::GetBasicAttackOrigin() const
@@ -154,13 +210,14 @@ void UElementManipulationComponent::SetupSpells()
 
 		if (!Cooldowns.Find(SpellConfig.Spell))
 		{
-			Cooldowns.Add(SpellConfig.Spell, 1);
+			Cooldowns.Add(SpellConfig.Spell, 5);
 		}
 	}
 
 	for (TTuple<TSubclassOf<ABaseSpell>, float>& kvp : Cooldowns)
 	{
 		CooldownTimers.Add(kvp.Key);
+		CooldownMultipliers.Add(kvp.Key, 1);
 	}
 
 	for (size_t i = 0; i < CurrentElements.Num(); i++)
@@ -179,12 +236,7 @@ void UElementManipulationComponent::OnBasicAttackHit(ABaseSpell* Spell, AActor* 
 	OnBasicAttackHitDelegate.Broadcast(Spell, HitActor);
 }
 
-float UElementManipulationComponent::CalculateBaseAttackCooldown()
+float UElementManipulationComponent::CalculateSpellCooldown(TSubclassOf<class ABaseSpell> Spell)
 {
-	return *Cooldowns.Find(BasicAttack) * (Stats ? Stats->GetBaseAttackCooldownMultiplier() : 1.f);
-}
-
-float UElementManipulationComponent::CalculateSpellCooldown(const TSubclassOf<class ABaseSpell>* Spell)
-{
-	return *Cooldowns.Find(*Spell) * (Stats ? Stats->GetSpellCooldownMultiplier() : 1.f);
+	return *Cooldowns.Find(Spell) * *CooldownMultipliers.Find(Spell) * (Stats ? Stats->GetSpellCooldownMultiplier() : 1.f);
 }
