@@ -3,30 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WizardCharacter.h"
+#include "Health/BaseHealthComponent.h"
+#include <Kismet/KismetSystemLibrary.h>
+#include "ModularExtraConditions/ModularExtraConditions.h"
+#include "ModularTriggerEffect/ModularTriggerEffects.h"
+#include "ModularTriggerTargetting/ModularTriggerTargetting.h"
 #include "SpellCasting/Spells/BaseSpell.h"
 #include "SpellCasting/Spells/BaseProjectile.h"
 #include "SpellCasting/Spells/Blizzard.h"
 #include "SpellCasting/Spells/Vortex.h"
 #include "StatusEffects/StatusEffect.h"
 #include "StatusEffects/StatusEffectHandlingComponent.h"
-#include "ModularTriggerTargetting/ModularTriggerTargetting.h"
-#include "ModularTriggerEffect/ModularTriggerEffects.h"
-#include "ModularExtraConditions/ModularExtraConditions.h"
-#include <Kismet/KismetSystemLibrary.h>
-#include "TriggerEffects.generated.h"
 
-UENUM(BlueprintType)
-enum class TriggerCondition : uint8
-{
-	OnSpellCast,
-	OnBasicAttackCast,
-	OnSpellHit,
-	OnBasicAttackHit,
-	OnTakeHit,
-	OnDamageDealt,
-	OnEnemyKiled
-};
+#include "TriggerEffects.generated.h"
 
 UCLASS(Abstract, EditInlineNew)
 class UBaseTriggerEffect : public UObject
@@ -34,7 +23,7 @@ class UBaseTriggerEffect : public UObject
 	GENERATED_BODY()
 public:
 	virtual void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target, float Damage) {};
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly)
 	class APawn* Instigator;
 };
 
@@ -60,7 +49,8 @@ public:
 	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target, float Damage) override
 	{
 		if (!IsValid(EffectModule) ||
-			IsValid(ConditionsModule) && !ConditionsModule->CheckCondition(triggerOwner, spell, target))
+			(IsValid(ConditionsModule) &&
+			(bInvertCondition ? ConditionsModule->CheckCondition(triggerOwner, spell, target) : !ConditionsModule->CheckCondition(triggerOwner, spell, target))))
 		{
 			return;
 		}
@@ -71,12 +61,20 @@ public:
 		{
 			TargettingModule->GatherTargets(triggerOwner, spell, target, targetLocations, targetActors);
 		}
+
+		if (IsValid(ConditionsModule))
+		{
+			ConditionsModule->OnExecution(targetLocations, targetActors, Damage, Instigator);
+		}
+
 		EffectModule->ExecuteEffect(targetLocations, targetActors, Damage, Instigator);
 	}
 
 private:
 	UPROPERTY(EditDefaultsOnly, Instanced)
 	class UModularExtraConditionsBase* ConditionsModule;
+	UPROPERTY(EditDefaultsOnly)
+	bool bInvertCondition = false;
 	UPROPERTY(EditDefaultsOnly, Instanced)
 	class UModularTriggerTargettingBase* TargettingModule;
 	UPROPERTY(EditDefaultsOnly, Instanced)
@@ -113,7 +111,7 @@ public:
 	{
 		TArray<AActor*> ignore{ triggerOwner };
 		TArray<AActor*> outActors;
-		UKismetSystemLibrary::SphereOverlapActors(triggerOwner->GetWorld(), triggerOwner->GetActorLocation(), Radius, TArray<TEnumAsByte<EObjectTypeQuery>>(), ABaseCharacter::StaticClass(), ignore, outActors);
+		//UKismetSystemLibrary::SphereOverlapActors(triggerOwner->GetWorld(), triggerOwner->GetActorLocation(), Radius, TArray<TEnumAsByte<EObjectTypeQuery>>(), ABaseCharacter::StaticClass(), ignore, outActors);
 		for (AActor* actor : outActors)
 		{
 			auto enemy = Cast<ABaseCharacter>(actor);
@@ -248,38 +246,52 @@ public:
 	{
 		//slows from blizzard itself dont count
 		ABlizzard* blizzard = Cast<ABlizzard>(spell);
-		if (spell == nullptr || blizzard != nullptr)
+		if (spell == nullptr || blizzard != nullptr || target == nullptr)
 			return;
 
-		if (!Initialized)
+		if (!bInitialized)
 		{
 			Blizzard = GetWorld()->SpawnActor<ABlizzard>(*BlizzardClass);
-			//Blizzard->SetWizard(triggerOwner);
-			Initialized = true;
+			Blizzard->SetParent(Cast<APawn>(triggerOwner));
+			bInitialized = true;
 		}
 
-		/*auto slowEffect = spell->GetStatusEffects().FindByPredicate([](const FStatusEffect& effect) {return effect.EffectType == Type::Slow; });
+		auto slowEffect = spell->GetStatusEffectsRef().FindByPredicate([](const UBaseStatusEffect* effect) {return effect->IsA<UMovementSpeedStatusEffect>(); });
 		if (slowEffect != nullptr)
 		{
-			CurrentSlowsActive++;
-			UE_LOG(LogTemp, Warning, TEXT("slow added"));
-			if (CurrentSlowsActive >= SlowsNeeded)
+			FTimerHandle* ActiveActorTimer = ActiveSlows.Find(target);
+
+			if (!ActiveActorTimer)
 			{
-				GetWorld()->GetTimerManager().ClearTimer(DeactivationTimer);
-				Blizzard->Activate();
-				UE_LOG(LogTemp, Warning, TEXT("Blizzard Activated"));	
+				CurrentSlowsActive++;
+				UE_LOG(LogTemp, Warning, TEXT("slow added"));
+				if (CurrentSlowsActive >= SlowsNeeded)
+				{
+					GetWorld()->GetTimerManager().ClearTimer(DeactivationTimer);
+					Blizzard->Activate();
+					UE_LOG(LogTemp, Warning, TEXT("Blizzard Activated"));
+				}
+			}
+			else
+			{
+				triggerOwner->GetWorld()->GetTimerManager().ClearTimer(*ActiveActorTimer);
 			}
 
 			FTimerHandle handle;
-			triggerOwner->GetWorld()->GetTimerManager().SetTimer(handle, [triggerOwner, this](){
+			triggerOwner->GetWorld()->GetTimerManager().SetTimer(handle, [triggerOwner, target, this](){
 				CurrentSlowsActive--;
 				UE_LOG(LogTemp, Warning, TEXT("slow removed"));
+
+				ActiveSlows.Remove(target);
+
 				if (CurrentSlowsActive == SlowsNeeded-1)
 				{
 					GetWorld()->GetTimerManager().SetTimer(DeactivationTimer, Blizzard, &ABlizzard::Deactivate, LingerDuration);
 					UE_LOG(LogTemp, Warning, TEXT("Blizzard deactivates soon"));
-				}}, slowEffect->Duration, false);
-		}*/
+				}}, (*slowEffect)->TotalDuration, false);
+			
+			ActiveSlows.Add(target, handle);
+		}
 	};
 
 private:
@@ -292,8 +304,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABlizzard> BlizzardClass;
 	ABlizzard* Blizzard;
-	bool Initialized = false;
-
+	bool bInitialized = false;
+	UPROPERTY(Transient)
+	TMap<AActor*, FTimerHandle> ActiveSlows;
 };
 
 //Damage Reduction Trigger
@@ -343,4 +356,29 @@ private:
 	float SpawnChance = 0.3f;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AVortex> VortexClass;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UHealHealthCompTrigger : public UBaseTriggerEffect
+{
+	GENERATED_BODY()
+public:
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target, float Damage) override
+	{
+		if (IsValid(HealthComp))
+		{
+			HealthComp->Heal(HealAmount);
+		}
+	};
+
+	void SetHealthComponent(UBaseHealthComponent* NewHealthComponent)
+	{
+		HealthComp = NewHealthComponent;
+	}
+	
+private:
+	UPROPERTY(Transient)
+	UBaseHealthComponent* HealthComp;
+	UPROPERTY(EditDefaultsOnly)
+	float HealAmount = 10.f;
 };
