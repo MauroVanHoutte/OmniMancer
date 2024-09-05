@@ -4,30 +4,55 @@
 
 #include "CoreMinimal.h"
 #include "StatusEffects/StatusEffect.h"
+#include "TriggerHandlingComponent.h"
 #include "CharacterUpgrades.generated.h"
 
-class AWizardCharacter;
-class UBaseTriggerEffect;
-class UBaseStatBoost;
-class UBaseAttackStatusEffect;
-class UBaseRepeatingEffect;
 //Upgrade Base
 UCLASS(BlueprintType, Abstract, Blueprintable, EditInlineNew)
 class UNREALPROJECT_API UCharacterUpgrade : public UObject
 {
 	GENERATED_BODY()
 public:
-	virtual void Apply(AWizardCharacter* character) {};
-	virtual void Remove(AWizardCharacter* character) {};
+	virtual void Apply(AActor* character) {};
+	virtual void Remove(AActor* character) {};
+	UFUNCTION(BlueprintCallable)
+	virtual bool CanBeApplied();
 	virtual void SetTag(const FString& tag) { Tag = tag; };
+	UFUNCTION(BlueprintCallable)
+	FText GetFormattedDescription() { return FText::Format(Description, GetDescriptionArguments()); };
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText Name;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText Description;
 
 	UPROPERTY(EditDefaultsOnly)
 	FString Tag {};
 
-protected:
-	UPROPERTY(VisibleAnywhere)
-	bool Applied = false;
+	UPROPERTY(BlueprintReadWrite)
+	int CurrentLevel = 0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int MaxLevel = 1;
 
+private:
+	virtual FFormatNamedArguments GetDescriptionArguments() { return FFormatNamedArguments(); };
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UNREALPROJECT_API USpellUpgrade : public UCharacterUpgrade
+{
+	GENERATED_BODY()
+public:
+	virtual void Apply(AActor* character) override;
+	virtual void Remove(AActor* character) override;
+
+private:
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
+	TArray<TSubclassOf<class ABaseSpell>> ApplicableSpells;
+	UPROPERTY(EditDefaultsOnly, Instanced)
+	class UBaseSpellUpgradeEffect* UpgradeEffect;
 };
 
 //Triggered Effects
@@ -36,12 +61,14 @@ class UNREALPROJECT_API UTriggerUpgrade : public UCharacterUpgrade
 {
 	GENERATED_BODY()
 public:
-	virtual void Apply(AWizardCharacter* character) override;
-	virtual void Remove(AWizardCharacter* character) override;
+	virtual void Apply(AActor* character) override;
+	virtual void Remove(AActor* character) override;
 
 private:
+	UPROPERTY(EditDefaultsOnly)
+	TriggerCondition Condition;
 	UPROPERTY(EditDefaultsOnly, Instanced)
-	UBaseTriggerEffect* TriggerEffect;
+	class UBaseTriggerEffect* TriggerEffect;
 };
 
 //Stats
@@ -50,40 +77,12 @@ class UNREALPROJECT_API UStatUpgrade : public UCharacterUpgrade
 {
 	GENERATED_BODY()
 public:
-	virtual void Apply(AWizardCharacter* character) override;
-	virtual void Remove(AWizardCharacter* character) override;
+	virtual void Apply(AActor* character) override;
+	virtual void Remove(AActor* character) override;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Instanced)
-	UBaseStatBoost* StatBoost;
-};
-
-//Base attack status effect
-UCLASS(BlueprintType, EditInlineNew)
-class UNREALPROJECT_API UBaseAttackStatusEffectUpgrade : public UCharacterUpgrade
-{
-	GENERATED_BODY()
-public:
-	virtual void Apply(AWizardCharacter* character) override;
-	virtual void Remove(AWizardCharacter* character) override;
-
-private:
-	//UPROPERTY(EditDefaultsOnly)
-	//FStatusEffect StatusEffect;
-};
-
-//Reflect status effect
-UCLASS(BlueprintType, EditInlineNew)
-class UNREALPROJECT_API UReflectStatusEffectUpgrade : public UCharacterUpgrade
-{
-	GENERATED_BODY()
-public:
-	virtual void Apply(AWizardCharacter* character) override;
-	virtual void Remove(AWizardCharacter* character) override;
-
-private:
-	//UPROPERTY(EditDefaultsOnly)
-	//FStatusEffect StatusEffect;
+	class UBaseStatBoost* StatBoost;
 };
 
 //Repeating effect
@@ -92,9 +91,46 @@ class UNREALPROJECT_API URepeatingEffectUpgrade : public UCharacterUpgrade
 {
 	GENERATED_BODY()
 public:
-	virtual void Apply(AWizardCharacter* character) override;
-	virtual void Remove(AWizardCharacter* character) override;
+	virtual void Apply(AActor* character) override;
+	virtual void Remove(AActor* character) override;
 private:
 	UPROPERTY(EditDefaultsOnly, Instanced)
-	UBaseRepeatingEffect* Effect;
+	class UBaseRepeatingEffect* Effect;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UNREALPROJECT_API UShieldUpgrade : public UCharacterUpgrade
+{
+	GENERATED_BODY()
+
+public:
+	virtual void Apply(AActor* character) override;
+	virtual void Remove(AActor* character) override;
+
+protected:
+	virtual FFormatNamedArguments GetDescriptionArguments();
+
+	UPROPERTY(EditDefaultsOnly, Instanced)
+	class UBaseHealthComponent* ShieldComponent;
+	UPROPERTY(EditDefaultsOnly)
+	float ShieldHealthPerLevel = 10;
+	UPROPERTY(EditDefaultsOnly)
+	float BaseShieldHealth = 0.f;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UWidgetComponent> HealthbarComponentClass;
+	class UWidgetComponent* InstancedComponent;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UNREALPROJECT_API UKillBarrierUpgrade : public UShieldUpgrade
+{
+	GENERATED_BODY()
+
+public:
+	virtual void Apply(AActor* character) override;
+	virtual void Remove(AActor* character) override;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Instanced)
+	class UHealHealthCompTrigger* Trigger;
 };

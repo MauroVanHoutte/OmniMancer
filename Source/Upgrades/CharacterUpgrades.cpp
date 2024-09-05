@@ -1,95 +1,161 @@
 #include "CharacterUpgrades.h"
-#include "WizardCharacter.h"
-#include "Triggers/TriggerEffects.h"
-#include "StatUpgrades/StatBoosts.h"
+#include "Components/WidgetComponent.h"
+#include "Health/BaseHealthComponent.h"
+#include "Health/DecayingHealthComponent.h"
+#include "Health/Healthbar.h"
+#include "Health/HealthManager.h"
 #include "RepeatingEffects/RepeatingEffect.h"
+#include "SpellUpgrades/BaseSpelUpgrade.h"
+#include "SpellUpgradesComponent.h"
+#include "StatUpgrades/StatBoosts.h"
+#include "Triggers/TriggerEffects.h"
+#include "TriggerHandlingComponent.h"
 
-void UTriggerUpgrade::Apply(AWizardCharacter* character)
+bool UCharacterUpgrade::CanBeApplied()
 {
-	if (!Applied)
+	return CurrentLevel < MaxLevel;
+}
+
+void USpellUpgrade::Apply(AActor* character)
+{
+	USpellUpgradesComponent* SpellUpgradesComp = character->GetComponentByClass<USpellUpgradesComponent>();
+
+	UpgradeEffect->CurrentLevel++;
+
+	if (IsValid(SpellUpgradesComp))
 	{
-		character->AddTriggerEffect(TriggerEffect);
-		Applied = true;
+		for (const TSubclassOf<ABaseSpell>& SpellType : ApplicableSpells)
+		{
+			if (CurrentLevel == 1)
+			{
+				SpellUpgradesComp->RegisterSpellUpgrade(SpellType, UpgradeEffect);
+			}
+
+			UpgradeEffect->OnUpgradeRegistered(SpellUpgradesComp, SpellType);
+		}
 	}
 }
 
-void UTriggerUpgrade::Remove(AWizardCharacter* character)
+void USpellUpgrade::Remove(AActor* character)
 {
-	if (Applied)
+	USpellUpgradesComponent* SpellUpgradesComp = character->GetComponentByClass<USpellUpgradesComponent>();
+	if (IsValid(SpellUpgradesComp))
 	{
-		character->RemoveTriggerEffect(TriggerEffect);
-		Applied = false;
+		for (const TSubclassOf<ABaseSpell>& SpellType : ApplicableSpells)
+		{
+			SpellUpgradesComp->RemoveSpellUpgrade(SpellType, UpgradeEffect);
+		}
+	}
+
+	CurrentLevel = 0;
+}
+
+FFormatNamedArguments USpellUpgrade::GetDescriptionArguments()
+{
+	return UpgradeEffect->GetDescriptionArguments();
+}
+
+void UTriggerUpgrade::Apply(AActor* character)
+{
+	UTriggerHandlingComponent* TriggerComponent = character->GetComponentByClass<UTriggerHandlingComponent>();
+	if (IsValid(TriggerComponent))
+	{
+		TriggerComponent->AddTriggerEffect(Condition, TriggerEffect);
 	}
 }
 
-void UStatUpgrade::Remove(AWizardCharacter* character)
+void UTriggerUpgrade::Remove(AActor* character)
 {
-	if (Applied)
+	UTriggerHandlingComponent* TriggerComponent = character->GetComponentByClass<UTriggerHandlingComponent>();
+	if (IsValid(TriggerComponent))
 	{
-		StatBoost->Remove(character);
-		Applied = false;
+		TriggerComponent->RemoveTriggerEffect(Condition, TriggerEffect);
 	}
 }
 
-void UStatUpgrade::Apply(AWizardCharacter* character)
+void UStatUpgrade::Remove(AActor* character)
 {
-	if (!Applied)
+
+}
+
+void UStatUpgrade::Apply(AActor* character)
+{
+
+}
+
+void URepeatingEffectUpgrade::Apply(AActor* character)
+{
+	Effect->Apply(character);
+}
+
+void URepeatingEffectUpgrade::Remove(AActor* character)
+{
+	Effect->Remove(character);
+}
+
+void UShieldUpgrade::Apply(AActor* character)
+{
+	UHealthManager* HealthManager = character->GetComponentByClass<UHealthManager>();
+	if (IsValid(HealthManager) && CurrentLevel == 1)
 	{
-		StatBoost->Apply(character);
-		Applied = true;
+		if (!IsValid(InstancedComponent))
+		{
+			InstancedComponent = Cast<UWidgetComponent>(character->AddComponentByClass(HealthbarComponentClass, false, HealthbarComponentClass.GetDefaultObject()->GetRelativeTransform(), false));
+			//InstancedComponent->SetWidget(CreateWidget<UUserWidget>(GetWorld(), UserWidget));
+		}
+		if (!ShieldComponent->HasBegunPlay())
+		{
+			ShieldComponent->RegisterComponent();
+		}
+
+		ShieldComponent->BindHealthbar(InstancedComponent);
+		//InstancedComponent->GetUserWidgetObject()->AddToViewport();
+		HealthManager->AddHealthComponent(ShieldComponent);
+	}
+
+	ShieldComponent->SetMaxHealth(BaseShieldHealth + CurrentLevel * ShieldHealthPerLevel);
+}
+
+void UShieldUpgrade::Remove(AActor* character)
+{
+	UHealthManager* HealthManager = character->GetComponentByClass<UHealthManager>();
+	if (IsValid(HealthManager))
+	{
+		InstancedComponent->GetUserWidgetObject()->RemoveFromParent();
+		InstancedComponent->AttachToComponent(nullptr, FAttachmentTransformRules::KeepRelativeTransform);
+		character->RemoveInstanceComponent(ShieldComponent);
+		HealthManager->RemoveHealthComponent(ShieldComponent);
+	}
+
+	CurrentLevel = 0;
+}
+
+FFormatNamedArguments UShieldUpgrade::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add("ShieldHealthPerLevel", ShieldHealthPerLevel * CurrentLevel + 1);
+	return Args;
+}
+
+void UKillBarrierUpgrade::Apply(AActor* character)
+{
+	Super::Apply(character);
+
+	Trigger->SetHealthComponent(ShieldComponent);
+	UTriggerHandlingComponent* TriggerHandling = character->GetComponentByClass<UTriggerHandlingComponent>();
+	if (IsValid(TriggerHandling))
+	{
+		TriggerHandling->AddTriggerEffect(TriggerCondition::OnEnemyKiled, Trigger);
 	}
 }
 
-void UBaseAttackStatusEffectUpgrade::Apply(AWizardCharacter* character)
+void UKillBarrierUpgrade::Remove(AActor* character)
 {
-	if (!Applied)
-	{
-		//character->AddBaseAttackStatusEffect(StatusEffect);
-		Applied = true;
-	}
-}
+	Super::Apply(character);
 
-void UBaseAttackStatusEffectUpgrade::Remove(AWizardCharacter* character)
-{
-	if (Applied)
+	UTriggerHandlingComponent* TriggerHandling = character->GetComponentByClass<UTriggerHandlingComponent>();
+	if (IsValid(TriggerHandling))
 	{
-		//character->RemoveBaseAttackStatusEffect(StatusEffect);
-		Applied = false;
-	}
-}
-
-void UReflectStatusEffectUpgrade::Apply(AWizardCharacter* character)
-{
-	if (!Applied)
-	{
-		//character->AddReflectStatusEffect(StatusEffect);
-		Applied = true;
-	}
-}
-
-void UReflectStatusEffectUpgrade::Remove(AWizardCharacter* character)
-{
-	if (Applied)
-	{
-		//character->RemoveReflectStatusEffect(StatusEffect);
-		Applied = false;
-	}
-}
-
-void URepeatingEffectUpgrade::Apply(AWizardCharacter* character)
-{
-	if (!Applied)
-	{
-		Effect->Apply(character);
-		Applied = true;
-	}
-}
-
-void URepeatingEffectUpgrade::Remove(AWizardCharacter* character)
-{
-	if (Applied)
-	{
-		Effect->Remove(character);
-		Applied = false;
+		TriggerHandling->RemoveTriggerEffect(TriggerCondition::OnEnemyKiled, Trigger);
 	}
 }
