@@ -17,9 +17,12 @@ class UNREALPROJECT_API ABlizzard : public ABaseSpell
 public:
 	ABlizzard();
 
+	//IHitTriggerInterface implementation
+	virtual bool WasActorHitBefore_Implementation(class AActor* TriggeringActor) override;
+
 	void TickBlizzard();
 
-	void SetWizard(AWizardCharacter* wizard);
+	void SetParent(APawn* Parent);
 	void ApplyWizardStats();
 
 	void Activate();
@@ -33,11 +36,7 @@ private:
 	UStaticMeshComponent* CylinderMesh;
 	UPROPERTY(EditAnywhere, Category = "BaseParameter")
 	float TickInterval = 0.2f;
-	UPROPERTY(EditAnywhere, Category = "BaseParameter")
-	float SlowAmount = 0.2f;
-	UPROPERTY(EditAnywhere, Category = "BaseParameter")
-	float DamagePerTick = 0.4f;
 
 	FTimerHandle ApplicationTimer;
-	AWizardCharacter* Wizard;
+	APawn* ParentPawn;
 };

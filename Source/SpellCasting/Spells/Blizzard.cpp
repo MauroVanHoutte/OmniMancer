@@ -2,11 +2,12 @@
 
 
 #include "Blizzard.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Enemies/BaseCharacter.h"
-#include "WizardCharacter.h"
+#include "Health/AffiliationComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "StatusEffects/StatusEffect.h"
 #include "StatusEffects/StatusEffectHandlingComponent.h"
+#include "WizardCharacter.h"
 
 ABlizzard::ABlizzard()
 {
@@ -19,34 +20,29 @@ ABlizzard::ABlizzard()
 	CylinderMesh->SetStaticMesh(mesh);
 }
 
+bool ABlizzard::WasActorHitBefore_Implementation(AActor* TriggeringActor)
+{
+	return false;
+}
+
 void ABlizzard::TickBlizzard()
 {
 	ApplyWizardStats();
-
-	TArray<AActor*> OverlappingActors;
-	GetOverlappingActors(OverlappingActors, ABaseCharacter::StaticClass());
-	for (AActor* Actor : OverlappingActors)
-	{
-		FDamageEvent DamageEvent;
-		Actor->TakeDamage(DamagePerTick, DamageEvent, GetInstigatorController(), this);
-		OnHit(Actor);
-	}
+	SetActorEnableCollision(false);
+	SetActorEnableCollision(true);
 }
 
-void ABlizzard::SetWizard(AWizardCharacter* wizard)
+void ABlizzard::SetParent(APawn* Parent)
 {
-	if (GetInstigator() != wizard)
-	{
-		SetInstigator(wizard);
-		FAttachmentTransformRules attachRules{ EAttachmentRule::SnapToTarget, false };
-		AttachToActor(wizard, attachRules);
-		Wizard = wizard;
-	}
+	SetInstigator(Parent);
+	FAttachmentTransformRules attachRules{ EAttachmentRule::SnapToTarget, false };
+	AttachToActor(Parent, attachRules);
+	ParentPawn = Parent;
 }
 
 void ABlizzard::ApplyWizardStats()
 {
-	InitSpell(FVector(), Wizard);
+	InitSpell(FVector(), ParentPawn);
 }
 
 void ABlizzard::Activate()
