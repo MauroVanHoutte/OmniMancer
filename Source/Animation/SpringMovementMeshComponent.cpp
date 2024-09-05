@@ -20,7 +20,7 @@ void USpringMovementMeshComponent::TickComponent(float DeltaTime, ELevelTick Tic
 	float k2 = 1 / FMath::Pow((2 * PI * TFrequency), 2);
 	float k3 = (TResponse * TDamping) / (2 * PI * TFrequency);
 
-	FVector TargetPos = TargetLocation->GetComponentLocation();
+	FVector TargetPos = TargetLocation ? TargetLocation->GetComponentLocation() : FVector(0, 0, 0);
 	if (!FVector::PointsAreNear(Position, TargetPos, 0.1f) || !Velocity.IsNearlyZero())
 	{
 		FVector inputSpeed = (TargetPos - OldInputPos) / DeltaTime; //estimate input speed
