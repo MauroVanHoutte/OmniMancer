@@ -30,4 +30,6 @@ private:
 	float DashDuration = 1.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	float DashSpeed = 1200.f;
+	FVector StartLocation;
+	FVector EndLocation;
 };
