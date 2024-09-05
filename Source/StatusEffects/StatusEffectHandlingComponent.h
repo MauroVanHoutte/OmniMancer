@@ -27,6 +27,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void ApplyStatusEffect(class UBaseStatusEffect* StatusEffects);
+	const TArray<class UBaseStatusEffect*>& GetActiveStatusEffects() { return ActiveStatusEffects; };
 private:
 	TArray<class UBaseStatusEffect*> ActiveStatusEffects;
 	class UStatusEffectPoolingSubsystem* StatusEffectPooling;
