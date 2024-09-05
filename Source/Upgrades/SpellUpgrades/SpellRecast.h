@@ -3,25 +3,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SpellCasting/BaseSpelUpgrade.h"
-#include "FlameColumnRecast.generated.h"
+#include "BaseSpelUpgrade.h"
+#include "SpellRecast.generated.h"
 
 /**
  * 
  */
 UCLASS(BlueprintType)
-class UNREALPROJECT_API UFlameColumnRecast : public UBaseSpellUpgrade
+class UNREALPROJECT_API USpellRecast : public UBaseSpellUpgradeEffect
 {
 	GENERATED_BODY()
 public:
 	virtual void ApplyToSpell(class ABaseSpell* Spell) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
 	UFUNCTION()
-	void OnFlameColumnDestroyed(AActor* DestroyedActor);
+	void OnSpellDestroyed(AActor* DestroyedActor);
 
 	UPROPERTY(Transient)
-	TMap<AActor*, AActor*> OriginalToRecast;
+	TMap<AActor*, float> RecastCounters;
 
 	UPROPERTY(EditDefaultsOnly)
 	float SizeMultiplier = 1.75f;
