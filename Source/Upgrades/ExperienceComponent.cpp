@@ -20,7 +20,7 @@ void UExperienceComponent::AddExperience(int AddedExperience)
 		Experience -= ExperienceToNextLevel;
 		Level++;
 		OnLevelledUpDelegate.Broadcast(this, Level);
-		CalculateExperienceForNextLevel();
+		ExperienceToNextLevel = CalculateExperienceForNextLevel();
 		if (Experience >= ExperienceToNextLevel)
 		{
 			FSimpleDelegate Delegate;
@@ -43,7 +43,7 @@ int UExperienceComponent::GetLevel()
 	return Level;
 }
 
-void UExperienceComponent::CalculateExperienceForNextLevel_Implementation()
+float UExperienceComponent::CalculateExperienceForNextLevel_Implementation()
 {
-	ExperienceToNextLevel = int(10 * FMath::Pow(1.4, Level));
+	return int(1 * FMath::Pow(1.4, Level));
 }

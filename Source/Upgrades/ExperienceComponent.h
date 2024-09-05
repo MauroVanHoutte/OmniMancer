@@ -27,7 +27,7 @@ public:
 	int GetLevel();
 
 	UFUNCTION(BlueprintNativeEvent)
-	void CalculateExperienceForNextLevel();
+	float CalculateExperienceForNextLevel();
 
 	UPROPERTY(BlueprintAssignable)
 	FExperienceAddedSignature OnExperienceAddedDelegate;
