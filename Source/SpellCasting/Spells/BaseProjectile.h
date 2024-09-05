@@ -20,6 +20,8 @@ public:
 	// Sets default values for this actor's properties
 	ABaseProjectile();
 
+	virtual class UAffiliationComponent* GetAffiliation_Implementation() override;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -34,6 +36,9 @@ public:
 
 	void SetExplosion(float radius, float damage);
 
+	UFUNCTION(BlueprintCallable)
+	int GetBounces();
+	UFUNCTION(BlueprintCallable)
 	void SetBounces(int bounces);
 
 	bool Initialized = false;
@@ -44,6 +49,7 @@ protected:
 
 	void Explode();	
 
+	UPROPERTY(EditDefaultsOnly)
 	USphereComponent* CollisionComponent;
 	UPROPERTY(EditAnywhere)
 	UProjectileMovementComponent* ProjectileMovement;

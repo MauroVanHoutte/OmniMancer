@@ -15,6 +15,9 @@ class UNREALPROJECT_API AIceZone : public ABaseSpell
 public:	
 	AIceZone();
 
+	//IHitTriggerInterface implementations
+	virtual bool WasActorHitBefore_Implementation(class AActor* TriggeringActor) override;
+
 	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
 
 	void SetRadius(float radius);

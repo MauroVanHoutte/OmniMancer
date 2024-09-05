@@ -43,10 +43,6 @@ void ATornado::InitSpell(const FVector& targetLocation, APawn* caster)
 	Super::InitSpell(targetLocation, caster);
 
 	FireInDirection((targetLocation - caster->GetActorLocation()).GetSafeNormal());
-
-	Damage = BaseDamage + DamagePerFireLevel * FireLevel;
-	ScaleGrowth += ScaleGrowthPerWindLevel * WindLevel;
-	//SetStunParams(true, StunDuration + StunDurationPerFrostLevel * FireLevel);
 }
 
 void ATornado::BeginPlay()
@@ -65,18 +61,4 @@ void ATornado::OnHit(AActor* HitActor)
 	UForceApplicationComponent* ForceComponent = HitActor->GetComponentByClass<UForceApplicationComponent>();
 	if (IsValid(ForceComponent))
 		ForceComponent->ApplyImpulse(FVector(0, 0, 50000));
-
-	//Wind level 4 effect
-	if (WindLevel >= 4)
-		ShootLightning(HitActor);
-}
-
-void ATornado::ShootLightning(AActor* targetActor)
-{
-	if (Lightning == nullptr)
-		return;
-	auto lightning = GetWorld()->SpawnActor<AChainLightning>(Lightning);
-	lightning->InitSpell(targetActor->GetActorLocation(), Cast<AWizardCharacter>(GetInstigator()));
-	lightning->FireInDirection((targetActor->GetActorLocation() - GetActorLocation()).GetSafeNormal());
-	lightning->SetDamageMultiplier(0.5f); //weaker damage
 }

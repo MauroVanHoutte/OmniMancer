@@ -28,7 +28,6 @@ ABaseProjectile::ABaseProjectile()
 	ProjectileMovement->SetUpdatedComponent(CollisionComponent);
 	ProjectileMovement->InitialSpeed = MaxSpeed;
 	ProjectileMovement->MaxSpeed = MaxSpeed;
-	ProjectileMovement->bShouldBounce = false;
 	ProjectileMovement->ProjectileGravityScale = 0.f;
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
@@ -38,6 +37,11 @@ ABaseProjectile::ABaseProjectile()
 	Mesh->SetupAttachment(CollisionComponent);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+}
+
+UAffiliationComponent* ABaseProjectile::GetAffiliation_Implementation()
+{
+	return Super::GetAffiliation_Implementation();
 }
 
 // Called when the game starts or when spawned
@@ -105,7 +109,7 @@ void ABaseProjectile::OnHit(AActor* hitActor)
 	{
 		TArray<AActor*> actors;
 		TArray<AActor*> ignore{ Cast<AActor>(GetWorld()->GetFirstPlayerController()->GetPawn()) };
-		UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), BounceRange, TArray<TEnumAsByte<EObjectTypeQuery>>(), ABaseCharacter::StaticClass(), ignore, actors);
+		UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), BounceRange, TArray<TEnumAsByte<EObjectTypeQuery>>(), ACharacter::StaticClass(), ignore, actors);
 
 		if (actors.Num() > 0)
 		{
@@ -141,6 +145,11 @@ void ABaseProjectile::SetExplosion(float radius, float damage)
 	Explosive = true;
 	ExplosionDamage = damage;
 	ExplosionRadius = radius;
+}
+
+int ABaseProjectile::GetBounces()
+{
+	return TotalBounces;
 }
 
 void ABaseProjectile::SetBounces(int bounces)

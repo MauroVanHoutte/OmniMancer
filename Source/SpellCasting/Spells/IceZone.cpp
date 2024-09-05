@@ -3,9 +3,10 @@
 
 #include "IceZone.h"
 #include "Enemies/BaseCharacter.h"
-#include "WizardCharacter.h"
+#include "Health/AffiliationComponent.h"
 #include "StatusEffects/StatusEffect.h"
 #include "StatusEffects/StatusEffectHandlingComponent.h"
+#include "WizardCharacter.h"
 
 // Sets default values
 AIceZone::AIceZone()
@@ -35,24 +36,19 @@ void AIceZone::BeginPlay()
 
 	GetWorld()->GetTimerManager().SetTimer(ApplicationTimer, [this]()
 		{
-			TArray<AActor*> overlappingActors{};
-			GetOverlappingActors(overlappingActors, ABaseCharacter::StaticClass());
-
-			for (AActor* actor : overlappingActors)
-			{
-				/*auto instigatorController = Cast<APlayerController>(GetInstigatorController());
-				auto baseEnemy = Cast<ABaseCharacter>(actor);
-				auto actorController = Cast<APlayerController>(baseEnemy->GetController());*/
-				/*if (baseEnemy && instigatorController != actorController)
-					baseEnemy->ReapplyStatusEffects(StatusEffects);*/
-				OnHit(actor);
-			}
+			SetActorEnableCollision(false);
+			SetActorEnableCollision(true);
 		}, ApplicationInterval, true);
 }
 
 void AIceZone::OnDeath()
 {
 	GetWorld()->GetTimerManager().ClearTimer(ApplicationTimer);
+}
+
+bool AIceZone::WasActorHitBefore_Implementation(AActor* TriggeringActor)
+{
+	return false;
 }
 
 void AIceZone::InitSpell(const FVector& targetLocation, APawn* caster)

@@ -26,8 +26,6 @@ protected:
 	virtual void BeginPlay() override;
 	void OnHit(AActor* hitActor) override;
 
-	void ShootLightning(AActor* targetActor);
-
 	UPROPERTY(BlueprintReadWrite)
 	UStaticMeshComponent* Mesh;
 
@@ -35,24 +33,10 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	UProjectileMovementComponent* ProjectileMovement;
 
-	UPROPERTY(EditDefaultsOnly, Category="Base Parameters")
-	float BaseDamage = 5.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Base Parameters", meta=(AllowPrivateAccess = true))
 	float ScaleGrowth = 1.3f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Base Parameters", meta = (AllowPrivateAccess = true))
 	float StartScale = 1.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float StunDuration = 1.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Base Parameters", meta = (AllowPrivateAccess = true))
 	float Speed = 1000.f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float DamagePerFireLevel = 1.5f;
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float ScaleGrowthPerWindLevel = .2f;
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float StunDurationPerFrostLevel = 0.5f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	TSubclassOf<AChainLightning> Lightning;
 };
