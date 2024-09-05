@@ -33,6 +33,13 @@ public:
 	void Init() override;
 	void Shutdown() override;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int GetCompletedRoomCount();
+	UFUNCTION(BlueprintCallable)
+	void SetCompletedRoomCount(int NewRoomCount);
+	UFUNCTION(BlueprintCallable)
+	int IncrementCompletedRoomCount();
+
 	UFUNCTION(BlueprintCallable)
 	int GetCurrency();
 	UFUNCTION(BlueprintCallable)
@@ -53,6 +60,7 @@ public:
 	FCurrencyChanged OnCurrencyChanged;
 
 private:
+	int CompletedRooms = 0;
 	int Currency = 500;
 	TSet<FString> UnlockedUpgrades{};
 	WizardElement Selected = WizardElement::Fire;

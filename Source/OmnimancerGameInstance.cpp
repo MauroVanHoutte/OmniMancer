@@ -74,6 +74,21 @@ void UOmnimancerGameInstance::Shutdown()
 	UGameplayStatics::SaveGameToSlot(save, "SaveSlot", 0);
 }
 
+int UOmnimancerGameInstance::GetCompletedRoomCount()
+{
+	return CompletedRooms;
+}
+
+void UOmnimancerGameInstance::SetCompletedRoomCount(int NewRoomCount)
+{
+	CompletedRooms = NewRoomCount;
+}
+
+int UOmnimancerGameInstance::IncrementCompletedRoomCount()
+{
+	return ++CompletedRooms;
+}
+
 int UOmnimancerGameInstance::GetCurrency()
 {
 	return Currency;
