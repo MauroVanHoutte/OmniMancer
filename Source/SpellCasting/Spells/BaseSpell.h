@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "StatusEffects/StatusEffect.h"
+#include "Health/HitTriggerInterface.h"
 #include "BaseSpell.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSpellHitSignature, ABaseSpell*, Spell, AActor*, HitActor);
@@ -13,12 +14,18 @@ class AWizardCharacter;
 class ABaseCharacter;
 
 UCLASS(Abstract)
-class UNREALPROJECT_API ABaseSpell : public AActor
+class UNREALPROJECT_API ABaseSpell : public AActor, public IHitTriggerInterface
 {
 	GENERATED_BODY()
 	
 public:	
 	ABaseSpell();
+
+	//IHitTriggerInterface implementations
+	virtual void OnTriggered_Implementation(class AActor* TriggeringActor);
+	virtual class UAffiliationComponent* GetAffiliation_Implementation();
+	virtual bool WasActorHitBefore_Implementation(class AActor* TriggeringActor);
+	//end IHitTriggerInterface implementations
 
 	virtual void Destroy();
 
@@ -30,23 +37,23 @@ public:
 	//virtual const TArray<FStatusEffect>& GetStatusEffects() const;
 	UFUNCTION(BlueprintCallable)
 	void SetBaseDamage(float damage);
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetBaseDamage();
 	UFUNCTION(BlueprintCallable)
 	virtual void SetDamageMultiplier(float damageMultiplier);
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetDamageMultiplier();
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	virtual float GetFinalDamage() const;
 	UFUNCTION(BlueprintCallable)
 	virtual void SetScale(float NewScale) {};
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	virtual float GetScale() const { return 0; };
 
 	UFUNCTION(BLueprintCallable)
-	void TrackAppliedUpgrade(class USpellUpgradeData* SpellUpgrade) { AppliedSpellUpgrades.Add(SpellUpgrade); };
+	void TrackAppliedUpgrade(class UBaseSpellUpgradeEffect* SpellUpgrade) { AppliedSpellUpgrades.Add(SpellUpgrade); };
 	UFUNCTION(BlueprintCallable)
-	TArray<class USpellUpgradeData*>& GetAppliedSpellUpgrades() { return AppliedSpellUpgrades; };
+	TArray<class UBaseSpellUpgradeEffect*>& GetAppliedSpellUpgrades() { return AppliedSpellUpgrades; };
 
 	UFUNCTION(BlueprintCallable)
 	TArray<UBaseStatusEffect*>& GetStatusEffectsRef();
@@ -75,7 +82,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Instanced)
 	TArray<UBaseStatusEffect*> StatusEffects{}; //status effects get applied to entities hit
 
-	TArray<class USpellUpgradeData*> AppliedSpellUpgrades;
+	TArray<class UBaseSpellUpgradeEffect*> AppliedSpellUpgrades;
 
 	UPROPERTY(EditDefaultsOnly)
 	float LifeSpan = 5;
@@ -90,15 +97,8 @@ protected:
 	int WindLevel = -1;
 
 	FTimerHandle LifeTimer{};
+
 private:
 	UPROPERTY(VisibleAnywhere)
 	float DamageMultiplier = 1;
-	UPROPERTY(VisibleAnywhere)
-	float SlowDurationMultiplier = 1;
-	UPROPERTY(VisibleAnywhere)
-	float BurnDurationMultiplier = 1;
-	UPROPERTY(VisibleAnywhere)
-	float StunDurationMultiplier = 1;
-
-
 };

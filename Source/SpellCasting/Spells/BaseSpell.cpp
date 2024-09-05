@@ -13,6 +13,25 @@ ABaseSpell::ABaseSpell()
 	SetActorEnableCollision(false);
 }
 
+// IHitTriggerInterface implementations
+void ABaseSpell::OnTriggered_Implementation(AActor* TriggeringActor)
+{
+	HitActors.AddUnique(TriggeringActor);
+	TriggeringActor->TakeDamage(GetFinalDamage(), FDamageEvent{}, GetInstigatorController(), this);
+	OnHit(TriggeringActor);
+}
+
+UAffiliationComponent* ABaseSpell::GetAffiliation_Implementation()
+{
+	return GetOwner()->GetComponentByClass<UAffiliationComponent>();
+}
+
+bool ABaseSpell::WasActorHitBefore_Implementation(AActor* TriggeringActor)
+{
+	return HitActors.Contains(TriggeringActor);
+}
+// end IHitTriggerInterface implementations
+
 void ABaseSpell::Destroy()
 {
 	OnDeath();
