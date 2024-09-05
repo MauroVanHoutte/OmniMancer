@@ -2,8 +2,9 @@
 
 
 #include "HitHandlingComponent.h"
-#include "SpellCasting/Spells/BaseSpell.h"
 #include "AffiliationComponent.h"
+#include "SpellCasting/Spells/BaseSpell.h"
+#include "Health/HitTriggerInterface.h"
 
 // Sets default values for this component's properties
 UHitHandlingComponent::UHitHandlingComponent()
@@ -26,6 +27,16 @@ void UHitHandlingComponent::Initialize(const TArray<UShapeComponent*>& inCollide
 	}
 }
 
+void UHitHandlingComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	for (UShapeComponent* Collider : Colliders)
+	{
+		Collider->OnComponentBeginOverlap.RemoveDynamic(this, &UHitHandlingComponent::OnColliderOverlap);
+	}
+}
+
 // Called when the game starts
 void UHitHandlingComponent::BeginPlay()
 {
@@ -37,20 +48,16 @@ void UHitHandlingComponent::BeginPlay()
 
 void UHitHandlingComponent::OnColliderOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	ABaseSpell* spell = Cast<ABaseSpell>(OtherActor);
-	if (!spell)
+	if (!OtherActor->Implements<UHitTriggerInterface>())
 		return;
 
-	UAffiliationComponent* SpellAffiliation = spell->GetOwner() ? spell->GetOwner()->GetComponentByClass<UAffiliationComponent>() : nullptr;
+	UAffiliationComponent* Affiliation = IHitTriggerInterface::Execute_GetAffiliation(OtherActor);
 
-	if ((!SpellAffiliation || SpellAffiliation->GetAffiliation() != AffiliationComponent->GetAffiliation()) 
-		&& !spell->WasActorHit(GetOwner()))
+	if ((!Affiliation || Affiliation->GetAffiliation() != AffiliationComponent->GetAffiliation()) //Damage collider is not affiliated with hit actor
+		&& !IHitTriggerInterface::Execute_WasActorHitBefore(OtherActor, GetOwner())) //Hit Actor was not hit before
 	{
-		spell->AddHitActor(GetOwner());
-		GetOwner()->TakeDamage(spell->GetFinalDamage(), FDamageEvent{}, spell->GetInstigatorController(), spell);
-		//ReapplyStatusEffects(spell->GetStatusEffects());
-		//activates caster on hit trigger
-		spell->OnHit(GetOwner());
+		IHitTriggerInterface::Execute_OnTriggered(OtherActor, GetOwner());
+		OnHitRegisteredDelegate.Broadcast(OtherActor, GetOwner());
 	}
 }
 
