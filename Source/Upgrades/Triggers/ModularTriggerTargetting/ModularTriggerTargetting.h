@@ -51,6 +51,8 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	float Radius = 400.f;
+	UPROPERTY(EditDefaultsOnly)
+	bool bCheckAffiliation = true;
 };
 
 UCLASS(BlueprintType, EditInlineNew)
@@ -63,4 +65,6 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	float Radius = 400.f;
+	UPROPERTY(EditDefaultsOnly)
+	bool bCheckAffiliation = true;
 };
