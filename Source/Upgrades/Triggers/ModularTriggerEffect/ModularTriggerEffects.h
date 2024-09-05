@@ -28,7 +28,7 @@ public:
 	void BP_ExecuteEffect(const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator);
 };
 
-UCLASS(Blueprintable, BlueprintType, EditInlineNew)
+UCLASS(BlueprintType, EditInlineNew)
 class UStatusEffectTriggerEffect : public UModularTriggerEffectBase
 {
 	GENERATED_BODY()
@@ -38,4 +38,30 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly, Instanced)
 	class UBaseStatusEffect* StatusEffect;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class URadialProjectilesTriggerEffect : public UModularTriggerEffectBase
+{
+	GENERATED_BODY()
+public:
+	virtual void ExecuteEffect(const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class ABaseProjectile> ProjectileType;
+	UPROPERTY(EditDefaultsOnly)
+	int ProjectileCount = 5;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UHealTargets : public UModularTriggerEffectBase
+{
+	GENERATED_BODY()
+public:
+	virtual void ExecuteEffect(const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float HealAmount = 5.f;
 };
