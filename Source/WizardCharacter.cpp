@@ -142,10 +142,10 @@ void AWizardCharacter::OnTakeHit(AActor* cause)
 
 void AWizardCharacter::OnDeath()
 {
-	for (UCharacterUpgrade* upgrade : CharacterUpgrades)
-	{
-		upgrade->Remove(this);
-	}
+	//for (UCharacterUpgrade* upgrade : CharacterUpgrades)
+	//{
+	//	upgrade->Remove(this);
+	//}
 }
 
 
@@ -261,35 +261,35 @@ void AWizardCharacter::AddPowerUpEffect( UPowerUpEffect* effect)
 
 void AWizardCharacter::AddTriggerEffect(UBaseTriggerEffect* effect)
 {
-	TriggerEffects.Add(effect);
+	//TriggerEffects.Add(effect);
 }
 
 void AWizardCharacter::RemoveTriggerEffect(UBaseTriggerEffect* effect)
 {
-	for (size_t i = 0; i < TriggerEffects.Num(); i++)
+	/*for (size_t i = 0; i < TriggerEffects.Num(); i++)
 	{
 		if (TriggerEffects[i] == effect)
 		{
 			TriggerEffects.RemoveAt(i);
 			--i;
 		}
-	}
+	}*/
 }
 
 void AWizardCharacter::ApplyUpgrade(const FString& tag)
 {
-	(* CharacterUpgrades.FindByPredicate([tag](const UCharacterUpgrade* upgrade)
+	/*(* CharacterUpgrades.FindByPredicate([tag](const UCharacterUpgrade* upgrade)
 		{
 			return upgrade->Tag.Compare(tag) == 0;
-		}))->Apply(this);
+		}))->Apply(this);*/
 }
 
 void AWizardCharacter::RemoveUpgrade(const FString& tag)
 {
-	(* CharacterUpgrades.FindByPredicate([tag](const UCharacterUpgrade* upgrade)
+	/*(* CharacterUpgrades.FindByPredicate([tag](const UCharacterUpgrade* upgrade)
 		{
 			return upgrade->Tag.Compare(tag) == 0;
-		}))->Remove(this);
+		}))->Remove(this);*/
 }
 
 void AWizardCharacter::SetExplosionVariables(float damage, float radius, bool explode)
@@ -752,7 +752,7 @@ void AWizardCharacter::SetupUpgrades()
 	auto& unlockedUpgrades = gameInstance->GetUnlockedUpgrades();
 	unlockedUpgrades.Add("FreeUpgrade");
 
-	for (const auto& upgradeTag : unlockedUpgrades)
+	/*for (const auto& upgradeTag : unlockedUpgrades)
 	{
 		UCharacterUpgrade** matchingUpgrade = CharacterUpgrades.FindByPredicate([upgradeTag](UCharacterUpgrade* upgrade) 
 			{
@@ -763,7 +763,7 @@ void AWizardCharacter::SetupUpgrades()
 		{
 			(*matchingUpgrade)->Apply(this);
 		}
-	}
+	}*/
 }
 
 void AWizardCharacter::RaycastMouseOnLevel(FVector& mouseAtWizardHeight, FHitResult& raycastHit)

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Enemies/BaseCharacter.h"
 #include "GenericPlatform/GenericPlatformMisc.h" 
-#include "Upgrades/CharacterUpgrades.h"
+//#include "Upgrades/CharacterUpgrades.h"
 #include "SpellCasting/Elements.h"
 
 #include "WizardCharacter.generated.h"
@@ -255,9 +255,9 @@ private:
 	//UPROPERTY(VisibleAnywhere, Category = "Active")
 	//TArray<FStatusEffect> ReflectEffects;
 	//effects applied on hit, take hit and cast
-	TArray<UBaseTriggerEffect*> TriggerEffects;
-	UPROPERTY(EditAnywhere, Instanced)
-	TArray<UCharacterUpgrade*> CharacterUpgrades;
+	//TArray<UBaseTriggerEffect*> TriggerEffects;
+	//UPROPERTY(EditAnywhere, Instanced)
+	//TArray<UCharacterUpgrade*> CharacterUpgrades;
 
 	//Experience
 	int Experience = 0;
