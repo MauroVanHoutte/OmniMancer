@@ -41,6 +41,17 @@ void UHealthManager::BeginPlay()
 	}
 }
 
+void UHealthManager::EndPlay(EEndPlayReason::Type Reason)
+{
+	Super::EndPlay(Reason);
+
+	GetOwner()->OnTakeAnyDamage.RemoveDynamic(this, &UHealthManager::TakeDamage);
+	for (UBaseHealthComponent* HealthComponent : HealthComponents)
+	{
+		HealthComponent->OnFatalDamageTakenDelegate.RemoveDynamic(this, &UHealthManager::OnHealthComponentFatalDamage);
+	}
+}
+
 void UHealthManager::OnHealthComponentFatalDamage(UBaseHealthComponent* HealthComponent, float Damage, float OverkillDamage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	bool bAnyLiveHealthComponentsLeft = HealthComponents.ContainsByPredicate([](UBaseHealthComponent* HealthComponent)
@@ -81,8 +92,41 @@ void UHealthManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	// ...
 }
 
+void UHealthManager::AddHealthComponent(UBaseHealthComponent* Component)
+{
+	Component->OnFatalDamageTakenDelegate.AddDynamic(this, &UHealthManager::OnHealthComponentFatalDamage);
+	HealthComponents.Add(Component);
+}
+
+void UHealthManager::RemoveHealthComponent(UBaseHealthComponent* Component)
+{
+	Component->OnFatalDamageTakenDelegate.RemoveDynamic(this, &UHealthManager::OnHealthComponentFatalDamage);
+	HealthComponents.Remove(Component);
+}
+
+int UHealthManager::GetLiveHealthComponentCount()
+{
+	return HealthComponents.FilterByPredicate([](const UBaseHealthComponent* HealthComponent) {return !HealthComponent->IsDepleted(); }).Num();
+}
+
 void UHealthManager::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
+	for (UBaseHealthComponent* Component : HealthComponents)
+	{
+		if (Component->bRegenerates)
+		{
+			Component->bIsRegenerating = false;
+			FTimerDelegate Delegate;
+			Delegate.BindUObject(Component, &UBaseHealthComponent::StartRegenerating);
+			GetWorld()->GetTimerManager().SetTimer(Component->RegenerationTimer, Delegate, Component->RegenerationCooldown, false);
+		}
+	}
+
+	HealthComponents.Sort([](const UBaseHealthComponent& first, const UBaseHealthComponent& second)
+		{
+			return first.GetPriority() > second.GetPriority();
+		});
+
 	for (size_t i = 0; i < HealthComponents.Num(); i++)
 	{
 		if (!HealthComponents[i]->IsDepleted())
@@ -107,6 +151,23 @@ void UHealthManager::TakeDamage(AActor* DamagedActor, float Damage, const UDamag
 			{
 				return;
 			}
+		}
+	}
+}
+
+void UHealthManager::Heal(float HealAmount)
+{
+	HealthComponents.Sort([](const UBaseHealthComponent& first, const UBaseHealthComponent& second)
+		{
+			return first.GetPriority() < second.GetPriority();
+		});
+
+	for (UBaseHealthComponent* HealthComp : HealthComponents)
+	{
+		if (HealthComp->CanBeHealed())
+		{
+			HealthComp->Heal(HealAmount);
+			return;
 		}
 	}
 }

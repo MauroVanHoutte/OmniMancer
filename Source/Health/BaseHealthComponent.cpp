@@ -49,7 +49,20 @@ void UBaseHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	if (bRegenerates && bIsRegenerating)
+	{
+		bIsDepleted = false;
+		CurrentHealth += RegenerationRate * DeltaTime;
+
+		if (CurrentHealth >= MaxHealth)
+		{
+			CurrentHealth = MaxHealth;
+			bIsRegenerating = false;
+		}
+
+		if (BoundHealthbar)
+			BoundHealthbar->SetHealthPercentage(CurrentHealth / MaxHealth);
+	}
 }
 
 void UBaseHealthComponent::BindHealthbar(UWidgetComponent* Healthbar)
@@ -66,28 +79,51 @@ void UBaseHealthComponent::BindHealthbar(UWidgetComponent* Healthbar)
 
 void UBaseHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	CurrentHealth -= Damage;
-	SpawnDamageText(Damage);
-	OnDamageTakenDelegate.Broadcast(this, Damage, DamageType, InstigatedBy, DamageCauser);
-
-	if (BoundHealthbar)
-		BoundHealthbar->SetHealthPercentage(CurrentHealth / MaxHealth);
-
-	if (CurrentHealth <= 0)
+	if (Damage > 0)
 	{
-		const float OverkillDamage = -1 * CurrentHealth;
-		CurrentHealth = 0.f;
-		bIsDepleted = true;
-		OnFatalDamageTakenDelegate.Broadcast(this, Damage, OverkillDamage, DamageType, InstigatedBy, DamageCauser);
+		CurrentHealth -= Damage;
+		SpawnDamageText(Damage);
+		OnDamageTakenDelegate.Broadcast(this, Damage, DamageType, InstigatedBy, DamageCauser);
+
+		if (BoundHealthbar)
+			BoundHealthbar->SetHealthPercentage(CurrentHealth / MaxHealth);
+
+		if (CurrentHealth <= 0)
+		{
+			const float OverkillDamage = -1 * CurrentHealth;
+			CurrentHealth = 0.f;
+			bIsDepleted = true;
+			OnFatalDamageTakenDelegate.Broadcast(this, Damage, OverkillDamage, DamageType, InstigatedBy, DamageCauser);
+		}
 	}
 }
 
 void UBaseHealthComponent::SpawnDamageText(float damage)
 {
-	if (FloatingTextClass == nullptr || FMath::IsNearlyEqual(damage, 0.f))
+	if (DamageFloatingTextClass == nullptr || FMath::IsNearlyEqual(damage, 0.f))
 		return;
-	AFloatingTextActor* TextActor = GetWorld()->SpawnActor<AFloatingTextActor>(FloatingTextClass);
+	AFloatingTextActor* TextActor = GetWorld()->SpawnActor<AFloatingTextActor>(DamageFloatingTextClass);
 	TextActor->Initialize(FText::FromString(FString::SanitizeFloat(FMath::RoundHalfToZero(damage * 100) / 100.f)));
+	TextActor->SetActorLocation(GetOwner()->GetActorLocation());
+}
+
+void UBaseHealthComponent::Heal(float HealAmount)
+{
+	if (!CanBeHealed())
+		return;
+
+	CurrentHealth += HealAmount;
+	CurrentHealth = FMath::Clamp(CurrentHealth, 0, MaxHealth);
+	bIsDepleted = !(CurrentHealth > 0);
+
+	if (BoundHealthbar)
+		BoundHealthbar->SetHealthPercentage(CurrentHealth / MaxHealth);
+
+	if (HealFloatingTextClass == nullptr || FMath::IsNearlyEqual(HealAmount, 0.f))
+		return;
+
+	AFloatingTextActor* TextActor = GetWorld()->SpawnActor<AFloatingTextActor>(HealFloatingTextClass);
+	TextActor->Initialize(FText::FromString(FString::SanitizeFloat(FMath::RoundHalfToZero(HealAmount * 100) / 100.f)));
 	TextActor->SetActorLocation(GetOwner()->GetActorLocation());
 }
 
@@ -100,6 +136,9 @@ void UBaseHealthComponent::SetMaxHealth(float NewMaxHealth)
 {
 	ensure(NewMaxHealth > 0);
 	MaxHealth = NewMaxHealth;
+
+	if (bRegenerates)
+		bIsRegenerating = true;
 
 	if (BoundHealthbar)
 		BoundHealthbar->SetHealthPercentage(CurrentHealth / MaxHealth);
@@ -147,6 +186,11 @@ void UBaseHealthComponent::Kill(const UDamageType* DamageType, AController* Inst
 	OnFatalDamageTakenDelegate.Broadcast(this, -1, -1, DamageType, InstigatedBy, DamageCauser);
 }
 
+bool UBaseHealthComponent::CanBeHealed() const
+{
+	return bCanBeHealed;
+}
+
 bool UBaseHealthComponent::IsDepleted() const
 {
 	return bIsDepleted;
@@ -165,4 +209,9 @@ bool UBaseHealthComponent::GetBlocksDamage() const
 bool UBaseHealthComponent::GetOverflows() const
 {
 	return bOverflow;
+}
+
+void UBaseHealthComponent::StartRegenerating()
+{
+	bIsRegenerating = true;
 }

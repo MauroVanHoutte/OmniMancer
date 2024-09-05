@@ -22,6 +22,7 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	virtual void EndPlay(EEndPlayReason::Type Reason) override;
 
 	UFUNCTION()
 	void OnHealthComponentFatalDamage(class UBaseHealthComponent* HealthComponent, float Damage, float OverkillDamage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
@@ -30,8 +31,15 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void AddHealthComponent(class UBaseHealthComponent* Component);
+	void RemoveHealthComponent(class UBaseHealthComponent* Component);
+
+	UFUNCTION(BlueprintCallable)
+	int GetLiveHealthComponentCount();
+
 	UFUNCTION()
 	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	void Heal(float HealAmount);
 
 	UPROPERTY(BlueprintAssignable)
 	FManagerDamageTakenSignature OnDamageTakenDelegate;

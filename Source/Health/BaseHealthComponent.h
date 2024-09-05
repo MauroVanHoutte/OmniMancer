@@ -7,19 +7,19 @@
 #include "Delegates/DelegateCombinations.h"
 #include "BaseHealthComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FDamageTakenSignature, UBaseHealthComponent*, DamagedActor, float, Damage, const class UDamageType*, DamageType, class AController*, InstigatedBy, AActor*, DamageCauser);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FFatalDamageTakenSignature, UBaseHealthComponent*, DamagedActor, float, Damage, float, OverKillDamage, const class UDamageType*, DamageType, class AController*, InstigatedBy, AActor*, DamageCauser);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FDamageTakenSignature, UBaseHealthComponent*, DamagedComponent, float, Damage, const class UDamageType*, DamageType, class AController*, InstigatedBy, AActor*, DamageCauser);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FFatalDamageTakenSignature, UBaseHealthComponent*, DamagedComponent, float, Damage, float, OverKillDamage, const class UDamageType*, DamageType, class AController*, InstigatedBy, AActor*, DamageCauser);
 
-UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(Blueprintable, EditInlineNew, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class UNREALPROJECT_API UBaseHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
+	friend class UHealthManager;
 
 public:
 	// Sets default values for this component's properties
 	UBaseHealthComponent();
 
-protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
@@ -33,6 +33,7 @@ public:
 	UFUNCTION()
 	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 	void SpawnDamageText(float damage);
+	virtual void Heal(float HealAmount);
 
 	UFUNCTION(BlueprintCallable)
 	float GetMaxHealth() const;
@@ -51,6 +52,7 @@ public:
 
 	void Kill(const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
+	bool CanBeHealed() const;
 	bool IsDepleted() const;
 	//Only important when a HealthManager is present
 	//Higher priority health components takes damage first
@@ -80,11 +82,28 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	bool bStartDepleted = false;
 	UPROPERTY(EditDefaultsOnly)
+	bool bCanBeHealed = true;
+	UPROPERTY(EditDefaultsOnly)
 	bool bSpawnDamageText = true;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class AFloatingTextActor> FloatingTextClass = nullptr;
+	TSubclassOf<class AFloatingTextActor> DamageFloatingTextClass = nullptr;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class AFloatingTextActor> HealFloatingTextClass = nullptr;
 	UPROPERTY(BlueprintReadWrite)
 	class UHealthbar* BoundHealthbar = nullptr;
+
+	//Recovery
+	void StartRegenerating();
+	UPROPERTY(EditDefaultsOnly)
+	bool bRegenerates = false;
+	UPROPERTY(EditDefaultsOnly)
+	bool bIsRegenerating = false;
+	FTimerHandle RegenerationTimer;
+	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bRegenerates"))
+	float RegenerationCooldown = 5.f;
+	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bRegenerates"))
+	float RegenerationRate = 5.f;
+	//
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsDepleted = false;
