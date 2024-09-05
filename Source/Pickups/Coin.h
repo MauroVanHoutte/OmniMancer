@@ -23,6 +23,7 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable)
 	void LaunchInDirection(const FVector& direction, float strength);
 
 	void HomeInToTarget(AActor* Target);
