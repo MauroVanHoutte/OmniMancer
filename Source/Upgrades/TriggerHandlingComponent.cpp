@@ -38,6 +38,15 @@ void UTriggerHandlingComponent::AddTriggerEffect(TriggerCondition Condition, UBa
 	TriggerEffects.FindOrAdd(Condition).TriggerArray.Add(TriggerEffect);
 }
 
+void UTriggerHandlingComponent::RemoveTriggerEffect(TriggerCondition Condition, UBaseTriggerEffect* TriggerEffect)
+{
+	FTriggerArray* TriggersForCondition = TriggerEffects.Find(Condition);
+	if (TriggersForCondition)
+	{
+		TriggersForCondition->TriggerArray.Remove(TriggerEffect);
+	}
+}
+
 void UTriggerHandlingComponent::TriggerDamageDealt(AActor* DamageCause, AActor* DamagedActor, float Damage)
 {
 	ABaseSpell* Spell = Cast<ABaseSpell>(DamageCause);

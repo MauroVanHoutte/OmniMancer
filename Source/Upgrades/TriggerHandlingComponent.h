@@ -7,6 +7,18 @@
 #include "Upgrades/Triggers/TriggerEffects.h"
 #include "TriggerHandlingComponent.generated.h"
 
+UENUM(BlueprintType)
+enum class TriggerCondition : uint8
+{
+	OnSpellCast,
+	OnBasicAttackCast,
+	OnSpellHit,
+	OnBasicAttackHit,
+	OnTakeHit,
+	OnDamageDealt,
+	OnEnemyKiled
+};
+
 USTRUCT()
 struct FTriggerArray 
 {
@@ -29,7 +41,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AddTriggerEffect(TriggerCondition Condition, class UBaseTriggerEffect* TriggerEffect);
-
+	UFUNCTION(BlueprintCallable)
+	void RemoveTriggerEffect(TriggerCondition Condition, class UBaseTriggerEffect* TriggerEffect);
+	
 	void TriggerDamageDealt(AActor* DamageCause, AActor* DamagedActor, float Damage);
 	void TriggerEnemyKilled(AActor* DamageCause, AActor* KilledEnemy, float Damage);
 
