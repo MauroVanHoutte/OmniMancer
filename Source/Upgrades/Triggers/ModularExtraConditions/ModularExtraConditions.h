@@ -22,6 +22,7 @@ class UModularExtraConditionsBase : public UObject
 	GENERATED_BODY()
 public:
 	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target) { return true; };
+	virtual void OnExecution(const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) {};
 };
 
 UCLASS(Abstract, Blueprintable, EditInlineNew)
@@ -42,6 +43,7 @@ class UCompoundModularCondition : public UModularExtraConditionsBase
 	GENERATED_BODY()
 public:
 	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target) override;
+	virtual void OnExecution(const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator);
 
 private:
 	
@@ -64,4 +66,54 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class ABaseSpell> RequiredSpell;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class USpellStatusEffectCondition : public UModularExtraConditionsBase
+{
+	GENERATED_BODY()
+public:
+	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target) override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UBaseStatusEffect> RequiredStatusEffect;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UCooldownCondition : public UModularExtraConditionsBase
+{
+	GENERATED_BODY()
+public:
+	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
+	virtual void OnExecution(const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator);
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float CooldownTime = 5;
+	FTimerHandle TimerHandle;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UTargetAffectedByStatusEffectCondition : public UModularExtraConditionsBase
+{
+	GENERATED_BODY()
+public:
+	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UBaseStatusEffect> RequiredStatusEffectType;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UTargetInRangeCondition : public UModularExtraConditionsBase
+{
+	GENERATED_BODY()
+public:
+	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float Range = 700.f;
 };
