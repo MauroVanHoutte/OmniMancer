@@ -82,7 +82,8 @@ float UStatComponent::GetSpellDamageMultiplier()
 void UStatComponent::SetSpeedMultiplier(float newSpeedMultiplier)
 {
 	MovementSpeedMultiplier = newSpeedMultiplier;
-	CharacterMovementComponent->MaxWalkSpeed = DefaultMovementSpeed * MovementSpeedMultiplier;
+	if (IsValid(CharacterMovementComponent))
+		CharacterMovementComponent->MaxWalkSpeed = DefaultMovementSpeed * MovementSpeedMultiplier;
 }
 
 float UStatComponent::GetSpeedMultiplier()
