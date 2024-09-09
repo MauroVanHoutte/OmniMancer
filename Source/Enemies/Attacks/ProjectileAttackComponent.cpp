@@ -4,15 +4,6 @@
 #include "ProjectileAttackComponent.h"
 #include "SpellCasting/Spells/BaseProjectile.h"
 
-UProjectileAttackComponent::UProjectileAttackComponent()
-{
-}
-
-void UProjectileAttackComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
-
 bool UProjectileAttackComponent::AreAttackRequirementsMet()
 {
 	float DistSquared = FVector::DistSquared(GetOwner()->GetActorLocation(), Target->GetActorLocation());
@@ -52,11 +43,6 @@ void UProjectileAttackComponent::BeginPlay()
 	AController* PlayerController = GetWorld()->GetFirstPlayerController();
 	if (IsValid(PlayerController))
 		Target = PlayerController->GetPawn();
-}
-
-void UProjectileAttackComponent::EndPlay(EEndPlayReason::Type Reason)
-{
-	Super::EndPlay(Reason);
 }
 
 void UProjectileAttackComponent::FireProjectile()
