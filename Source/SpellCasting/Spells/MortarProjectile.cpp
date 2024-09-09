@@ -40,7 +40,7 @@ void AMortarProjectile::BeginPlay()
 
 void AMortarProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherComp->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic)
+	if (OtherComp->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic && ProjectileMovement->Velocity.Z < 0)
 	{
 		CollisionComponent->SetCollisionProfileName("NoCollision"); //will collide multiple times before actually being destroyed
 		if (IsValid(this))

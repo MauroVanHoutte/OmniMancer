@@ -28,7 +28,7 @@ protected:
 
 	virtual void OnDeath() override;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UStaticMeshComponent* CylinderMesh;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
