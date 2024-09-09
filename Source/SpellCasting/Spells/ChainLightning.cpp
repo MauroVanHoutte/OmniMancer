@@ -15,10 +15,7 @@ void AChainLightning::InitSpell(const FVector& targetLocation, APawn* caster)
 {
 	Super::InitSpell(targetLocation, caster);
 
-	TotalBounces = NrOfBounces + WindLevel;
 	FireInDirection((targetLocation - caster->GetActorLocation()).GetSafeNormal());
-	Damage = InitialDamage + DamagePerWindLevel * WindLevel;
-	//SetStunParams(true, StunDuration + DurationPerFrost * FrostLevel);
 }
 
 void AChainLightning::BeginPlay()

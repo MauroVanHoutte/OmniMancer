@@ -28,18 +28,4 @@ protected:
 private:
 	const TArray<AActor*>& GetHitActors() const;
 	void AddHitActors(const TArray<AActor*>& actors);
-
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float InitialDamage = 15.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	bool Stuns = true;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float StunDuration = 0.5f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	int NrOfBounces = 3;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float DamagePerWindLevel = 3.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float DurationPerFrost = 0.25f;
 };
