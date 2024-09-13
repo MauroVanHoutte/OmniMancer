@@ -72,8 +72,8 @@ void UElementManipulationComponent::TryCastSpell()
 	
 	if (Spell != nullptr)
 	{
-		Spell->InitSpell(MousePosAtActorHeight, GetOwner<APawn>()); //virtual init overriden in derived spells
 		Spell->OnSpellHitDelegate.AddDynamic(this, &UElementManipulationComponent::OnSpellHit);
+		Spell->InitSpell(MousePosAtActorHeight, GetOwner<APawn>()); //virtual init overriden in derived spells
 	}
 
 	OnSpellCastedDelegate.Broadcast(GetOwner(), Spell);
