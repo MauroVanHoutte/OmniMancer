@@ -51,13 +51,13 @@ void UMortarAttackComponent::FireProjectile()
 
 	float GravityZ = GetWorld()->GetGravityZ();
 	
-	ASpellIndicator* Indicator = GetWorld()->SpawnActor<ASpellIndicator>(IndicatorClass, Target->GetActorLocation(), FRotator());
+	ASpellIndicator* Indicator = GetWorld()->SpawnActor<ASpellIndicator>(IndicatorClass, Target->GetActorLocation(), FRotator(0));
 	Indicator->StartCircleIndicator(FVector(IndicatorScale, IndicatorScale, 1), 2*OutVelocity.Z/-GravityZ);
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = GetOwner();
 	SpawnParams.Instigator = GetOwner<APawn>();
-	AMortarProjectile* Projectile = GetWorld()->SpawnActor<AMortarProjectile>(*ProjectileClass, GetOwner()->GetActorLocation(), FRotator(), SpawnParams);
+	AMortarProjectile* Projectile = GetWorld()->SpawnActor<AMortarProjectile>(*ProjectileClass, GetOwner()->GetActorLocation(), FRotator(0), SpawnParams);
 	UProjectileMovementComponent* ProjMovement = Projectile->GetProjectileMovementComp();
 	ProjMovement->MaxSpeed = 0;
 	ProjMovement->Velocity = OutVelocity;
