@@ -65,7 +65,7 @@ public:
 
 private:
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<class ABaseSpell> RequiredSpell;
+	TArray<TSubclassOf<class ABaseSpell>> AllowedSpellTypes;
 };
 
 UCLASS(BlueprintType, EditInlineNew)

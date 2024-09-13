@@ -32,7 +32,13 @@ void UCompoundModularCondition::OnExecution(const TArray<FVector>& targetLocatio
 
 bool USpellCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
 {
-	return spell->IsA(RequiredSpell);
+	for (const TSubclassOf<ABaseSpell>& SpellType : AllowedSpellTypes)
+	{
+		if (spell->IsA(SpellType))
+			return true;
+	}
+
+	return false;
 }
 
 bool UCooldownCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
