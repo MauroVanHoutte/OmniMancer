@@ -2,7 +2,7 @@
 
 
 #include "BaseSpell.h"
-#include "WizardCharacter.h"
+#include "Health/AffiliationComponent.h"
 #include "StatusEffects/StatusEffectHandlingComponent.h"
 
 // Sets default values
@@ -11,6 +11,7 @@ ABaseSpell::ABaseSpell()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	SetActorEnableCollision(false);
+	AffiliationComponent = CreateDefaultSubobject<UAffiliationComponent>(TEXT("Affiliation"), true);
 }
 
 // IHitTriggerInterface implementations
@@ -23,7 +24,7 @@ void ABaseSpell::OnTriggered_Implementation(AActor* TriggeringActor)
 
 UAffiliationComponent* ABaseSpell::GetAffiliation_Implementation()
 {
-	return GetOwner()->GetComponentByClass<UAffiliationComponent>();
+	return AffiliationComponent;
 }
 
 bool ABaseSpell::WasActorHitBefore_Implementation(AActor* TriggeringActor)
@@ -153,6 +154,12 @@ void ABaseSpell::InitSpell(const FVector& targetLocation, APawn* caster)
 {
 	SetOwner(caster);
 	SetInstigator(caster);
+
+	UAffiliationComponent* Affiliation = caster->GetComponentByClass<UAffiliationComponent>();
+	if (IsValid(Affiliation))
+	{
+		AffiliationComponent->SetAffiliation(Affiliation->GetAffiliation());
+	}
 
 	for (UBaseStatusEffect* StatusEffect : StatusEffects)
 	{

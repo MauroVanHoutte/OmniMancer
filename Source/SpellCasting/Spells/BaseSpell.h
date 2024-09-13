@@ -101,4 +101,6 @@ protected:
 private:
 	UPROPERTY(VisibleAnywhere)
 	float DamageMultiplier = 1;
+	UPROPERTY(Transient)
+	class UAffiliationComponent* AffiliationComponent;
 };
