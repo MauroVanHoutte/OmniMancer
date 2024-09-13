@@ -2,6 +2,7 @@
 
 
 #include "StatusEffectHandlingComponent.h"
+#include "ActiveStatusEffectsBar.h"
 #include "StatusEffectPoolingSubsystem.h"
 #include "StatusEffect.h"
 
@@ -13,6 +14,11 @@ UStatusEffectHandlingComponent::UStatusEffectHandlingComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
+}
+
+void UStatusEffectHandlingComponent::BindStatusEffectsBar(UActiveStatusEffectsBar* Widget)
+{
+	StatusEffectsBar = Widget;
 }
 
 
@@ -30,6 +36,7 @@ void UStatusEffectHandlingComponent::OnUnregister()
 	Super::OnUnregister();
 	for (UBaseStatusEffect* StatusEffect : ActiveStatusEffects)
 	{
+		StatusEffect->Remove(GetOwner(), ActiveStatusEffects);
 		StatusEffectPooling->ReturnStatusEffectInstance(StatusEffect);
 	}
 }
@@ -48,13 +55,23 @@ void UStatusEffectHandlingComponent::TickComponent(float DeltaTime, ELevelTick T
 		if (ActiveStatusEffects[i]->IsExpired(AffectedActor))
 		{
 			ActiveStatusEffects[i]->Remove(AffectedActor, ActiveStatusEffects);
+
+			if (IsValid(StatusEffectsBar))
+			{
+				StatusEffectsBar->RemoveStatusEffect(ActiveStatusEffects[i]);
+			}
+
 			ensure(StatusEffectPooling);
 			StatusEffectPooling->ReturnStatusEffectInstance(ActiveStatusEffects[i]);
-
 			ActiveStatusEffects[i] = ActiveStatusEffects[ActiveStatusEffects.Num() - 1];
 			ActiveStatusEffects.RemoveAt(ActiveStatusEffects.Num() - 1);
 			i--;
 		}
+	}
+
+	if (IsValid(StatusEffectsBar))
+	{
+		StatusEffectsBar->UpdateTimers(ActiveStatusEffects);
 	}
 }
 
@@ -66,6 +83,10 @@ void UStatusEffectHandlingComponent::ApplyStatusEffect(UBaseStatusEffect* Status
 	if (StatusEffectInstance->Apply(TargetActor, ActiveStatusEffects))
 	{
 		ActiveStatusEffects.Add(StatusEffectInstance);
+		if (IsValid(StatusEffectsBar) && StatusEffectInstance->Icon)
+		{
+			StatusEffectsBar->AddStatusEffect(StatusEffectInstance);
+		}
 	}
 	else
 	{

@@ -12,6 +12,7 @@
 #include <NiagaraComponent.h>
 #include "Upgrades/StatUpgrades/StatComponent.h"
 #include "SpellCasting/ElementManipulationComponent.h"
+#include "StatusEffectHandlingComponent.h"
 
 //FStatusEffect::FStatusEffect(Type type, float interval, float value, float duration, UObject* cause)
 //	: EffectType{type}
@@ -41,6 +42,16 @@ bool UBaseStatusEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& Active
 			(*MatchingEffect)->RefreshDuration();
 			return false;
 		}
+	}
+	else if (bSeperateByInstigator)
+	{
+		UBaseStatusEffect** MatchingEffect = ActiveEffects.FindByPredicate([this](const UBaseStatusEffect* OtherEffect)
+			{
+				return Identifier == OtherEffect->Identifier
+					&& Instigator == OtherEffect->Instigator;
+			});
+		if (MatchingEffect)
+			return false;
 	}
 
 	RemainingDuration = TotalDuration; 
@@ -138,21 +149,38 @@ void UDamageOverTimeStatusEffect::Update(float DeltaTime, AActor* Target)
 
 bool UCurseStatusEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
 {
-	UBaseStatusEffect** MatchingEffect = ActiveEffects.FindByPredicate([this](const UBaseStatusEffect* OtherEffect)
-		{
-			return Identifier == OtherEffect->Identifier
-				&& (!bSeperateByInstigator || Instigator == OtherEffect->Instigator);
-		});
+	bool bNotRefreshed = Super::Apply(Target, ActiveEffects);
 
-	return !MatchingEffect;
+	if (bNotRefreshed)
+	{
+		UHealthManager* HealthManager = Target->GetComponentByClass<UHealthManager>();
+		if (IsValid(HealthManager))
+		{
+			HealthManager->OnFatalDamageTakenDelegate.AddDynamic(this, &UCurseStatusEffect::OnFatalDamageTaken);
+		}
+	}
+
+	return bNotRefreshed;
 }
 
 void UCurseStatusEffect::Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
 {
-	FDamageEvent DamageEvent;
+ 	FDamageEvent DamageEvent;
 	Target->TakeDamage(Damage, DamageEvent, IsValid(Instigator) ? Instigator->Controller : nullptr, Instigator);
+
+	UHealthManager* HealthManager = Target->GetComponentByClass<UHealthManager>();
+	if (IsValid(HealthManager))
+	{
+		HealthManager->OnFatalDamageTakenDelegate.RemoveDynamic(this, &UCurseStatusEffect::OnFatalDamageTaken);
+	}
+
+	Super::Remove(Target, ActiveEffects);
+}
+
+void UCurseStatusEffect::OnFatalDamageTaken(UBaseHealthComponent* DamagedComponent, float DamageTaken, float OverkillDamage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
 	TArray<AActor*> OverlappingActors;
-	UKismetSystemLibrary::SphereOverlapActors(Target->GetWorld(), Target->GetActorLocation(), SpreadRange, {}, APawn::StaticClass(), { Instigator, Target }, OverlappingActors);
+	UKismetSystemLibrary::SphereOverlapActors(Instigator, DamagedComponent->GetOwner()->GetActorLocation(), SpreadRange, {}, APawn::StaticClass(), {Instigator, DamagedComponent->GetOwner() }, OverlappingActors);
 
 	UAffiliationComponent* InstigatorAffiliation = Instigator->GetComponentByClass<UAffiliationComponent>();
 
@@ -165,7 +193,14 @@ void UCurseStatusEffect::Remove(AActor* Target, TArray<UBaseStatusEffect*>& Acti
 			});
 	}
 
-	Super::Remove(Target, ActiveEffects);
+	for (AActor* Actor : OverlappingActors)
+	{
+		UStatusEffectHandlingComponent* StatusHandling = Actor->GetComponentByClass<UStatusEffectHandlingComponent>();
+		if (IsValid(StatusHandling))
+		{
+			StatusHandling->ApplyStatusEffect(this);
+		}
+	}
 }
 
 bool UMovementSpeedStatusEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
@@ -324,6 +359,7 @@ bool UExecuteEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEff
 		if (IsValid(HealthManager))
 		{
 			HealthManager->OnDamageTakenDelegate.AddDynamic(this, &UExecuteEffect::OnDamageTaken);
+			HealthManager->TakeDamage(Target, 0.1f, nullptr, Instigator->GetController(), Instigator);
 		}
 	}
 
@@ -343,5 +379,76 @@ void UExecuteEffect::OnDamageTaken(UBaseHealthComponent* DamagedComponent, float
 	if (!DamagedComponent->IsDepleted() && HealthManager->GetLiveHealthComponentCount() == 1 && DamagedComponent->GetHealthPercentage() < ExecutionThreshold)
 	{
 		DamagedComponent->Kill(DamageType, Instigator ? Instigator->GetController() : nullptr, DamageCauser);
+	}
+}
+
+TArray<TPair<UChainDamageEffect*, AActor*>> UChainDamageEffect::ActiveChainEffects{};
+bool UChainDamageEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	bool bNotRefreshed = Super::Apply(Target, ActiveEffects);
+
+	if (bNotRefreshed)
+	{
+		ActiveChainEffects.Add(TPair<UChainDamageEffect*, AActor*>(this, Target));
+		HealthManager = Target->GetComponentByClass<UHealthManager>();
+		if (IsValid(HealthManager))
+		{
+			HealthManager->OnDamageTakenDelegate.AddDynamic(this, &UChainDamageEffect::OnDamageTaken);
+		}
+	}
+
+	return bNotRefreshed;
+}
+
+void UChainDamageEffect::Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	ActiveChainEffects.RemoveAll([this, Target](const TPair<UChainDamageEffect*, AActor*>& Effect)
+		{
+			return Effect.Key == this && Effect.Value == Target;
+		});
+
+	if (IsValid(HealthManager))
+	{
+		HealthManager->OnDamageTakenDelegate.RemoveDynamic(this, &UChainDamageEffect::OnDamageTaken);
+	}
+}
+
+void UChainDamageEffect::OnDamageTaken(UBaseHealthComponent* DamagedComponent, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (!IsValid(DamageType) || !DamageType->IsA(UChainDamageType::StaticClass()))
+	{
+		TArray<AActor*> ReachedActors;
+		ReachedActors.Add(DamagedComponent->GetOwner());
+		int NewlyReachedActors;
+		do
+		{
+			NewlyReachedActors = 0;
+
+			for (TPair<UChainDamageEffect*, AActor*> Pair : ActiveChainEffects)
+			{
+				if (IsValid(Pair.Key) && IsValid(Pair.Value) && !ReachedActors.Contains(Pair.Value))
+				{
+					for (size_t i = 0; i < ReachedActors.Num(); i++)
+					{
+						if (IsValid(ReachedActors[i]) && FVector::DistSquared(ReachedActors[i]->GetActorLocation(), Pair.Value->GetActorLocation()) < MaxRange * MaxRange)
+						{
+							ReachedActors.Add(Pair.Value);
+							NewlyReachedActors++;
+							break;
+						}
+					}
+				}
+			}
+		} while (NewlyReachedActors > 0);
+
+		for (AActor* ReachedActor : ReachedActors)
+		{
+			if (IsValid(ReachedActor) && ReachedActor != DamagedComponent->GetOwner())
+			{
+				FDamageEvent DamageEvent;
+				DamageEvent.DamageTypeClass = UChainDamageType::StaticClass();
+				ReachedActor->TakeDamage(Damage * TransferPercentage, DamageEvent, InstigatedBy, DamageCauser);
+			}
+		}
 	}
 }

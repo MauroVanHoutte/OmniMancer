@@ -76,6 +76,8 @@ public:
 	bool bSeperateByInstigator = true;
 	UPROPERTY(EditDefaultsOnly)
 	bool bRefreshDuration = true;
+	UPROPERTY(EditDefaultsOnly)
+	UTexture2D* Icon;
 };
 
 UCLASS(BlueprintType, EditInlineNew)
@@ -140,6 +142,8 @@ class UCurseStatusEffect : public UBaseStatusEffect
 public:	
 	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+	UFUNCTION()
+	void OnFatalDamageTaken(UBaseHealthComponent* DamagedComponent, float DamageTaken, float OverkillDamage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	UPROPERTY(EditDefaultsOnly)
 	float Damage;
@@ -203,4 +207,32 @@ private:
 	float ExecutionThreshold = 0.2f;
 	UPROPERTY(Transient)
 	class UHealthManager* HealthManager;
+};
+
+UCLASS()
+class UChainDamageType : public UDamageType
+{
+	GENERATED_BODY()
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UChainDamageEffect : public UBaseStatusEffect
+{
+	GENERATED_BODY()
+
+public:
+	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+
+private:
+	UFUNCTION()
+	void OnDamageTaken(class UBaseHealthComponent* DamagedComponent, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
+	UPROPERTY(EditDefaultsOnly)
+	float TransferPercentage = 0.25f;
+	UPROPERTY(EditDefaultsOnly)
+	float MaxRange = 800.f;
+	UPROPERTY(Transient)
+	class UHealthManager* HealthManager;
+	static TArray<TPair<UChainDamageEffect*, AActor*>> ActiveChainEffects;
 };

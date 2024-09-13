@@ -17,6 +17,9 @@ public:
 	// Sets default values for this component's properties
 	UStatusEffectHandlingComponent();
 
+	UFUNCTION(BlueprintCallable)
+	void BindStatusEffectsBar(class UActiveStatusEffectsBar* Widget);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -29,6 +32,10 @@ public:
 	void ApplyStatusEffect(class UBaseStatusEffect* StatusEffects);
 	const TArray<class UBaseStatusEffect*>& GetActiveStatusEffects() { return ActiveStatusEffects; };
 private:
+	UPROPERTY(Transient)
 	TArray<class UBaseStatusEffect*> ActiveStatusEffects;
+	UPROPERTY(Transient)
 	class UStatusEffectPoolingSubsystem* StatusEffectPooling;
+	UPROPERTY(Transient)
+	class UActiveStatusEffectsBar* StatusEffectsBar;
 };
