@@ -38,6 +38,11 @@ int UExperienceComponent::GetExperience()
 	return Experience;
 }
 
+int UExperienceComponent::GetExperienceToNextLevel()
+{
+	return ExperienceToNextLevel - Experience;
+}
+
 int UExperienceComponent::GetLevel()
 {
 	return Level;

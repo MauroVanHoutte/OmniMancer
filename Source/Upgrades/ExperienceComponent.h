@@ -22,6 +22,8 @@ public:
 	void AddExperience(int AddedExperience);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetExperience();
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int GetExperienceToNextLevel();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetLevel();
