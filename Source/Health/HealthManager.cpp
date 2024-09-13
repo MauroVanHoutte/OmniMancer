@@ -131,6 +131,7 @@ void UHealthManager::TakeDamage(AActor* DamagedActor, float Damage, const UDamag
 	{
 		if (!HealthComponents[i]->IsDepleted())
 		{
+			HealthComponents[i]->TakeDamage(DamagedActor, Damage, DamageType, InstigatedBy, DamageCauser);
 			OnDamageTakenDelegate.Broadcast(HealthComponents[i], Damage, DamageType, InstigatedBy, DamageCauser);
 
 			if (IsValid(InstigatedBy))
@@ -146,7 +147,6 @@ void UHealthManager::TakeDamage(AActor* DamagedActor, float Damage, const UDamag
 				}
 			}
 			
-			HealthComponents[i]->TakeDamage(DamagedActor, Damage, DamageType, InstigatedBy, DamageCauser);
 			if (HealthComponents[i]->GetBlocksDamage())
 			{
 				return;
