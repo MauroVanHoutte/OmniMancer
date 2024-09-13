@@ -108,7 +108,8 @@ void UShieldUpgrade::Apply(AActor* character)
 			ShieldComponent->RegisterComponent();
 		}
 
-		ShieldComponent->BindHealthbar(InstancedComponent);
+		UHealthbar* Healthbar = Cast<UHealthbar>(InstancedComponent->GetUserWidgetObject());
+		ShieldComponent->BindHealthbar(Healthbar);
 		//InstancedComponent->GetUserWidgetObject()->AddToViewport();
 		HealthManager->AddHealthComponent(ShieldComponent);
 	}

@@ -65,12 +65,13 @@ void UBaseHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	}
 }
 
-void UBaseHealthComponent::BindHealthbar(UWidgetComponent* Healthbar)
+void UBaseHealthComponent::BindHealthbar(UHealthbar* Healthbar)
 {
-	BoundHealthbar = Cast<UHealthbar>(Healthbar->GetWidget());
+	BoundHealthbar = Healthbar;
 	
 	if (IsValid(Healthbar) && !IsValid(BoundHealthbar))
 	{
+		BoundHealthbar = Healthbar;
 		FTimerDelegate Delegate;
 		Delegate.BindUObject(this, &UBaseHealthComponent::BindHealthbar, Healthbar);
 		GetWorld()->GetTimerManager().SetTimerForNextTick(Delegate);
