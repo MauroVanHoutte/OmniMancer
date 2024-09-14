@@ -12,6 +12,7 @@ ABaseSpell::ABaseSpell()
 	PrimaryActorTick.bCanEverTick = true;
 	SetActorEnableCollision(false);
 	AffiliationComponent = CreateDefaultSubobject<UAffiliationComponent>(TEXT("Affiliation"), true);
+	AffiliationComponent->SetAffiliation(EAffiliation::Enemy);
 }
 
 // IHitTriggerInterface implementations
@@ -155,10 +156,10 @@ void ABaseSpell::InitSpell(const FVector& targetLocation, APawn* caster)
 	SetOwner(caster);
 	SetInstigator(caster);
 
-	UAffiliationComponent* Affiliation = caster->GetComponentByClass<UAffiliationComponent>();
-	if (IsValid(Affiliation))
+	UAffiliationComponent* CasterAffiliation = caster ? caster->GetComponentByClass<UAffiliationComponent>() : nullptr;
+	if (IsValid(CasterAffiliation))
 	{
-		AffiliationComponent->SetAffiliation(Affiliation->GetAffiliation());
+		AffiliationComponent->SetAffiliation(CasterAffiliation->GetAffiliation());
 	}
 
 	for (UBaseStatusEffect* StatusEffect : StatusEffects)
