@@ -41,6 +41,12 @@ void AIceZone::BeginPlay()
 		}, ApplicationInterval, true);
 }
 
+void AIceZone::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	GetWorld()->GetTimerManager().ClearTimer(ApplicationTimer);
+}
+
 void AIceZone::OnDeath()
 {
 	GetWorld()->GetTimerManager().ClearTimer(ApplicationTimer);

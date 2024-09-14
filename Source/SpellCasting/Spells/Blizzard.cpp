@@ -64,3 +64,10 @@ void ABlizzard::BeginPlay()
 	CylinderMesh->SetCollisionProfileName(TEXT("NoCollision"));
 	CylinderMesh->SetVisibility(false);
 }
+
+void ABlizzard::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	GetWorld()->GetTimerManager().ClearTimer(ApplicationTimer);
+
+}
