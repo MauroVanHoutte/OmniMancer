@@ -13,24 +13,31 @@ UExperienceComponent::UExperienceComponent()
 
 void UExperienceComponent::AddExperience(int AddedExperience)
 {
-	Experience += AddedExperience;
-
-	if (Experience >= ExperienceToNextLevel)
+	if (bStoringExperience)
 	{
-		Experience -= ExperienceToNextLevel;
-		Level++;
-		OnLevelledUpDelegate.Broadcast(this, Level);
-		ExperienceToNextLevel = CalculateExperienceForNextLevel();
+		StoredExperience += AddedExperience;
+	}
+	else
+	{
+		Experience += AddedExperience;
+
 		if (Experience >= ExperienceToNextLevel)
 		{
-			FSimpleDelegate Delegate;
-			Delegate.BindUObject(this, &UExperienceComponent::AddExperience, 0);
-			FTimerHandle Handle;
-			GetWorld()->GetTimerManager().SetTimer(Handle, Delegate, 0.1, false);
+			Experience -= ExperienceToNextLevel;
+			Level++;
+			OnLevelledUpDelegate.Broadcast(this, Level);
+			ExperienceToNextLevel = CalculateExperienceForNextLevel();
+			if (Experience >= ExperienceToNextLevel)
+			{
+				FTimerDelegate Delegate;
+				Delegate.BindUObject(this, &UExperienceComponent::AddExperience, 0);
+				FTimerHandle Handle;
+				GetWorld()->GetTimerManager().SetTimer(Handle, Delegate, 0.1, false);
+			}
 		}
-	}
 
-	OnExperienceAddedDelegate.Broadcast(this, AddedExperience, Experience, ExperienceToNextLevel);
+		OnExperienceAddedDelegate.Broadcast(this, AddedExperience, Experience, ExperienceToNextLevel);
+	}
 }
 
 int UExperienceComponent::GetExperience()
@@ -41,6 +48,18 @@ int UExperienceComponent::GetExperience()
 int UExperienceComponent::GetExperienceToNextLevel()
 {
 	return ExperienceToNextLevel - Experience;
+}
+
+void UExperienceComponent::ConvertStoredExperience()
+{
+	AddExperience(StoredExperience);
+	StoredExperience = 0;
+}
+
+void UExperienceComponent::SetStoringExperience(bool newStoringExperience)
+{
+	ConvertStoredExperience();
+	bStoringExperience = newStoringExperience;
 }
 
 int UExperienceComponent::GetLevel()

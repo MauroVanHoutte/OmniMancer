@@ -24,6 +24,10 @@ public:
 	int GetExperience();
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetExperienceToNextLevel();
+	UFUNCTION(BlueprintCallable)
+	void ConvertStoredExperience();
+	UFUNCTION(BlueprintCallable)
+	void SetStoringExperience(bool newStoringExperience);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int GetLevel();
@@ -40,8 +44,10 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	int ExperienceToNextLevel = 10;
 	UPROPERTY(EditDefaultsOnly)
-
 	int Level = 1;
 
+	bool bStoringExperience = true;
+
 	int Experience = 0;
+	int StoredExperience = 0;
 };
