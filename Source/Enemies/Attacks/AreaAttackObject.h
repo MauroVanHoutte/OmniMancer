@@ -3,54 +3,52 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Enemies/Attacks/BaseAttackComponent.h"
-#include "AreaAttackComponent.generated.h"
+#include "Enemies/Attacks/BaseAttackObject.h"
+#include "AreaAttackObject.generated.h"
 
 /**
  * 
  */
-UCLASS(meta = (BlueprintSpawnableComponent))
-class UNREALPROJECT_API UAreaAttackComponent : public UBaseAttackComponent
+UCLASS()
+class UNREALPROJECT_API UAreaAttackObject : public UBaseAttackObject
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
-	UAreaAttackComponent();
+	virtual bool AreAttackRequirementsMet(AActor* Target) override;
 
-	virtual bool AreAttackRequirementsMet() override;
+	virtual bool WasActorHitBefore(AActor* TriggeredActor) override;
+	virtual void OnHitTriggered(AActor* HitActor) override;
 
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-	virtual void EndPlay(EEndPlayReason::Type Reason) override;
-
-	virtual void InitiateAttack() override;
+	virtual void InitiateAttack(AActor* Target) override;
 	virtual void InterruptAttack() override;
 
 private:
 	void StartDamage();
 	void EndDamage();
+	void AttackCompleted();
 
 	UPROPERTY(EditDefaultsOnly)
 	float Range = 200.f;
 	UPROPERTY(EditDefaultsOnly)
 	float ChargeUpTime = 0.7f;
 	UPROPERTY(EditDefaultsOnly)
+	float AttackCompletionDelay = 0.5f;
+	UPROPERTY(EditDefaultsOnly)
 	float ActiveTime = 0.5f;
 	UPROPERTY(EditDefaultsOnly)
 	float Damage = 10.f;
-	UPROPERTY(EditDefaultsOnly)
-	FName ColliderTag;
 
+	UPROPERTY(EditDefaultsOnly)
+	FName ColliderTag = TEXT("AreaAttackCollider");
 	UPROPERTY(Transient)
 	TArray<class UPrimitiveComponent*> HurtBoxes;
-
-	FTimerHandle TimerHandle;
 	UPROPERTY(Transient)
 	TArray<AActor*> HitActors;
+
+	FTimerHandle DamageTimerHandle;
+	FTimerHandle CompletionTimerHandle;
 	FName NoCollisionProfileName = TEXT("NoCollision");
 	FName OverlapProfileName = TEXT("OverlapAllDynamic");
-	UPROPERTY(BlueprintReadOnly, Transient, meta = (AllowPrivateAccess = "true"))
-	AActor* Target;
 };
