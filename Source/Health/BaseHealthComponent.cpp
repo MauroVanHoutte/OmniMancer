@@ -82,10 +82,18 @@ void UBaseHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const 
 {
 	if (Damage > 0)
 	{
+		if (bRegenerates)
+		{
+			bIsRegenerating = false;
+			FTimerDelegate Delegate;
+			Delegate.BindUObject(this, &UBaseHealthComponent::StartRegenerating);
+			GetWorld()->GetTimerManager().SetTimer(RegenerationTimer, Delegate, RegenerationCooldown, false);
+		}
+
 		CurrentHealth -= Damage;
-		SpawnDamageText(Damage);
 		OnDamageTakenDelegate.Broadcast(this, Damage, DamageType, InstigatedBy, DamageCauser);
 
+		SpawnDamageText(Damage);
 		if (BoundHealthbar)
 			BoundHealthbar->SetHealthPercentage(CurrentHealth / MaxHealth);
 

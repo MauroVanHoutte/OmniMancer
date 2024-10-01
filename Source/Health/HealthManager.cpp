@@ -39,6 +39,10 @@ void UHealthManager::BeginPlay()
 		Owner->OnTakeAnyDamage.RemoveAll(HealthComponent);
 		HealthComponent->OnFatalDamageTakenDelegate.AddDynamic(this, &UHealthManager::OnHealthComponentFatalDamage);
 	}
+	HealthComponents.Sort([](const UBaseHealthComponent& first, const UBaseHealthComponent& second)
+		{
+			return first.GetPriority() > second.GetPriority();
+		});
 }
 
 void UHealthManager::EndPlay(EEndPlayReason::Type Reason)
@@ -96,12 +100,22 @@ void UHealthManager::AddHealthComponent(UBaseHealthComponent* Component)
 {
 	Component->OnFatalDamageTakenDelegate.AddDynamic(this, &UHealthManager::OnHealthComponentFatalDamage);
 	HealthComponents.Add(Component);
+
+	HealthComponents.Sort([](const UBaseHealthComponent& first, const UBaseHealthComponent& second)
+		{
+			return first.GetPriority() > second.GetPriority();
+		});
 }
 
 void UHealthManager::RemoveHealthComponent(UBaseHealthComponent* Component)
 {
 	Component->OnFatalDamageTakenDelegate.RemoveDynamic(this, &UHealthManager::OnHealthComponentFatalDamage);
 	HealthComponents.Remove(Component);
+
+	HealthComponents.Sort([](const UBaseHealthComponent& first, const UBaseHealthComponent& second)
+		{
+			return first.GetPriority() > second.GetPriority();
+		});
 }
 
 int UHealthManager::GetLiveHealthComponentCount()
@@ -111,22 +125,7 @@ int UHealthManager::GetLiveHealthComponentCount()
 
 void UHealthManager::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	for (UBaseHealthComponent* Component : HealthComponents)
-	{
-		if (Component->bRegenerates)
-		{
-			Component->bIsRegenerating = false;
-			FTimerDelegate Delegate;
-			Delegate.BindUObject(Component, &UBaseHealthComponent::StartRegenerating);
-			GetWorld()->GetTimerManager().SetTimer(Component->RegenerationTimer, Delegate, Component->RegenerationCooldown, false);
-		}
-	}
-
-	HealthComponents.Sort([](const UBaseHealthComponent& first, const UBaseHealthComponent& second)
-		{
-			return first.GetPriority() > second.GetPriority();
-		});
-
+	//Health components are kept sorted by priority
 	for (size_t i = 0; i < HealthComponents.Num(); i++)
 	{
 		if (!HealthComponents[i]->IsDepleted())
