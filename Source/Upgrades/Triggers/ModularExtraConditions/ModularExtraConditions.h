@@ -7,7 +7,7 @@
 #include "ModularExtraConditions.generated.h"
 
 UENUM(BlueprintType)
-enum class CompoundConditionOperation
+enum class CompoundConditionOperation : uint8
 {
 	AND,
 	OR

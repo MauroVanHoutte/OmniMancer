@@ -2,7 +2,7 @@
 
 
 #include "StatusEffect.h"
-#include <AIModule/Classes/AIController.h>
+#include <AIController.h>
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Enemies/BaseCharacter.h"
 #include "Health/AffiliationComponent.h"
