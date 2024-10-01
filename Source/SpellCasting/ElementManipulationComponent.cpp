@@ -54,7 +54,7 @@ void UElementManipulationComponent::TryCastSpell()
 {
 	const int SpellID = UElementLibrary::GetSpellIDFromElements(CurrentElements);
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	auto SpellClass = Spells.Find(SpellID);
+	TSubclassOf<ABaseSpell>* SpellClass = Spells.Find(SpellID);
 
 	if (!SpellClass || TimerManager.IsTimerActive(*CooldownTimers.Find(*SpellClass)))
 		return;
@@ -68,12 +68,12 @@ void UElementManipulationComponent::TryCastSpell()
 	FActorSpawnParameters spawnParams{};
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	FVector SpawnLocation = IsValid(SpellOriginPoint) ? SpellOriginPoint->GetComponentLocation() : GetOwner()->GetActorLocation();
-	auto Spell = GetWorld()->SpawnActor<ABaseSpell>(*SpellClass, SpawnLocation, FRotator(), spawnParams);
+	ABaseSpell* Spell = GetWorld()->SpawnActor<ABaseSpell>(*SpellClass, SpawnLocation, FRotator(), spawnParams);
 	
-	if (Spell != nullptr)
+	if (IsValid(Spell))
 	{
 		Spell->OnSpellHitDelegate.AddDynamic(this, &UElementManipulationComponent::OnSpellHit);
-		Spell->InitSpell(MousePosAtActorHeight, GetOwner<APawn>()); //virtual init overriden in derived spells
+		Spell->InitSpell(MousePosAtActorHeight, GetOwner<APawn>());
 	}
 
 	OnSpellCastedDelegate.Broadcast(GetOwner(), Spell);
