@@ -172,18 +172,18 @@ void UUpgradeButton::AddUpgrade()
 {
 	UOmnimancerGameInstance* gameInstance = GetGameInstance<UOmnimancerGameInstance>();
 	gameInstance->AddUnlockedUpgrade(UpgradeName);
-	AWizardCharacter* player = GetOwningPlayer<AWizardCharacter>();
+	/*AWizardCharacter* player = GetOwningPlayer<AWizardCharacter>();
 	if (player != nullptr)
-		player->ApplyUpgrade(UpgradeName);
+		player->ApplyUpgrade(UpgradeName);*/
 }
 
 void UUpgradeButton::RemoveUpgrade()
 {
 	UOmnimancerGameInstance* gameInstance = GetGameInstance<UOmnimancerGameInstance>();
 	gameInstance->RemoveUnlockedUpgrade(UpgradeName);
-	AWizardCharacter* player = GetOwningPlayer<AWizardCharacter>();
-	if (player != nullptr)
-		player->RemoveUpgrade(UpgradeName);
+	//AWizardCharacter* player = GetOwningPlayer<AWizardCharacter>();
+	//if (player != nullptr)
+	//	player->RemoveUpgrade(UpgradeName);
 }
 
 void UUpgradeButton::PropagateRefund(bool first)
