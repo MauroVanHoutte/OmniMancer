@@ -3,6 +3,12 @@
 
 #include "Enemies/Moves/Moves.h"
 #include "Enemies/Attacks/BaseAttackObject.h"
+#include "Enemies/Moves/MoveRequirements.h"
+
+bool UBaseMove::CanBeExecuted(AActor* Target)
+{
+    return IsValid(ExtraRequirement) ? ExtraRequirement->AreRequirementsMet(OwningActor, Target) : true;
+}
 
 //UAttackMove
 void UAttackMove::TickMove(float DeltaTime)
@@ -12,9 +18,17 @@ void UAttackMove::TickMove(float DeltaTime)
 
 void UAttackMove::OnBeginPlay(AActor* Owner)
 {
+    Super::OnBeginPlay(Owner);
+
     AttackObject->OnBeginPlay(Owner);
     AttackObject->OnAttackComponentCompletedDelegate.AddDynamic(this, &UAttackMove::OnAttackComponentCompleted);
     AttackObject->OnAttackComponentInterruptedDelegate.AddDynamic(this, &UAttackMove::OnAttackComponentInterrupted);
+}
+
+void UAttackMove::OnEndPlay()
+{
+    AttackObject->OnEndPlay();
+    AttackObject->ConditionalBeginDestroy();
 }
 
 void UAttackMove::Execute(AActor* Target)
@@ -24,7 +38,7 @@ void UAttackMove::Execute(AActor* Target)
 
 bool UAttackMove::CanBeExecuted(AActor* Target)
 {
-    return bCheckAttackRequirements ? AttackObject->AreAttackRequirementsMet(Target) : true;
+    return Super::CanBeExecuted(Target) && (bCheckAttackRequirements ? AttackObject->AreAttackRequirementsMet(Target) : true);
 }
 
 bool UAttackMove::CanBeInterrupted()
@@ -69,9 +83,20 @@ void UMoveSequence::TickMove(float DeltaTime)
 
 void UMoveSequence::OnBeginPlay(AActor* Owner)
 {
+    Super::OnBeginPlay(Owner);
+
     for (UBaseMove* Move : MoveSequence)
     {
         Move->OnBeginPlay(Owner);
+    }
+}
+
+void UMoveSequence::OnEndPlay()
+{
+    for (UBaseMove* Move : MoveSequence)
+    {
+        Move->OnEndPlay();
+        Move->ConditionalBeginDestroy();
     }
 }
 
@@ -89,7 +114,7 @@ void UMoveSequence::Execute(AActor* Target)
 
 bool UMoveSequence::CanBeExecuted(AActor* Target)
 {
-    return bCheckFirstMoveRequirements ? MoveSequence[0]->CanBeExecuted(Target) : true;
+    return Super::CanBeExecuted(Target) && (bCheckFirstMoveRequirements ? MoveSequence[0]->CanBeExecuted(Target) : true);
 }
 
 bool UMoveSequence::CanBeInterrupted()

@@ -8,6 +8,11 @@
 #include <Kismet/KismetMathLibrary.h>
 #include "Engine/DamageEvents.h"
 
+void UChargeAttackObject::OnEndPlay()
+{
+	OwningActor->GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+}
+
 void UChargeAttackObject::TickAttack(float DeltaTime)
 {
 	Super::TickAttack(DeltaTime);

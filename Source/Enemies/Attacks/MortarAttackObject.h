@@ -15,6 +15,8 @@ class UNREALPROJECT_API UMortarAttackObject : public UBaseAttackObject
 	GENERATED_BODY()
 
 public:
+	virtual void OnEndPlay() override;
+
 	virtual bool AreAttackRequirementsMet(AActor* Target) override;
 	virtual void InitiateAttack(AActor* Target) override;
 

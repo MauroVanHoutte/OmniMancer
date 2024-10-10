@@ -6,6 +6,11 @@
 #include "SpellCasting/Spells/SpellIndicator.h"
 #include "SpellCasting/Spells/MortarProjectile.h"
 
+void UMortarAttackObject::OnEndPlay()
+{
+	OwningActor->GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+}
+
 bool UMortarAttackObject::AreAttackRequirementsMet(AActor* Target)
 {
 	float DistSquared = FVector::DistSquared(OwningActor->GetActorLocation(), Target->GetActorLocation());

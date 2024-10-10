@@ -99,6 +99,15 @@ void UMovesetComponent::BeginPlay()
 	}
 }
 
+void UMovesetComponent::EndPlay(EEndPlayReason::Type Reason)
+{
+	for (UBaseMove* Move : Moves)
+	{
+		Move->OnEndPlay();
+		Move->ConditionalBeginDestroy();
+	}
+}
+
 void UMovesetComponent::OnMoveComponentCompleted(UBaseMove* Move)
 {
 	ActiveMove = nullptr;

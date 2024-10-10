@@ -18,11 +18,13 @@ public:
 	virtual void TickMove(float DeltaTime) {};
 
 	UFUNCTION(BlueprintCallable)
-	virtual void OnBeginPlay(AActor* Owner) {};
+	virtual void OnBeginPlay(AActor* Owner) { OwningActor = Owner; };
+	UFUNCTION(BlueprintCallable)
+	virtual void OnEndPlay() {};
 	UFUNCTION(BlueprintCallable)
 	virtual void Execute(AActor* Target) {};
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanBeExecuted(AActor* Target) { return false; };
+	virtual bool CanBeExecuted(AActor* Target);
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanBeInterrupted() { return false; };
 	UFUNCTION(BlueprintCallable)
@@ -35,6 +37,12 @@ public:
 
 	FMoveCompletedSignature OnMoveCompletedDelegate;
 	FMoveInterruptedSignature OnMoveInterruptedDelegate;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Instanced)
+	class UBaseMoveRequirement* ExtraRequirement;
+	UPROPERTY(Transient)
+	AActor* OwningActor = nullptr;
 };
 
 UCLASS()
@@ -44,8 +52,9 @@ class UNREALPROJECT_API UAttackMove : public UBaseMove
 
 public:
 	virtual void TickMove(float DeltaTime) override;
-
 	virtual void OnBeginPlay(AActor* Owner) override;
+	virtual void OnEndPlay() override;
+
 	virtual void Execute(AActor* Target) override;
 	virtual bool CanBeExecuted(AActor* Target) override;
 	virtual bool CanBeInterrupted() override;
@@ -75,6 +84,7 @@ class UNREALPROJECT_API UMoveSequence : public UBaseMove
 public:
 	virtual void TickMove(float DeltaTime) override;
 	virtual void OnBeginPlay(AActor* Owner) override;
+	virtual void OnEndPlay() override;
 
 	virtual void Execute(AActor* Target) override;
 	virtual bool CanBeExecuted(AActor* Target) override;

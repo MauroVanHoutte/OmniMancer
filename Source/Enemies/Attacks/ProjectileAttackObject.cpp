@@ -4,6 +4,11 @@
 #include "ProjectileAttackObject.h"
 #include "SpellCasting/Spells/BaseProjectile.h"
 
+void UProjectileAttackObject::OnEndPlay()
+{
+	OwningActor->GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+}
+
 bool UProjectileAttackObject::AreAttackRequirementsMet(AActor* Target)
 {
 	float DistSquared = FVector::DistSquared(OwningActor->GetActorLocation(), Target->GetActorLocation());

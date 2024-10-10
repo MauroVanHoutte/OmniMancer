@@ -6,6 +6,12 @@
 #include <Components/PrimitiveComponent.h>
 #include "Engine/DamageEvents.h"
 
+void UAreaAttackObject::OnEndPlay()
+{
+	OwningActor->GetWorld()->GetTimerManager().ClearTimer(DamageTimerHandle);
+	OwningActor->GetWorld()->GetTimerManager().ClearTimer(CompletionTimerHandle);
+}
+
 bool UAreaAttackObject::AreAttackRequirementsMet(AActor* Target)
 {
 	return FVector::DistSquared(OwningActor->GetActorLocation(), Target->GetActorLocation()) < Range * Range;

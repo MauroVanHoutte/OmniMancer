@@ -15,6 +15,8 @@ class UNREALPROJECT_API UAreaAttackObject : public UBaseAttackObject
 	GENERATED_BODY()
 
 public:
+	virtual void OnEndPlay() override;
+
 	virtual bool AreAttackRequirementsMet(AActor* Target) override;
 
 	virtual bool WasActorHitBefore(AActor* TriggeredActor) override;

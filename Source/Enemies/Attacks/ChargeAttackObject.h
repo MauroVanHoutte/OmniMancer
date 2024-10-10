@@ -16,6 +16,7 @@ class UNREALPROJECT_API UChargeAttackObject : public UBaseAttackObject
 	
 public:
 	virtual void TickAttack(float DeltaTime) override;
+	virtual void OnEndPlay() override;
 
 	virtual bool AreAttackRequirementsMet(AActor* Target) override;
 

@@ -15,8 +15,9 @@ class UNREALPROJECT_API UBaseAttackObject : public UObject
 	GENERATED_BODY()
 
 public:
-	virtual void OnBeginPlay(AActor* Owner);
 	virtual void TickAttack(float DeltaTime) {};
+	virtual void OnBeginPlay(AActor* Owner);
+	virtual void OnEndPlay() {};
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool AreAttackRequirementsMet(AActor* Target) { return false; };
