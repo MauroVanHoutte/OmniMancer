@@ -103,28 +103,28 @@ void UElementManipulationComponent::TryCastBasicAttack()
 
 	if (Spell != nullptr)
 	{
-		Spell->InitSpell(MousePosAtActorHeight, GetOwner<APawn>());
 		Spell->OnSpellHitDelegate.AddDynamic(this, &UElementManipulationComponent::OnBasicAttackHit);
+		Spell->InitSpell(MousePosAtActorHeight, GetOwner<APawn>());
 	}
 
 	OnBasicAttackCastedDelegate.Broadcast(GetOwner(), Spell);
 }
 
-ABaseSpell* UElementManipulationComponent::TriggeredCast(TSubclassOf<ABaseSpell> SpellClass, bool SendSpellCastedEvent)
+ABaseSpell* UElementManipulationComponent::TriggeredCast(TSubclassOf<ABaseSpell> SpellClass, const FVector& TargetLocation, const FVector& SpawnLocation, bool SendSpellEvents)
 {
 	FActorSpawnParameters spawnParams{};
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	FVector SpawnLocation = GetOwner()->GetActorLocation();
 	ABaseSpell* Spell = GetWorld()->SpawnActor<ABaseSpell>(SpellClass, SpawnLocation, FRotator(), spawnParams);
 
 	if (Spell != nullptr)
 	{
-		Spell->InitSpell(SpawnLocation, GetOwner<APawn>());
+		Spell->InitSpell(TargetLocation, GetOwner<APawn>());
 	}
 
-	if (SendSpellCastedEvent)
+	if (SendSpellEvents)
 	{
-		OnTriggeredSpellCastedDelegate.Broadcast(GetOwner(), Spell);
+		Spell->OnSpellHitDelegate.AddDynamic(this, &UElementManipulationComponent::OnSpellHit);
+		OnSpellCastedDelegate.Broadcast(GetOwner(), Spell);
 	}
 
 	return Spell;
@@ -153,17 +153,19 @@ const TArray<FSpellConfig>& UElementManipulationComponent::GetSpellConfig()
 
 void UElementManipulationComponent::AddCooldownMultiplier(TSubclassOf<ABaseSpell> ApplicableSpell, float CooldownMultiplier)
 {
-	Cooldowns[ApplicableSpell] *= CooldownMultiplier;
+	if (SpellCooldownMultipliers.Contains(ApplicableSpell))
+	{
+		SpellCooldownMultipliers[ApplicableSpell] *= CooldownMultiplier;
+	}
+	else
+	{
+		SpellCooldownMultipliers.Add(ApplicableSpell, 1 * CooldownMultiplier);
+	}
 }
 
 void UElementManipulationComponent::AddCooldownMultiplierForElement(WizardElement Element, float CooldownMultiplier)
 {
-	TArray<FSpellConfig> SpellsWithElement = SpellConfiguration.FilterByPredicate([Element](const FSpellConfig& Config) {return Config.ElementCombination.Contains(Element); });
-	
-	for (const FSpellConfig& Spell : SpellsWithElement)
-	{
-		Cooldowns[Spell.Spell] *= CooldownMultiplier;
-	}
+	ElementCooldownMultipliers[Element] *= CooldownMultiplier;
 }
 
 TMap<TSubclassOf<class ABaseSpell>, float>& UElementManipulationComponent::GetSpellCooldowns()
@@ -217,7 +219,7 @@ void UElementManipulationComponent::SetupSpells()
 	for (TTuple<TSubclassOf<ABaseSpell>, float>& kvp : Cooldowns)
 	{
 		CooldownTimers.Add(kvp.Key);
-		CooldownMultipliers.Add(kvp.Key, 1);
+		SpellCooldownMultipliers.Add(kvp.Key, 1);
 	}
 
 	for (size_t i = 0; i < CurrentElements.Num(); i++)
@@ -238,5 +240,21 @@ void UElementManipulationComponent::OnBasicAttackHit(ABaseSpell* Spell, AActor* 
 
 float UElementManipulationComponent::CalculateSpellCooldown(TSubclassOf<class ABaseSpell> Spell)
 {
-	return *Cooldowns.Find(Spell) * *CooldownMultipliers.Find(Spell) * (Stats ? Stats->GetSpellCooldownMultiplier() : 1.f);
+	//Calculate element cooldown multiplier for spell
+	FSpellConfig* SpellConfig = SpellConfiguration.FindByPredicate([Spell](const FSpellConfig& SpellConfig) {return SpellConfig.Spell == Spell; });
+	float ElementCooldownMultiplier = 1;
+	if (SpellConfig)
+	{
+		//Spells consisting of only 1 element do not get its cooldown multiplier applied twice
+		WizardElement LastAddedElement{ WizardElement::None };
+		for (const WizardElement& ComponentElement : SpellConfig->ElementCombination)
+		{
+			if (LastAddedElement != ComponentElement)
+				ElementCooldownMultiplier *= ElementCooldownMultipliers[ComponentElement];
+
+			LastAddedElement = ComponentElement;
+		}
+	}
+
+	return *Cooldowns.Find(Spell) * SpellCooldownMultipliers.FindOrAdd(Spell, 1) * ElementCooldownMultiplier * (Stats ? Stats->GetSpellCooldownMultiplier() : 1.f);
 }

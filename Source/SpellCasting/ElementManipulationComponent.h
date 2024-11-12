@@ -14,6 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTriggeredSpellCastedSignature, AAc
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBasicAttackCastedSignature, AActor*, Caster, ABaseSpell*, Spell);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSpellHitSignature, ABaseSpell*, Spell, AActor*, HitActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBasicAttackHitSignature, ABaseSpell*, Spell, AActor*, HitActor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSpellDestroyedSignature, ABaseSpell*, Spell);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FElementLearnedSignature, WizardElement, LearnedElement);
 
 USTRUCT(BlueprintType)
@@ -51,7 +52,7 @@ public:
 	void TryCastBasicAttack();
 
 	UFUNCTION(BlueprintCallable)
-	class ABaseSpell* TriggeredCast(TSubclassOf<ABaseSpell> SpellClass, bool SendSpellCastedEvent);
+	class ABaseSpell* TriggeredCast(TSubclassOf<ABaseSpell> SpellClass, const FVector& TargetLocation, const FVector& SpawnLocation, bool SendSpellEvents);
 
 	UFUNCTION(BlueprintCallable)
 	const TSet<WizardElement>& GetLearnedElements() const;
@@ -121,7 +122,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TMap<TSubclassOf<class ABaseSpell>, FTimerHandle> CooldownTimers{};
 	UPROPERTY(VisibleAnywhere)
-	TMap<TSubclassOf<class ABaseSpell>, float> CooldownMultipliers{};
+	TMap<TSubclassOf<class ABaseSpell>, float> SpellCooldownMultipliers{};
+	UPROPERTY(VisibleAnywhere)
+	TMap<WizardElement, float> ElementCooldownMultipliers{};
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	USceneComponent* BasicAttackOriginPoint;
