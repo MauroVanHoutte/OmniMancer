@@ -22,24 +22,24 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void OnEndPlay() {};
 	UFUNCTION(BlueprintCallable)
-	virtual void Execute(AActor* Target) {};
+	virtual void Execute(AActor* Target, const FVector& TargetLocation) {};
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanBeExecuted(AActor* Target);
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanBeInterrupted() { return false; };
+	virtual bool CanBeInterrupted() { return true; };
 	UFUNCTION(BlueprintCallable)
 	virtual void Interrupt() {};
 
 	UFUNCTION(BlueprintCallable)
-	virtual void OnHitTriggered(AActor* HitActor) {};
+	virtual void OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent) {};
 	UFUNCTION(BlueprintCallable)
-	virtual bool WasActorHitBefore(AActor* TestActor) { return false; };
+	virtual bool WasActorHitBefore(AActor* TestActor, class UPrimitiveComponent* ColliderComponent) { return false; };
 
 	FMoveCompletedSignature OnMoveCompletedDelegate;
 	FMoveInterruptedSignature OnMoveInterruptedDelegate;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, Instanced)
+	UPROPERTY(EditAnywhere, Instanced)
 	class UBaseMoveRequirement* ExtraRequirement;
 	UPROPERTY(Transient)
 	AActor* OwningActor = nullptr;
@@ -55,13 +55,13 @@ public:
 	virtual void OnBeginPlay(AActor* Owner) override;
 	virtual void OnEndPlay() override;
 
-	virtual void Execute(AActor* Target) override;
+	virtual void Execute(AActor* Target, const FVector& TargetLocation) override;
 	virtual bool CanBeExecuted(AActor* Target) override;
 	virtual bool CanBeInterrupted() override;
 	virtual void Interrupt() override;
 
-	virtual void OnHitTriggered(AActor* HitActor) override;
-	virtual bool WasActorHitBefore(AActor* TestActor) override;
+	virtual void OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent) override;
+	virtual bool WasActorHitBefore(AActor* TestActor, class UPrimitiveComponent* ColliderComponent) override;
 
 private:
 	UFUNCTION()
@@ -69,10 +69,10 @@ private:
 	UFUNCTION()
 	void OnAttackComponentInterrupted(class UBaseAttackObject* Attack);
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	bool bCheckAttackRequirements = true;
 
-	UPROPERTY(Instanced, EditDefaultsOnly)
+	UPROPERTY(Instanced, EditAnywhere)
 	class UBaseAttackObject* AttackObject;
 };
 
@@ -86,28 +86,59 @@ public:
 	virtual void OnBeginPlay(AActor* Owner) override;
 	virtual void OnEndPlay() override;
 
-	virtual void Execute(AActor* Target) override;
+	virtual void Execute(AActor* Target, const FVector& TargetLocation) override;
 	virtual bool CanBeExecuted(AActor* Target) override;
 	virtual bool CanBeInterrupted() override;
 	virtual void Interrupt() override;
 
-	virtual void OnHitTriggered(AActor* HitActor) override;
-	virtual bool WasActorHitBefore(AActor* TestActor) override;
+	virtual void OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent) override;
+	virtual bool WasActorHitBefore(AActor* TestActor, class UPrimitiveComponent* ColliderComponent) override;
 
 private:
 	UFUNCTION()
 	void OnMoveComponentCompleted(class UBaseMove* Move);
-	UFUNCTION()
-	void OnMoveComponentInterrupted(class UBaseMove* Move);
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	bool bCheckFirstMoveRequirements = false;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	bool bCheckSubsequentMoveRequirements = false;
 
-	UPROPERTY(Instanced, EditDefaultsOnly)
+	UPROPERTY(Instanced, EditAnywhere)
 	TArray<UBaseMove*> MoveSequence;
 	int ActiveMoveIdx = -1;
 	UPROPERTY(Transient)
 	AActor* TargetActor = nullptr;
+	UPROPERTY(Transient)
+	FVector Location;
+};
+
+UCLASS()
+class UNREALPROJECT_API UParallelMoves : public UBaseMove
+{
+	GENERATED_BODY()
+
+public:
+	virtual void TickMove(float DeltaTime) override;
+	virtual void OnBeginPlay(AActor* Owner) override;
+	virtual void OnEndPlay() override;
+
+	virtual void Execute(AActor* Target, const FVector& TargetLocation) override;
+	virtual bool CanBeExecuted(AActor* Target) override;
+	virtual bool CanBeInterrupted() override;
+	virtual void Interrupt() override;
+
+private:
+	UFUNCTION()
+	void OnMoveComponentCompleted(class UBaseMove* Move);
+
+	UPROPERTY(Instanced, EditAnywhere)
+	TArray<UBaseMove*> Moves;
+	UPROPERTY(Transient)
+	AActor* TargetActor = nullptr;
+
+	UPROPERTY(EditAnywhere)
+	bool bCanBeInterrupted = false;
+
+	UPROPERTY(Transient)
+	TArray<UBaseMove*> ActiveMoves;
 };

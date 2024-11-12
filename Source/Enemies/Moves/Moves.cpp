@@ -21,8 +21,8 @@ void UAttackMove::OnBeginPlay(AActor* Owner)
     Super::OnBeginPlay(Owner);
 
     AttackObject->OnBeginPlay(Owner);
-    AttackObject->OnAttackComponentCompletedDelegate.AddDynamic(this, &UAttackMove::OnAttackComponentCompleted);
-    AttackObject->OnAttackComponentInterruptedDelegate.AddDynamic(this, &UAttackMove::OnAttackComponentInterrupted);
+    AttackObject->OnAttackCompletedDelegate.AddDynamic(this, &UAttackMove::OnAttackComponentCompleted);
+    AttackObject->OnAttackInterruptedDelegate.AddDynamic(this, &UAttackMove::OnAttackComponentInterrupted);
 }
 
 void UAttackMove::OnEndPlay()
@@ -31,9 +31,9 @@ void UAttackMove::OnEndPlay()
     AttackObject->ConditionalBeginDestroy();
 }
 
-void UAttackMove::Execute(AActor* Target)
+void UAttackMove::Execute(AActor* Target, const FVector& TargetLocation)
 {
-    AttackObject->InitiateAttack(Target);
+    AttackObject->InitiateAttack(Target, TargetLocation);
 }
 
 bool UAttackMove::CanBeExecuted(AActor* Target)
@@ -51,14 +51,14 @@ void UAttackMove::Interrupt()
     AttackObject->TryInterruptAttack();
 }
 
-void UAttackMove::OnHitTriggered(AActor* HitActor)
+void UAttackMove::OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent)
 {
-    AttackObject->OnHitTriggered(HitActor);
+    AttackObject->OnHitTriggered(HitActor, ColliderComponent);
 }
 
-bool UAttackMove::WasActorHitBefore(AActor* TestActor)
+bool UAttackMove::WasActorHitBefore(AActor* TestActor, class UPrimitiveComponent* ColliderComponent)
 {
-    return AttackObject->WasActorHitBefore(TestActor);
+    return AttackObject->WasActorHitBefore(TestActor, ColliderComponent);
 }
 
 void UAttackMove::OnAttackComponentCompleted(UBaseAttackObject* Attack)
@@ -100,15 +100,15 @@ void UMoveSequence::OnEndPlay()
     }
 }
 
-void UMoveSequence::Execute(AActor* Target)
+void UMoveSequence::Execute(AActor* Target, const FVector& TargetLocation)
 {
     if (ActiveMoveIdx < 0 && !MoveSequence.IsEmpty())
     {
         TargetActor = Target;
+        Location = TargetLocation;
         ActiveMoveIdx = 0;
         MoveSequence[ActiveMoveIdx]->OnMoveCompletedDelegate.AddDynamic(this, &UMoveSequence::OnMoveComponentCompleted);
-        MoveSequence[ActiveMoveIdx]->OnMoveInterruptedDelegate.AddDynamic(this, &UMoveSequence::OnMoveComponentInterrupted);
-        MoveSequence[ActiveMoveIdx]->Execute(TargetActor);
+        MoveSequence[ActiveMoveIdx]->Execute(TargetActor, Location);
     }
 }
 
@@ -125,30 +125,31 @@ bool UMoveSequence::CanBeInterrupted()
 void UMoveSequence::Interrupt()
 {
     MoveSequence[ActiveMoveIdx]->Interrupt();
+    MoveSequence[ActiveMoveIdx]->OnMoveCompletedDelegate.RemoveDynamic(this, &UMoveSequence::OnMoveComponentCompleted);
+    ActiveMoveIdx = -1;
+    OnMoveInterruptedDelegate.Broadcast(this);
 }
 
-void UMoveSequence::OnHitTriggered(AActor* HitActor)
+void UMoveSequence::OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent)
 {
-    MoveSequence[ActiveMoveIdx]->OnHitTriggered(HitActor);
+    MoveSequence[ActiveMoveIdx]->OnHitTriggered(HitActor, ColliderComponent);
 }
 
-bool UMoveSequence::WasActorHitBefore(AActor* TestActor)
+bool UMoveSequence::WasActorHitBefore(AActor* TestActor, class UPrimitiveComponent* ColliderComponent)
 {
-    return MoveSequence[ActiveMoveIdx]->WasActorHitBefore(TestActor);
+    return MoveSequence[ActiveMoveIdx]->WasActorHitBefore(TestActor, ColliderComponent);
 }
 
 void UMoveSequence::OnMoveComponentCompleted(UBaseMove* Move)
 {
     MoveSequence[ActiveMoveIdx]->OnMoveCompletedDelegate.RemoveDynamic(this, &UMoveSequence::OnMoveComponentCompleted);
-    MoveSequence[ActiveMoveIdx]->OnMoveInterruptedDelegate.RemoveDynamic(this, &UMoveSequence::OnMoveComponentInterrupted);
     ActiveMoveIdx++;
     if (ActiveMoveIdx < MoveSequence.Num())
     {
         if (!bCheckSubsequentMoveRequirements || MoveSequence[ActiveMoveIdx]->CanBeExecuted(TargetActor))
         {
             MoveSequence[ActiveMoveIdx]->OnMoveCompletedDelegate.AddDynamic(this, &UMoveSequence::OnMoveComponentCompleted);
-            MoveSequence[ActiveMoveIdx]->OnMoveInterruptedDelegate.AddDynamic(this, &UMoveSequence::OnMoveComponentInterrupted);
-            MoveSequence[ActiveMoveIdx]->Execute(TargetActor);
+            MoveSequence[ActiveMoveIdx]->Execute(TargetActor, Location);
             return;
         }
        
@@ -157,12 +158,72 @@ void UMoveSequence::OnMoveComponentCompleted(UBaseMove* Move)
     ActiveMoveIdx = -1;
     OnMoveCompletedDelegate.Broadcast(this);
 }
-
-void UMoveSequence::OnMoveComponentInterrupted(UBaseMove* Move)
-{
-    MoveSequence[ActiveMoveIdx]->OnMoveCompletedDelegate.RemoveDynamic(this, &UMoveSequence::OnMoveComponentCompleted);
-    MoveSequence[ActiveMoveIdx]->OnMoveInterruptedDelegate.RemoveDynamic(this, &UMoveSequence::OnMoveComponentInterrupted);
-    ActiveMoveIdx = -1;
-    OnMoveInterruptedDelegate.Broadcast(this);
-}
 //~UMoveSequence
+
+//UParallelMoves
+void UParallelMoves::TickMove(float DeltaTime)
+{
+    for (UBaseMove* Move : Moves)
+    {
+        Move->TickMove(DeltaTime);
+    }
+}
+
+void UParallelMoves::OnBeginPlay(AActor* Owner)
+{
+    Super::OnBeginPlay(Owner);
+
+    for (UBaseMove* Move : Moves)
+    {
+        Move->OnBeginPlay(Owner);
+    }
+}
+
+void UParallelMoves::OnEndPlay()
+{
+    for (UBaseMove* Move : Moves)
+    {
+        Move->OnEndPlay();
+        Move->ConditionalBeginDestroy();
+    }
+}
+
+void UParallelMoves::Execute(AActor* Target, const FVector& TargetLocation)
+{
+    ActiveMoves = Moves;
+    for (UBaseMove* Move : ActiveMoves)
+    {
+        Move->Execute(Target, TargetLocation);
+        Move->OnMoveCompletedDelegate.AddDynamic(this, &UParallelMoves::OnMoveComponentCompleted);
+    }
+}
+
+bool UParallelMoves::CanBeExecuted(AActor* Target)
+{
+    return Super::CanBeExecuted(Target);
+}
+
+bool UParallelMoves::CanBeInterrupted()
+{
+    return bCanBeInterrupted;
+}
+
+void UParallelMoves::Interrupt()
+{
+    for (UBaseMove* Move : ActiveMoves)
+    {
+        Move->Interrupt();
+    }
+}
+
+void UParallelMoves::OnMoveComponentCompleted(UBaseMove* Move)
+{
+    Move->OnMoveCompletedDelegate.RemoveDynamic(this, &UParallelMoves::OnMoveComponentCompleted);
+    ActiveMoves.Remove(Move);
+    
+    if (ActiveMoves.IsEmpty())
+    {
+        OnMoveCompletedDelegate.Broadcast(this);
+    }
+}
+//~UParallelMoves
