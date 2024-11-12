@@ -52,7 +52,7 @@ void AIceZone::OnDeath()
 	GetWorld()->GetTimerManager().ClearTimer(ApplicationTimer);
 }
 
-bool AIceZone::WasActorHitBefore_Implementation(AActor* TriggeringActor)
+bool AIceZone::WasActorHitBefore_Implementation(AActor* TriggeringActor, class UPrimitiveComponent* ColliderComponent)
 {
 	return false;
 }

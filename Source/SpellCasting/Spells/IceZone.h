@@ -16,7 +16,7 @@ public:
 	AIceZone();
 
 	//IHitTriggerInterface implementations
-	virtual bool WasActorHitBefore_Implementation(class AActor* TriggeringActor) override;
+	virtual bool WasActorHitBefore_Implementation(class AActor* TriggeringActor, class UPrimitiveComponent* ColliderComponent) override;
 
 	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
 

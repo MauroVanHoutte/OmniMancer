@@ -49,7 +49,7 @@ bool UMovesetComponent::ExecuteAttack(AActor* Target)
 	if (IsValid(ValidMoves[RandIdx]))
 	{
 		ActiveMove = ValidMoves[RandIdx];
-		ValidMoves[RandIdx]->Execute(Target);
+		ValidMoves[RandIdx]->Execute(Target, IsValid(Target) ? Target->GetActorLocation() : FVector(0, 0, 0));
 		return true;
 	}
 	return false;
@@ -68,19 +68,19 @@ void UMovesetComponent::InterruptAttack()
 	}
 }
 
-void UMovesetComponent::OnHitTriggered(AActor* HitActor)
+void UMovesetComponent::OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent)
 {
 	if (IsValid(ActiveMove))
 	{
-		ActiveMove->OnHitTriggered(HitActor);
+		ActiveMove->OnHitTriggered(HitActor, ColliderComponent);
 	}
 }
 
-bool UMovesetComponent::WasActorHitBefore(AActor* TestActor)
+bool UMovesetComponent::WasActorHitBefore(AActor* TestActor, class UPrimitiveComponent* ColliderComponent)
 {
 	if (IsValid(ActiveMove))
 	{
-		return ActiveMove->WasActorHitBefore(TestActor);
+		return ActiveMove->WasActorHitBefore(TestActor, ColliderComponent);
 	}
 
 	return false;
@@ -90,6 +90,8 @@ bool UMovesetComponent::WasActorHitBefore(AActor* TestActor)
 void UMovesetComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Moves.RemoveAll([](const UBaseMove* Move) {return !IsValid(Move); });
 
 	for (UBaseMove* Move : Moves)
 	{ 

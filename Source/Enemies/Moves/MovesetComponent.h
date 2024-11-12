@@ -30,9 +30,9 @@ public:
 	void InterruptAttack();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void OnHitTriggered(AActor* HitActor);
+	virtual void OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent);
 	UFUNCTION(BlueprintCallable)
-	virtual bool WasActorHitBefore(AActor* TestActor);
+	virtual bool WasActorHitBefore(AActor* TestActor, class UPrimitiveComponent* ColliderComponent);
 
 	UPROPERTY(BlueprintAssignable)
 	FMoveComponentCompletedSignature OnAttackCompletedDelegate;

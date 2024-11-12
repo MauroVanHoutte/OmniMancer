@@ -16,7 +16,7 @@ ABaseSpell::ABaseSpell()
 }
 
 // IHitTriggerInterface implementations
-void ABaseSpell::OnTriggered_Implementation(AActor* TriggeringActor)
+void ABaseSpell::OnTriggered_Implementation(AActor* TriggeringActor, class UPrimitiveComponent* ColliderComponent)
 {
 	HitActors.AddUnique(TriggeringActor);
 	TriggeringActor->TakeDamage(GetFinalDamage(), FDamageEvent{}, GetInstigatorController(), this);
@@ -28,7 +28,7 @@ UAffiliationComponent* ABaseSpell::GetAffiliation_Implementation()
 	return AffiliationComponent;
 }
 
-bool ABaseSpell::WasActorHitBefore_Implementation(AActor* TriggeringActor)
+bool ABaseSpell::WasActorHitBefore_Implementation(AActor* TriggeringActor, class UPrimitiveComponent* ColliderComponent)
 {
 	return HitActors.Contains(TriggeringActor);
 }
@@ -42,6 +42,7 @@ void ABaseSpell::Destroy()
 
 void ABaseSpell::OnDeath()
 {
+	OnSpellDestroyedDelegate.Broadcast(this);
 }
 
 //void ABaseSpell::AddStatusEffect(const FStatusEffect& effect)

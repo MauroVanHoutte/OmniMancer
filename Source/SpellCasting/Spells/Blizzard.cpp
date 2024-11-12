@@ -20,7 +20,7 @@ ABlizzard::ABlizzard()
 	CylinderMesh->SetStaticMesh(mesh);
 }
 
-bool ABlizzard::WasActorHitBefore_Implementation(AActor* TriggeringActor)
+bool ABlizzard::WasActorHitBefore_Implementation(AActor* TriggeringActor, UPrimitiveComponent* ColliderComponent)
 {
 	return false;
 }

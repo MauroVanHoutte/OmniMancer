@@ -13,9 +13,9 @@ class IHitTriggerInterface
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void OnTriggered(class AActor* TriggeringActor);
+	void OnTriggered(class AActor* TriggeringActor, class UPrimitiveComponent* ColliderComponent);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	class UAffiliationComponent* GetAffiliation();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool WasActorHitBefore(class AActor* TriggeringActor);
+	bool WasActorHitBefore(class AActor* TriggeringActor, class UPrimitiveComponent* ColliderComponent);
 };

@@ -54,9 +54,9 @@ void UHitHandlingComponent::OnColliderOverlap(UPrimitiveComponent* OverlappedCom
 	UAffiliationComponent* Affiliation = IHitTriggerInterface::Execute_GetAffiliation(OtherActor);
 
 	if ((!Affiliation || Affiliation->GetAffiliation() != AffiliationComponent->GetAffiliation()) //Damage collider is not affiliated with hit actor
-		&& !IHitTriggerInterface::Execute_WasActorHitBefore(OtherActor, GetOwner())) //Hit Actor was not hit before
+		&& !IHitTriggerInterface::Execute_WasActorHitBefore(OtherActor, GetOwner(), OtherComp)) //Hit Actor was not hit before
 	{
-		IHitTriggerInterface::Execute_OnTriggered(OtherActor, GetOwner());
+		IHitTriggerInterface::Execute_OnTriggered(OtherActor, GetOwner(), OtherComp);
 		OnHitRegisteredDelegate.Broadcast(OtherActor, GetOwner());
 	}
 }

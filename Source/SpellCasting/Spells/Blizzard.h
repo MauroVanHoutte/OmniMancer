@@ -18,7 +18,7 @@ public:
 	ABlizzard();
 
 	//IHitTriggerInterface implementation
-	virtual bool WasActorHitBefore_Implementation(class AActor* TriggeringActor) override;
+	virtual bool WasActorHitBefore_Implementation(class AActor* TriggeringActor, class UPrimitiveComponent* ColliderComponent) override;
 
 	void TickBlizzard();
 

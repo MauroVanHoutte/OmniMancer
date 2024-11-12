@@ -9,6 +9,7 @@
 #include "BaseSpell.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSpellHitSignature, ABaseSpell*, Spell, AActor*, HitActor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSpellDestroyedSignature, ABaseSpell*, Spell);
 
 class AWizardCharacter;
 class ABaseCharacter;
@@ -22,9 +23,9 @@ public:
 	ABaseSpell();
 
 	//IHitTriggerInterface implementations
-	virtual void OnTriggered_Implementation(class AActor* TriggeringActor);
+	virtual void OnTriggered_Implementation(class AActor* TriggeringActor, class UPrimitiveComponent* ColliderComponent);
 	virtual class UAffiliationComponent* GetAffiliation_Implementation();
-	virtual bool WasActorHitBefore_Implementation(class AActor* TriggeringActor);
+	virtual bool WasActorHitBefore_Implementation(class AActor* TriggeringActor, class UPrimitiveComponent* CollisionComponent);
 	//end IHitTriggerInterface implementations
 
 	virtual void Destroy();
@@ -50,11 +51,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	virtual float GetScale() const { return 0; };
 
-	UFUNCTION(BLueprintCallable)
-	void TrackAppliedUpgrade(class UBaseSpellUpgradeEffect* SpellUpgrade) { AppliedSpellUpgrades.Add(SpellUpgrade); };
-	UFUNCTION(BlueprintCallable)
-	TArray<class UBaseSpellUpgradeEffect*>& GetAppliedSpellUpgrades() { return AppliedSpellUpgrades; };
-
 	UFUNCTION(BlueprintCallable)
 	TArray<UBaseStatusEffect*>& GetStatusEffectsRef();
 
@@ -67,6 +63,7 @@ public:
 	virtual void OnHit(AActor* hitActor);
 
 	FOnSpellHitSignature OnSpellHitDelegate;
+	FOnSpellDestroyedSignature OnSpellDestroyedDelegate;
 
 protected:
 	virtual void BeginPlay() override;
