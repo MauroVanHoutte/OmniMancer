@@ -8,8 +8,11 @@
 
 void UAreaAttackObject::OnEndPlay()
 {
-	OwningActor->GetWorld()->GetTimerManager().ClearTimer(DamageTimerHandle);
-	OwningActor->GetWorld()->GetTimerManager().ClearTimer(CompletionTimerHandle);
+	if (IsValid(GetWorld()))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(DamageTimerHandle);
+		GetWorld()->GetTimerManager().ClearTimer(CompletionTimerHandle);
+	}
 }
 
 bool UAreaAttackObject::AreAttackRequirementsMet(AActor* Target)
@@ -17,21 +20,24 @@ bool UAreaAttackObject::AreAttackRequirementsMet(AActor* Target)
 	return FVector::DistSquared(OwningActor->GetActorLocation(), Target->GetActorLocation()) < Range * Range;
 }
 
-bool UAreaAttackObject::WasActorHitBefore(AActor* TriggeredActor)
+bool UAreaAttackObject::WasActorHitBefore(AActor* TriggeredActor, class UPrimitiveComponent* ColliderComponent)
 {
-	return HitActors.Contains(TriggeredActor);
+	return !HurtBoxes.Contains(ColliderComponent) || HitActors.Contains(TriggeredActor);
 }
 
-void UAreaAttackObject::OnHitTriggered(AActor* HitActor)
+void UAreaAttackObject::OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent)
 {
-	HitActors.Add(HitActor);
-	FDamageEvent DamageEvent;
-	HitActor->TakeDamage(Damage, DamageEvent, OwningActor->GetInstigatorController(), OwningActor);
+	if (HurtBoxes.Contains(ColliderComponent))
+	{
+		HitActors.Add(HitActor);
+		FDamageEvent DamageEvent;
+		HitActor->TakeDamage(Damage, DamageEvent, OwningActor->GetInstigatorController(), OwningActor);
+	}
 }
 
-void UAreaAttackObject::InitiateAttack(AActor* Target)
+void UAreaAttackObject::InitiateAttack(AActor* Target, const FVector& Location)
 {
-	Super::InitiateAttack(Target);
+	Super::InitiateAttack(Target, Location);
 
 	HitActors.Empty();
 
@@ -101,5 +107,5 @@ void UAreaAttackObject::EndDamage()
 
 void UAreaAttackObject::AttackCompleted()
 {
-	OnAttackComponentCompletedDelegate.Broadcast(this);
+	OnAttackCompletedDelegate.Broadcast(this);
 }

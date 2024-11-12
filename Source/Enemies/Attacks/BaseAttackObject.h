@@ -20,9 +20,9 @@ public:
 	virtual void OnEndPlay() {};
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool AreAttackRequirementsMet(AActor* Target) { return false; };
+	virtual bool AreAttackRequirementsMet(AActor* Target) { return true; };
 	UFUNCTION(BlueprintCallable)
-	virtual void InitiateAttack(AActor* Target) { TargetActor = Target; };
+	virtual void InitiateAttack(AActor* Target, const FVector& Location = FVector(0, 0, 0)) { TargetActor = Target; TargetLocation = Location; };
 	UFUNCTION(BlueprintCallable)
 	virtual bool TryInterruptAttack();
 
@@ -30,22 +30,27 @@ public:
 	virtual bool IsAttackInterruptable() { return bIsInterruptable; };
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool WasActorHitBefore(AActor* TriggeredActor) { return false; };
+	virtual bool WasActorHitBefore(AActor* TriggeredActor, class UPrimitiveComponent* ColliderComponent) { return true; };
 	UFUNCTION(BlueprintCallable)
-	virtual void OnHitTriggered(AActor* HitActor) {};
+	virtual void OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent) {};
 
 	UPROPERTY(BlueprintAssignable)
-	FAttackComponentCompletedSignature OnAttackComponentCompletedDelegate;
+	FAttackComponentCompletedSignature OnAttackCompletedDelegate;
 	UPROPERTY(BlueprintAssignable)
-	FAttackComponentInterruptedSignature OnAttackComponentInterruptedDelegate;
+	FAttackComponentInterruptedSignature OnAttackInterruptedDelegate;
 
 protected:
-	virtual void InterruptAttack() { OnAttackComponentInterruptedDelegate.Broadcast(this); };
+	virtual void InterruptAttack() { OnAttackInterruptedDelegate.Broadcast(this); };
 
 	UPROPERTY(EditDefaultsOnly)
 	bool bIsInterruptable = true;
+	//Instead of location of target actor
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bUseLocationTarget = true;
 	UPROPERTY(BlueprintReadOnly, Transient)
 	AActor* OwningActor;
 	UPROPERTY(BlueprintReadOnly, Transient)
 	AActor* TargetActor;
+	UPROPERTY(BlueprintReadOnly, Transient)
+	FVector TargetLocation;
 };

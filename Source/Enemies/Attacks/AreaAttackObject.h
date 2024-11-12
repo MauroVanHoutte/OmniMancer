@@ -19,11 +19,11 @@ public:
 
 	virtual bool AreAttackRequirementsMet(AActor* Target) override;
 
-	virtual bool WasActorHitBefore(AActor* TriggeredActor) override;
-	virtual void OnHitTriggered(AActor* HitActor) override;
+	virtual bool WasActorHitBefore(AActor* TriggeredActor, class UPrimitiveComponent* ColliderComponent) override;
+	virtual void OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent) override;
 
 protected:
-	virtual void InitiateAttack(AActor* Target) override;
+	virtual void InitiateAttack(AActor* Target, const FVector& Location) override;
 	virtual void InterruptAttack() override;
 
 private:

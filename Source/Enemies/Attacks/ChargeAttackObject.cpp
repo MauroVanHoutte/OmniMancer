@@ -10,7 +10,8 @@
 
 void UChargeAttackObject::OnEndPlay()
 {
-	OwningActor->GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+	if (IsValid(GetWorld()))
+		GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 }
 
 void UChargeAttackObject::TickAttack(float DeltaTime)
@@ -72,21 +73,24 @@ bool UChargeAttackObject::AreAttackRequirementsMet(AActor* Target)
 	return false;
 }
 
-bool UChargeAttackObject::WasActorHitBefore(AActor* TriggeredActor)
+bool UChargeAttackObject::WasActorHitBefore(AActor* TriggeredActor, class UPrimitiveComponent* ColliderComponent)
 {
-	return HitActors.Contains(TriggeredActor);
+	return !HurtBoxes.Contains(ColliderComponent) || HitActors.Contains(TriggeredActor);
 }
 
-void UChargeAttackObject::OnHitTriggered(AActor* HitActor)
+void UChargeAttackObject::OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent)
 {
-	HitActors.Add(HitActor);
-	FDamageEvent DamageEvent;
-	HitActor->TakeDamage(Damage, DamageEvent, OwningActor->GetInstigatorController(), OwningActor);
+	if (HurtBoxes.Contains(ColliderComponent))
+	{
+		HitActors.Add(HitActor);
+		FDamageEvent DamageEvent;
+		HitActor->TakeDamage(Damage, DamageEvent, OwningActor->GetInstigatorController(), OwningActor);
+	}
 }
 
-void UChargeAttackObject::InitiateAttack(AActor* Target)
+void UChargeAttackObject::InitiateAttack(AActor* Target, const FVector& Location)
 {
-	Super::InitiateAttack(Target);
+	Super::InitiateAttack(Target, Location);
 
 	if (HurtBoxes.IsEmpty())
 	{
@@ -102,7 +106,6 @@ void UChargeAttackObject::InitiateAttack(AActor* Target)
 	}
 
 	HitActors.Empty();
-	FVector TargetLocation = Target->GetActorLocation();
 	TargetLocation.Z = 0;
 	FVector OwnerLocation = OwningActor->GetActorLocation();
 	OwnerLocation.Z = 0;
@@ -134,5 +137,5 @@ void UChargeAttackObject::StartCharge()
 void UChargeAttackObject::CooldownCompleted()
 {
 	Cast<APawn>(OwningActor)->GetController<AAIController>()->SetFocus(TargetActor);
-	OnAttackComponentCompletedDelegate.Broadcast(this);
+	OnAttackCompletedDelegate.Broadcast(this);
 }
