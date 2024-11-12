@@ -203,15 +203,6 @@ float ABaseSpell::GetDamageMultiplier()
 void ABaseSpell::BeginPlay()
 {
 	Super::BeginPlay();
-	SetLifeTime(LifeSpan);
-}
-
-void ABaseSpell::SetLifeTime(float lifespan)
-{
-	if (lifespan < 0)
-		return;
-
-	GetWorld()->GetTimerManager().SetTimer(LifeTimer, this, &ABaseSpell::Destroy, lifespan);
 }
 
 // Called every frame

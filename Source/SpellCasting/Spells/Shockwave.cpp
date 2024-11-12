@@ -43,6 +43,7 @@ void AShockwave::InitSpell(const FVector& targetLocation, APawn* caster)
 	Super::InitSpell(targetLocation, caster);
 
 	SetActorLocation(caster->GetActorLocation());
+	SetLifeSpan(GrowthDuration + LingerDuration);
 }
 
 void AShockwave::BeginPlay()

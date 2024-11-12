@@ -67,11 +67,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void SetLifeTime(float lifespan);
 	virtual void OnDeath();
-
-	UPROPERTY(EditDefaultsOnly)
-	bool ApplyWizardOnHitEffects = true;
 
 	UPROPERTY(EditDefaultsOnly)
 	float Damage = 0;
@@ -80,20 +76,7 @@ protected:
 	TArray<UBaseStatusEffect*> StatusEffects{}; //status effects get applied to entities hit
 
 	TArray<class UBaseSpellUpgradeEffect*> AppliedSpellUpgrades;
-
-	UPROPERTY(EditDefaultsOnly)
-	float LifeSpan = 5;
-
-	TArray<AActor*> HitActors{};	
-
-	UPROPERTY(VisibleAnywhere)
-	int FireLevel = -1;
-	UPROPERTY(VisibleAnywhere)
-	int FrostLevel = -1;
-	UPROPERTY(VisibleAnywhere)
-	int WindLevel = -1;
-
-	FTimerHandle LifeTimer{};
+	TArray<AActor*> HitActors{};
 
 private:
 	UPROPERTY(VisibleAnywhere)

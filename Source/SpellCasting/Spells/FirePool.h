@@ -36,12 +36,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float ApplicationInterval = 0.3f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float BurnDamagePerFireLevel = 0.3f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float ScalePerFireLevel = 0.5f;
-
 private:
 	FTimerHandle ApplicationTimer;
 };

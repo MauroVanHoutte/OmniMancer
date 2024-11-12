@@ -35,13 +35,14 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float GrowthDuration = 1.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
+	float LingerDuration = 0.4f;
 	float GrowthTimer = 0;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float InitialRadius = 50;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float MaxScaleMultiplier = 20.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float KnockbackAmount = 500.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float StunDuration = 0.5f;
 };

@@ -33,29 +33,10 @@ protected:
 	UStaticMeshComponent* CylinderMesh;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	bool ApplyBurn = true;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float BurnDamage = 1.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float BurnInterval = 0.5f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float EffectLingerDuration = 2.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float SlowAmount = 0.5f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float CircleScale = 7.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float ApplicationInterval = 0.2f;
-
-
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float DamagePerFireLevel = 0.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float SlowPerFrostLevel = 0.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float DurationPerFrostLevel = 0.f;
 
 private:
 	FTimerHandle ApplicationTimer;

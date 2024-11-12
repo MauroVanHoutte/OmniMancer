@@ -39,12 +39,8 @@ void AIceWall::Tick(float deltaTime)
 void AIceWall::InitSpell(const FVector& targetLocation, APawn* caster)
 {
 	Super::InitSpell(targetLocation, caster);
-	//SetSlowParams(true, SlowValue + SlowPerFrostLevel * FrostLevel, SlowDuration + DurationPerFrostLevel * FrostLevel);
 
-	Damage = Damage + DamagePerFrostLevel * FrostLevel;
-
-	//if (FrostLevel > 3)
-	//	SetCurseParams(true, 15, 500, 5);
+	Damage = Damage;
 
 	FHitResult Hit;
 	GetWorld()->LineTraceSingleByChannel(Hit, targetLocation, targetLocation + FVector(0, 0, -500), ECollisionChannel::ECC_WorldStatic);
@@ -55,4 +51,5 @@ void AIceWall::InitSpell(const FVector& targetLocation, APawn* caster)
 	StartLocation = startLocation;
 	SetActorLocation(startLocation);
 	SetActorRotation(FRotator(0, (targetLocation - caster->GetActorLocation()).Rotation().Yaw, 0));
+	SetLifeSpan(RiseTime + LingerTime);
 }

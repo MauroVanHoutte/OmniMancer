@@ -40,15 +40,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
 	float RiseTime = 0.5f;
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float SlowValue = 0.5f;
-	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float SlowDuration = 3.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float DamagePerFrostLevel = 3.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float SlowPerFrostLevel = 0.05f;
-	UPROPERTY(EditDefaultsOnly, Category = "Element Scaling")
-	float DurationPerFrostLevel = 0.3f;
+	float LingerTime = 1.f;
+
 	FVector StartLocation;
 	FVector TargetLocation;
 	float RiseTimer = 0.f;

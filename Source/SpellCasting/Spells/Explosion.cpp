@@ -24,7 +24,7 @@ void AExplosion::InitSpell(const FVector& targetLocation, APawn* caster)
 	SphereGrowSpeed = FullSphereSize / GrowDuration;
 	MeshGrowSpeed = FullMeshScale / GrowDuration;
 	Timer = 0;
-	SetLifeTime(GrowDuration + LingerDuration);
+	SetLifeSpan(GrowDuration + LingerDuration);
 
 	Super::InitSpell(targetLocation, caster);
 }

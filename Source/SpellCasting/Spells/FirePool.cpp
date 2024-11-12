@@ -24,7 +24,7 @@ void AFirePool::InitSpell(const FVector& targetLocation, APawn* caster)
 	GetWorld()->LineTraceSingleByChannel(Hit, targetLocation, targetLocation + FVector(0, 0, -500), ECollisionChannel::ECC_WorldStatic);
 	SetActorLocation(Hit.bBlockingHit ? Hit.ImpactPoint : targetLocation);
 
-	SetRadius(CircleScale + ScalePerFireLevel * FireLevel);
+	SetRadius(CircleScale);
 }
 
 void AFirePool::SetRadius(float radius)
