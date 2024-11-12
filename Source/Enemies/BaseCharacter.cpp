@@ -16,29 +16,29 @@
 
 
 // Sets default values
-ABaseCharacter::ABaseCharacter()
-{
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
-	TArray<UCapsuleComponent*> comps;
-	GetComponents(comps);
-	if (comps.Num() > 0)
-	{
-		comps[0]->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnHit);
-		comps[0]->SetSimulatePhysics(true);
-	}
-
-	TArray<UCharacterMovementComponent*> characterMovementComps{};
-	GetComponents(characterMovementComps);
-	if (characterMovementComps.Num() > 0)
-	{
-		CharacterMovement = characterMovementComps[0];
-	}
-
-	NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("ParticleSystem");
-	NiagaraComponent->SetupAttachment(RootComponent);
-}
+//ABaseCharacter::ABaseCharacter()
+//{
+// 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+//	PrimaryActorTick.bCanEverTick = true;
+//
+//	TArray<UCapsuleComponent*> comps;
+//	GetComponents(comps);
+//	if (comps.Num() > 0)
+//	{
+//		comps[0]->OnComponentBeginOverlap.AddDynamic(this, &ABaseCharacter::OnHit);
+//		comps[0]->SetSimulatePhysics(true);
+//	}
+//
+//	TArray<UCharacterMovementComponent*> characterMovementComps{};
+//	GetComponents(characterMovementComps);
+//	if (characterMovementComps.Num() > 0)
+//	{
+//		CharacterMovement = characterMovementComps[0];
+//	}
+//
+//	NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("ParticleSystem");
+//	NiagaraComponent->SetupAttachment(RootComponent);
+//}
 
 bool ABaseCharacter::GetStunned() const 
 {

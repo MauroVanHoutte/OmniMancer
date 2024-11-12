@@ -21,7 +21,7 @@ class UNREALPROJECT_API ABaseCharacter : public ACharacter
 
 public:
 	// Sets default values for this character's properties
-	ABaseCharacter();
+	//ABaseCharacter();
 	//virtual void ReapplyStatusEffects(const TArray<FStatusEffect>& statusEffects);
 	//virtual void AddStatusEffect(const FStatusEffect& effect);
 	//virtual void AddStatusEffects(const TArray<FStatusEffect>& statusEffects);
