@@ -27,44 +27,44 @@
 #include "UI/PlayerHUD.h"
 
 // Sets default values
-AWizardCharacter::AWizardCharacter()
-	: ABaseCharacter()
-{
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>("Springarm");
-	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->SetRelativeLocationAndRotation(FVector(-10.f, 0, 300.f), FRotator(FMath::RadiansToDegrees(FMath::Asin(0.1)) + 270.f, 0, 0));
-	SpringArm->bEnableCameraLag = false;
-	SpringArm->CameraLagSpeed = 10.f;
-	SpringArm->TargetArmLength = 1200.f;
-
-	Camera = CreateDefaultSubobject<UCameraComponent>("TopDownCamera");
-	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-
-	CurrentElements.Init(WizardElement::Fire, MaxElements);
-
-	FirstElementBillboard = CreateDefaultSubobject<UBillboardComponent>("First Element");
-	FirstElementBillboard->bHiddenInGame = false;
-	FirstElementBillboard->SetupAttachment(RootComponent);
-	FirstElementBillboard->SetRelativeLocation(FVector(0, -50, 100));
-	FirstElementBillboard->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
-	SecondElementBillboard = CreateDefaultSubobject<UBillboardComponent>("Second Element");
-	SecondElementBillboard->bHiddenInGame = false;
-	SecondElementBillboard->SetupAttachment(RootComponent);
-	SecondElementBillboard->SetRelativeLocation(FVector(0, 50, 100));
-	SecondElementBillboard->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
-
-}
-
-AWizardCharacter::AWizardCharacter(FVTableHelper& Helper)
-	: AWizardCharacter()
-{
-
-}
-
-AWizardCharacter::~AWizardCharacter() = default;
+//AWizardCharacter::AWizardCharacter()
+//	: ABaseCharacter()
+//{
+// 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+//	PrimaryActorTick.bCanEverTick = true;
+//
+//	SpringArm = CreateDefaultSubobject<USpringArmComponent>("Springarm");
+//	SpringArm->SetupAttachment(RootComponent);
+//	SpringArm->SetRelativeLocationAndRotation(FVector(-10.f, 0, 300.f), FRotator(FMath::RadiansToDegrees(FMath::Asin(0.1)) + 270.f, 0, 0));
+//	SpringArm->bEnableCameraLag = false;
+//	SpringArm->CameraLagSpeed = 10.f;
+//	SpringArm->TargetArmLength = 1200.f;
+//
+//	Camera = CreateDefaultSubobject<UCameraComponent>("TopDownCamera");
+//	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+//
+//	CurrentElements.Init(WizardElement::Fire, MaxElements);
+//
+//	FirstElementBillboard = CreateDefaultSubobject<UBillboardComponent>("First Element");
+//	FirstElementBillboard->bHiddenInGame = false;
+//	FirstElementBillboard->SetupAttachment(RootComponent);
+//	FirstElementBillboard->SetRelativeLocation(FVector(0, -50, 100));
+//	FirstElementBillboard->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+//	SecondElementBillboard = CreateDefaultSubobject<UBillboardComponent>("Second Element");
+//	SecondElementBillboard->bHiddenInGame = false;
+//	SecondElementBillboard->SetupAttachment(RootComponent);
+//	SecondElementBillboard->SetRelativeLocation(FVector(0, 50, 100));
+//	SecondElementBillboard->SetRelativeScale3D(FVector(0.25f, 0.25f, 0.25f));
+//
+//}
+//
+//AWizardCharacter::AWizardCharacter(FVTableHelper& Helper)
+//	: AWizardCharacter()
+//{
+//
+//}
+//
+//AWizardCharacter::~AWizardCharacter() = default;
 
 
 // Called when the game starts or when spawned

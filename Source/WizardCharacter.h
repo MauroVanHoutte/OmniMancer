@@ -42,9 +42,9 @@ class UNREALPROJECT_API AWizardCharacter : public ABaseCharacter
 	GENERATED_BODY()
 
 public:
-	AWizardCharacter();
-	AWizardCharacter(FVTableHelper& Helper);
-	~AWizardCharacter();
+	//AWizardCharacter();
+	//AWizardCharacter(FVTableHelper& Helper);
+	//~AWizardCharacter();
 
 	virtual void Tick(float DeltaTime) override;
 
