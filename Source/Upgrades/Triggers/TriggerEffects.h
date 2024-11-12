@@ -14,6 +14,7 @@
 #include "SpellCasting/Spells/Vortex.h"
 #include "StatusEffects/StatusEffect.h"
 #include "StatusEffects/StatusEffectHandlingComponent.h"
+#include <Engine/DamageEvents.h>
 
 #include "TriggerEffects.generated.h"
 
@@ -67,7 +68,7 @@ public:
 			ConditionsModule->OnExecution(targetLocations, targetActors, Damage, Instigator);
 		}
 
-		EffectModule->ExecuteEffect(targetLocations, targetActors, Damage, Instigator);
+		EffectModule->ExecuteEffect(spell, targetLocations, targetActors, Damage, Instigator);
 	}
 
 private:
@@ -381,4 +382,31 @@ private:
 	UBaseHealthComponent* HealthComp;
 	UPROPERTY(EditDefaultsOnly)
 	float HealAmount = 10.f;
+};
+
+//
+UCLASS(BlueprintType, EditInlineNew)
+class UDamagePerHitActorOnSpellEndTrigger : public UBaseTriggerEffect
+{
+	GENERATED_BODY()
+public:
+	void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target, float Damage) override
+	{
+		spell->OnSpellDestroyedDelegate.AddDynamic(this, &UDamagePerHitActorOnSpellEndTrigger::OnSpellEnd);
+	}
+
+private:
+	UFUNCTION()
+	void OnSpellEnd(class ABaseSpell* Spell)
+	{
+		TArray<AActor*>& HitActors = Spell->GetHitActorsRef();
+		float TotalDamage = DamagePerTarget * HitActors.Num();
+		for (AActor* Actor : HitActors)
+		{
+			Actor->TakeDamage(TotalDamage, FDamageEvent{}, Instigator->GetInstigatorController(), Instigator);
+		}
+	}
+
+	UPROPERTY(EditDefaultsOnly)
+	float DamagePerTarget = 1.f;
 };

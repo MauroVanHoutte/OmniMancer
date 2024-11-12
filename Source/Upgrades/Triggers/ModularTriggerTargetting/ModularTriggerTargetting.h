@@ -6,7 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "ModularTriggerTargetting.generated.h"
 
-UCLASS(Abstract, EditInlineNew)
+UCLASS(Abstract, BlueprintType, EditInlineNew)
 class UModularTriggerTargettingBase : public UObject
 {
 	GENERATED_BODY()
@@ -14,7 +14,7 @@ public:
 	virtual void GatherTargets(class AActor* inTriggerOwner, class ABaseSpell* inSpell, class AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<class AActor*>& outTargetActors) {};
 };
 
-UCLASS(Abstract, Blueprintable, EditInlineNew)
+UCLASS(Abstract, Blueprintable)
 class UBPModularTriggerTargettingBase : public UModularTriggerTargettingBase
 {
 	GENERATED_BODY()
@@ -25,7 +25,7 @@ public:
 	void BP_GatherTargets(class AActor* inTriggerOwner, class ABaseSpell* inSpell, class AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<class AActor*>& outTargetActors);
 };
 
-UCLASS(BlueprintType, EditInlineNew)
+UCLASS()
 class UTargetHitActor : public UModularTriggerTargettingBase
 {
 	GENERATED_BODY()
@@ -33,7 +33,7 @@ public:
 	virtual void GatherTargets(class AActor* inTriggerOwner, class ABaseSpell* inSpell, class AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<class AActor*>& outTargetActors) override;
 };
 
-UCLASS(BlueprintType, EditInlineNew)
+UCLASS()
 class UTargetHitActorLocation : public UModularTriggerTargettingBase
 {
 	GENERATED_BODY()
@@ -41,7 +41,7 @@ public:
 	virtual void GatherTargets(class AActor* inTriggerOwner, class ABaseSpell* inSpell, class AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<class AActor*>& outTargetActors) override;
 };
 
-UCLASS(BlueprintType, EditInlineNew)
+UCLASS()
 class UTargetActorsProximateToTarget : public UModularTriggerTargettingBase
 {
 	GENERATED_BODY()
@@ -55,7 +55,7 @@ private:
 	bool bCheckAffiliation = true;
 };
 
-UCLASS(BlueprintType, EditInlineNew)
+UCLASS()
 class UTargetActorsProximateToOwner : public UModularTriggerTargettingBase
 {
 	GENERATED_BODY()
@@ -67,4 +67,12 @@ private:
 	float Radius = 400.f;
 	UPROPERTY(EditDefaultsOnly)
 	bool bCheckAffiliation = true;
+};
+
+UCLASS()
+class UTargetHitActors : public UModularTriggerTargettingBase
+{
+	GENERATED_BODY()
+public:
+	virtual void GatherTargets(class AActor* inTriggerOwner, class ABaseSpell* inSpell, class AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<class AActor*>& outTargetActors) override;
 };

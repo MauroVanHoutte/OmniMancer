@@ -4,6 +4,7 @@
 #include "ModularTriggerTargetting.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include "Health/AffiliationComponent.h"
+#include "SpellCasting/Spells/BaseSpell.h"
 
 void UBPModularTriggerTargettingBase::GatherTargets(AActor* inTriggerOwner, ABaseSpell* inSpell, AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<AActor*>& outTargetActors)
 {
@@ -50,4 +51,9 @@ void UTargetActorsProximateToOwner::GatherTargets(AActor* inTriggerOwner, ABaseS
 				return TriggerAffiliation && ActorAffiliation && ActorAffiliation->GetAffiliation() == TriggerAffiliation->GetAffiliation();
 			});
 	}
+}
+
+void UTargetHitActors::GatherTargets(AActor* inTriggerOwner, ABaseSpell* inSpell, AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<class AActor*>& outTargetActors)
+{
+	outTargetActors = inSpell->GetHitActorsRef();
 }
