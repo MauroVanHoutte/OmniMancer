@@ -8,7 +8,8 @@
 
 void UMortarAttackObject::OnEndPlay()
 {
-	OwningActor->GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+	if (IsValid(GetWorld()))
+		GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 }
 
 bool UMortarAttackObject::AreAttackRequirementsMet(AActor* Target)
@@ -18,9 +19,9 @@ bool UMortarAttackObject::AreAttackRequirementsMet(AActor* Target)
 	return DistSquared < AttackRange * AttackRange;
 }
 
-void UMortarAttackObject::InitiateAttack(AActor* Target)
+void UMortarAttackObject::InitiateAttack(AActor* Target, const FVector& Location)
 {
-	Super::InitiateAttack(Target);
+	Super::InitiateAttack(Target, Location);
 
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	if (!TimerManager.IsTimerActive(TimerHandle))
@@ -39,15 +40,17 @@ void UMortarAttackObject::InterruptAttack()
 
 void UMortarAttackObject::FireProjectile()
 {
+	FVector FinalTargetLocation = bUseLocationTarget ? TargetLocation : TargetActor->GetActorLocation();
+
 	FVector OutVelocity;
-	UGameplayStatics::FSuggestProjectileVelocityParameters Params{GetWorld(), OwningActor->GetActorLocation(), TargetActor->GetActorLocation(), ProjectileSpeed};
+	UGameplayStatics::FSuggestProjectileVelocityParameters Params{GetWorld(), OwningActor->GetActorLocation(), FinalTargetLocation, ProjectileSpeed};
 	Params.bFavorHighArc = true;
 	Params.TraceOption = ESuggestProjVelocityTraceOption::DoNotTrace;
 	UGameplayStatics::SuggestProjectileVelocity(Params, OutVelocity);
 
 	float GravityZ = GetWorld()->GetGravityZ();
 	
-	ASpellIndicator* Indicator = GetWorld()->SpawnActor<ASpellIndicator>(IndicatorClass, TargetActor->GetActorLocation(), FRotator(0));
+	ASpellIndicator* Indicator = GetWorld()->SpawnActor<ASpellIndicator>(IndicatorClass, FinalTargetLocation, FRotator(0));
 	Indicator->StartCircleIndicator(FVector(IndicatorScale, IndicatorScale, 1), 2*OutVelocity.Z/-GravityZ);
 
 	FActorSpawnParameters SpawnParams;
@@ -68,5 +71,5 @@ void UMortarAttackObject::FireProjectile()
 void UMortarAttackObject::CooldownCompleted()
 {
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
-	OnAttackComponentCompletedDelegate.Broadcast(this);
+	OnAttackCompletedDelegate.Broadcast(this);
 }

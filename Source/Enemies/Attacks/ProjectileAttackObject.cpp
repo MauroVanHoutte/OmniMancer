@@ -6,7 +6,8 @@
 
 void UProjectileAttackObject::OnEndPlay()
 {
-	OwningActor->GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+	if (IsValid(GetWorld()))
+		GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 }
 
 bool UProjectileAttackObject::AreAttackRequirementsMet(AActor* Target)
@@ -25,9 +26,9 @@ bool UProjectileAttackObject::AreAttackRequirementsMet(AActor* Target)
 	return false;
 }
 
-void UProjectileAttackObject::InitiateAttack(AActor* Target)
+void UProjectileAttackObject::InitiateAttack(AActor* Target, const FVector& Location)
 {
-	Super::InitiateAttack(Target);
+	Super::InitiateAttack(Target, Location);
 
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	if (!TimerManager.IsTimerActive(TimerHandle))
@@ -56,7 +57,7 @@ void UProjectileAttackObject::FireProjectile()
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = OwningActor;
 	ABaseProjectile* Projectile = GetWorld()->SpawnActor<ABaseProjectile>(*ProjectileClass, OwningActor->GetActorLocation(), FRotator(), SpawnParams);
-	Projectile->InitSpell(TargetActor->GetActorLocation(), Cast<APawn>(OwningActor));
+	Projectile->InitSpell(bUseLocationTarget ? TargetLocation : TargetActor->GetActorLocation(), Cast<APawn>(OwningActor));
 
 	if (ProjectileDamageOverride > 0)
 	{
@@ -72,5 +73,5 @@ void UProjectileAttackObject::FireProjectile()
 void UProjectileAttackObject::CooldownCompleted()
 {
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
-	OnAttackComponentCompletedDelegate.Broadcast(this);
+	OnAttackCompletedDelegate.Broadcast(this);
 }

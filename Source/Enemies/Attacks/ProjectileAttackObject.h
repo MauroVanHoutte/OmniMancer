@@ -18,7 +18,7 @@ public:
 	virtual void OnEndPlay() override;
 
 	virtual bool AreAttackRequirementsMet(AActor* Target) override;
-	virtual void InitiateAttack(AActor* Target) override;
+	virtual void InitiateAttack(AActor* Target, const FVector& Location) override;
 
 protected:
 	virtual void InterruptAttack() override;
