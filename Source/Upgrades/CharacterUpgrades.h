@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "StatusEffects/StatusEffect.h"
 #include "TriggerHandlingComponent.h"
+#include "SpellCasting/Elements.h"
 #include "CharacterUpgrades.generated.h"
 
 //Upgrade Base
@@ -38,23 +39,6 @@ private:
 	virtual FFormatNamedArguments GetDescriptionArguments() { return FFormatNamedArguments(); };
 };
 
-UCLASS(BlueprintType, EditInlineNew)
-class UNREALPROJECT_API USpellUpgrade : public UCharacterUpgrade
-{
-	GENERATED_BODY()
-public:
-	virtual void Apply(AActor* character) override;
-	virtual void Remove(AActor* character) override;
-
-private:
-	virtual FFormatNamedArguments GetDescriptionArguments() override;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess = true))
-	TArray<TSubclassOf<class ABaseSpell>> ApplicableSpells;
-	UPROPERTY(EditDefaultsOnly, Instanced)
-	class UBaseSpellUpgradeEffect* UpgradeEffect;
-};
-
 //Triggered Effects
 UCLASS(BlueprintType, EditInlineNew)
 class UNREALPROJECT_API UTriggerUpgrade : public UCharacterUpgrade
@@ -83,6 +67,26 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly, Instanced)
 	class UBaseStatBoost* StatBoost;
+};
+
+//Cooldown upgrade
+UCLASS(BlueprintType, EditInlineNew)
+class UNREALPROJECT_API UCooldownMultiplierUpgrade : public UCharacterUpgrade
+{
+	GENERATED_BODY()
+public:
+	virtual void Apply(AActor* character) override;
+	virtual void Remove(AActor* character) override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float Multiplier = 0.8f;
+	UPROPERTY(EditDefaultsOnly)
+	bool bSpellMultiplier = true;
+	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bSpellMultiplier"))
+	TSubclassOf<class ABaseSpell> SpellType;
+	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "!bSpellMultiplier"))
+	WizardElement Element = WizardElement::None;
 };
 
 //Repeating effect

@@ -5,8 +5,7 @@
 #include "Health/Healthbar.h"
 #include "Health/HealthManager.h"
 #include "RepeatingEffects/RepeatingEffect.h"
-#include "SpellUpgrades/BaseSpelUpgrade.h"
-#include "SpellUpgradesComponent.h"
+#include "SpellCasting/ElementManipulationComponent.h"
 #include "StatUpgrades/StatBoosts.h"
 #include "Triggers/TriggerEffects.h"
 #include "TriggerHandlingComponent.h"
@@ -14,45 +13,6 @@
 bool UCharacterUpgrade::CanBeApplied()
 {
 	return CurrentLevel < MaxLevel;
-}
-
-void USpellUpgrade::Apply(AActor* character)
-{
-	USpellUpgradesComponent* SpellUpgradesComp = character->GetComponentByClass<USpellUpgradesComponent>();
-
-	UpgradeEffect->CurrentLevel++;
-
-	if (IsValid(SpellUpgradesComp))
-	{
-		for (const TSubclassOf<ABaseSpell>& SpellType : ApplicableSpells)
-		{
-			if (CurrentLevel == 1)
-			{
-				SpellUpgradesComp->RegisterSpellUpgrade(SpellType, UpgradeEffect);
-			}
-
-			UpgradeEffect->OnUpgradeRegistered(SpellUpgradesComp, SpellType);
-		}
-	}
-}
-
-void USpellUpgrade::Remove(AActor* character)
-{
-	USpellUpgradesComponent* SpellUpgradesComp = character->GetComponentByClass<USpellUpgradesComponent>();
-	if (IsValid(SpellUpgradesComp))
-	{
-		for (const TSubclassOf<ABaseSpell>& SpellType : ApplicableSpells)
-		{
-			SpellUpgradesComp->RemoveSpellUpgrade(SpellType, UpgradeEffect);
-		}
-	}
-
-	CurrentLevel = 0;
-}
-
-FFormatNamedArguments USpellUpgrade::GetDescriptionArguments()
-{
-	return UpgradeEffect->GetDescriptionArguments();
 }
 
 void UTriggerUpgrade::Apply(AActor* character)
@@ -81,6 +41,38 @@ void UStatUpgrade::Remove(AActor* character)
 void UStatUpgrade::Apply(AActor* character)
 {
 
+}
+
+void UCooldownMultiplierUpgrade::Apply(AActor* character)
+{
+	UElementManipulationComponent* SpellCasting = character->GetComponentByClass<UElementManipulationComponent>();
+	if (IsValid(SpellCasting))
+	{
+		if (bSpellMultiplier)
+		{
+			SpellCasting->AddCooldownMultiplier(SpellType, Multiplier);
+		}
+		else
+		{
+			SpellCasting->AddCooldownMultiplierForElement(Element, Multiplier);
+		}
+	}
+}
+
+void UCooldownMultiplierUpgrade::Remove(AActor* character)
+{
+	UElementManipulationComponent* SpellCasting = character->GetComponentByClass<UElementManipulationComponent>();
+	if (IsValid(SpellCasting))
+	{
+		if (bSpellMultiplier)
+		{
+			SpellCasting->AddCooldownMultiplier(SpellType, 1/Multiplier);
+		}
+		else
+		{
+			SpellCasting->AddCooldownMultiplierForElement(Element, 1/Multiplier);
+		}
+	}
 }
 
 void URepeatingEffectUpgrade::Apply(AActor* character)
