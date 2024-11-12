@@ -17,8 +17,6 @@ void UCharacterUpgradesComponent::BeginPlay()
 		for (const UCharacterUpgrade* Upgrade : kvp.Value->Upgrades)
 		{
 			UCharacterUpgrade* UpgradeDuplicate = DuplicateObject(Upgrade, GetOwner());
-			USpellUpgrade* SpellUpgradeDuplicate = Cast<USpellUpgrade>(UpgradeDuplicate);
-
 			UpgradesArray.Upgrades.Add(UpgradeDuplicate);
 		}
 	}
