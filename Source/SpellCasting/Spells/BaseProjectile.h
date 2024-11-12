@@ -69,6 +69,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float PushbackForce = 1500.f;
 
+	UPROPERTY(EditDefaultsOnly)
+	bool bFireHorizontally = true;
+
 	//Explosion
 	bool Explosive = false;
 	float ExplosionRadius = 0;

@@ -26,7 +26,7 @@ ABaseProjectile::ABaseProjectile()
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
 	ProjectileMovement->SetUpdatedComponent(CollisionComponent);
-	ProjectileMovement->InitialSpeed = MaxSpeed;
+	ProjectileMovement->InitialSpeed = 0;
 	ProjectileMovement->MaxSpeed = MaxSpeed;
 	ProjectileMovement->ProjectileGravityScale = 0.f;
 
@@ -78,14 +78,14 @@ void ABaseProjectile::InitSpell(const FVector& targetLocation, APawn* caster)
 	//SetDamageMultiplier(wizard->GetBaseProjecileDamageMultiplier() * wizard->GetSpellDamageMultiplier());
 	//TotalBounces = wizard->GetBounces();
 	FVector LaunchDirection = (targetLocation - GetActorLocation());
-	LaunchDirection.Z = 0;
+	if (bFireHorizontally) LaunchDirection.Z = 0;
 	LaunchDirection.Normalize();
 	FireInDirection(LaunchDirection);
 }
 
 void ABaseProjectile::FireInDirection(const FVector& direction)
 {
-	ProjectileMovement->Velocity = direction * ProjectileMovement->InitialSpeed;
+	ProjectileMovement->Velocity = direction * MaxSpeed;
 	SetActorRotation(direction.Rotation());
 }
 
