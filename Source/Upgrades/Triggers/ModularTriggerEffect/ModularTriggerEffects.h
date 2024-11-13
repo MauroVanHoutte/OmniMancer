@@ -153,3 +153,15 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	int ExtraBounces = 1;
 };
+
+UCLASS()
+class USummonTriggerEffect : public UModularTriggerEffectBase
+{
+	GENERATED_BODY()
+public:
+	virtual void ExecuteEffect(class ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<APawn> SummonedClass;
+};

@@ -173,3 +173,11 @@ void UAddBouncesTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const 
 		Projectile->SetBounces(Projectile->GetBounces() + ExtraBounces);
 	}
 }
+
+void USummonTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, APawn* instigator)
+{
+	for (const FVector& Location : targetLocations)
+	{
+		GetWorld()->SpawnActor<AActor>(*SummonedClass, Location, FRotator(0, 0, 0));
+	}
+}
