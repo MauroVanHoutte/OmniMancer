@@ -18,6 +18,8 @@ void UCharacterUpgradesComponent::BeginPlay()
 		{
 			UCharacterUpgrade* UpgradeDuplicate = DuplicateObject(Upgrade, GetOwner());
 			UpgradesArray.Upgrades.Add(UpgradeDuplicate);
+			if (UpgradeDuplicate->bStartActive)
+				ApplyUpgrade(UpgradeDuplicate);
 		}
 	}
 

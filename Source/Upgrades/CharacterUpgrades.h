@@ -34,6 +34,8 @@ public:
 	int CurrentLevel = 0;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int MaxLevel = 1;
+	UPROPERTY(EditDefaultsOnly)
+	bool bStartActive = false;
 
 private:
 	virtual FFormatNamedArguments GetDescriptionArguments() { return FFormatNamedArguments(); };
