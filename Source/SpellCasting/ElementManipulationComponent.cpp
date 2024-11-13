@@ -250,7 +250,7 @@ float UElementManipulationComponent::CalculateSpellCooldown(TSubclassOf<class AB
 		for (const WizardElement& ComponentElement : SpellConfig->ElementCombination)
 		{
 			if (LastAddedElement != ComponentElement)
-				ElementCooldownMultiplier *= ElementCooldownMultipliers[ComponentElement];
+				ElementCooldownMultiplier *= ElementCooldownMultipliers.FindOrAdd(ComponentElement, 1);
 
 			LastAddedElement = ComponentElement;
 		}
