@@ -16,6 +16,7 @@ void UDecayingHealthComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 			CurrentHealth = FMath::Clamp(CurrentHealth, 0, MaxHealth);
 			bIsDepleted = true;
 			bIsDecaying = false;
+			OnFatalDamageTakenDelegate.Broadcast(this, 0, 0, nullptr, nullptr, nullptr);
 		}
 		
 		if (BoundHealthbar)

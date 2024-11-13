@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(meta = (BlueprintSpawnableComponent))
 class UNREALPROJECT_API UDecayingHealthComponent : public UBaseHealthComponent
 {
 	GENERATED_BODY()
