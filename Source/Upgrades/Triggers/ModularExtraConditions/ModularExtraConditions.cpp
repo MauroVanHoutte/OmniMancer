@@ -79,3 +79,14 @@ bool UTargetInRangeCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* s
 
 	return FVector::DistSquared(triggerOwner->GetActorLocation(), target->GetActorLocation()) < Range * Range;
 }
+
+bool URandomChanceCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
+{
+	return FMath::FRand() <= Chance;
+}
+
+bool UNthActivationCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
+{
+	ActivatonCount++;
+	return ActivatonCount % ActivationInterval == 0;
+}

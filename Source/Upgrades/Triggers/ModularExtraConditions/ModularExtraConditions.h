@@ -117,3 +117,29 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float Range = 700.f;
 };
+
+UCLASS(BlueprintType, EditInlineNew)
+class URandomChanceCondition : public UModularExtraConditionsBase
+{
+	GENERATED_BODY()
+public:
+	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float Chance = 0.7;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UNthActivationCondition : public UModularExtraConditionsBase
+{
+	GENERATED_BODY()
+public:
+	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
+
+private:
+	//Condition is satisfied every N activations
+	UPROPERTY(EditDefaultsOnly)
+	int ActivationInterval = 4;
+	int ActivatonCount = 0;
+};
