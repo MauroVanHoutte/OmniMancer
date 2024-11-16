@@ -83,6 +83,7 @@ void UChargeAttackObject::OnHitTriggered(AActor* HitActor, class UPrimitiveCompo
 	if (HurtBoxes.Contains(ColliderComponent))
 	{
 		HitActors.Add(HitActor);
+		OnAttackHitDelegate.Broadcast(this, OwningActor, HitActor);
 		FDamageEvent DamageEvent;
 		HitActor->TakeDamage(Damage, DamageEvent, OwningActor->GetInstigatorController(), OwningActor);
 	}

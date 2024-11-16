@@ -26,6 +26,8 @@ protected:
 private:
 	void FireProjectile();
 	void CooldownCompleted();
+	UFUNCTION()
+	void OnProjectileHit(class ABaseSpell* Spell, class AActor* HitActor);
 
 	UPROPERTY(EditDefaultsOnly, NoClear)
 	TSubclassOf<class ABaseProjectile> ProjectileClass;

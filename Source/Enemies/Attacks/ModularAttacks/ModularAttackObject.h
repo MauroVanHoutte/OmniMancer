@@ -27,7 +27,8 @@ public:
 
 private:
 	virtual void InterruptAttack() override;
-
+	UFUNCTION()
+	void OnEffectHit(class UModularAttackEffectBase* Effect, class AActor* AttackActor, class AActor* HitActor);
 	UFUNCTION()
 	void OnEffectCompleted(class UModularAttackEffectBase* Effect);
 

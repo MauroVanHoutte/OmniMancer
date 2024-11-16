@@ -7,6 +7,7 @@
 #include "MovesetComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoveComponentCompletedSignature, class UMovesetComponent*, MoveComponent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMoveComponentHitSignature, class UMovesetComponent*, MoveComponent, class AActor*, AttackActor, class AActor*, HitActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoveComponentInterruptedSignature, class UMovesetComponent*, MoveComponent);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -37,6 +38,8 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FMoveComponentCompletedSignature OnAttackCompletedDelegate;
 	UPROPERTY(BlueprintAssignable)
+	FMoveComponentHitSignature OnAttackHitDelegate;
+	UPROPERTY(BlueprintAssignable)
 	FMoveComponentInterruptedSignature OnAttackInterruptedDelegate;
 
 protected:
@@ -47,6 +50,8 @@ protected:
 private:
 	UFUNCTION()
 	void OnMoveComponentCompleted(class UBaseMove* Move);
+	UFUNCTION()
+	void OnMoveComponentHit(class UBaseMove* Move, class AActor* AttackActor, class AActor* HitActor);
 	UFUNCTION()
 	void OnMoveComponentInterrupted(class UBaseMove* Move);
 

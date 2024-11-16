@@ -97,6 +97,7 @@ void UMovesetComponent::BeginPlay()
 	{ 
 		Move->OnBeginPlay(GetOwner());
 		Move->OnMoveCompletedDelegate.AddDynamic(this, &UMovesetComponent::OnMoveComponentCompleted);
+		Move->OnMoveHitDelegate.AddDynamic(this, &UMovesetComponent::OnMoveComponentHit);
 		Move->OnMoveInterruptedDelegate.AddDynamic(this, &UMovesetComponent::OnMoveComponentInterrupted);
 	}
 }
@@ -114,6 +115,11 @@ void UMovesetComponent::OnMoveComponentCompleted(UBaseMove* Move)
 {
 	ActiveMove = nullptr;
 	OnAttackCompletedDelegate.Broadcast(this);
+}
+
+void UMovesetComponent::OnMoveComponentHit(UBaseMove* Move, AActor* AttackActor, AActor* HitActor)
+{
+	OnAttackHitDelegate.Broadcast(this, AttackActor, HitActor);
 }
 
 void UMovesetComponent::OnMoveComponentInterrupted(UBaseMove* Move)

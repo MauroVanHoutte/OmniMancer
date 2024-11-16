@@ -54,10 +54,9 @@ void UProjectileAttackObject::InterruptAttack()
 
 void UProjectileAttackObject::FireProjectile()
 {
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = OwningActor;
-	ABaseProjectile* Projectile = GetWorld()->SpawnActor<ABaseProjectile>(*ProjectileClass, OwningActor->GetActorLocation(), FRotator(), SpawnParams);
-	Projectile->InitSpell(bUseLocationTarget ? TargetLocation : TargetActor->GetActorLocation(), Cast<APawn>(OwningActor));
+	ABaseProjectile* Projectile = GetWorld()->SpawnActor<ABaseProjectile>(*ProjectileClass, OwningActor->GetActorLocation(), FRotator());
+	Projectile->InitSpell(bUseLocationTarget ? TargetLocation : (IsValid(TargetActor) ? TargetActor->GetActorLocation() : FVector(0, 0, 0)), Cast<APawn>(OwningActor));
+	Projectile->OnSpellHitDelegate.AddDynamic(this, &UProjectileAttackObject::OnProjectileHit);
 
 	if (ProjectileDamageOverride > 0)
 	{
@@ -74,4 +73,9 @@ void UProjectileAttackObject::CooldownCompleted()
 {
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 	OnAttackCompletedDelegate.Broadcast(this);
+}
+
+void UProjectileAttackObject::OnProjectileHit(ABaseSpell* Spell, AActor* HitActor)
+{
+	OnAttackHitDelegate.Broadcast(this, Spell, HitActor);
 }

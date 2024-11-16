@@ -7,6 +7,7 @@
 #include "BaseAttackObject.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAttackComponentCompletedSignature, class UBaseAttackObject*, AttackObject);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FAttackComponentHitSignature, class UBaseAttackObject*, AttackObject, class AActor*, AttackActor, class AActor*, HitActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAttackComponentInterruptedSignature, class UBaseAttackObject*, AttackObject);
 
 UCLASS(Abstract, Blueprintable, BlueprintType, EditInlineNew)
@@ -36,6 +37,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FAttackComponentCompletedSignature OnAttackCompletedDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FAttackComponentHitSignature OnAttackHitDelegate;
 	UPROPERTY(BlueprintAssignable)
 	FAttackComponentInterruptedSignature OnAttackInterruptedDelegate;
 

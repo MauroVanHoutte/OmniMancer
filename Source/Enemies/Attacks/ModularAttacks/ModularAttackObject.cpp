@@ -19,6 +19,7 @@ void UModularAttackObject::OnBeginPlay(AActor* Owner)
 	if (IsValid(AttackEffect))
 	{
 		AttackEffect->OnBeginPlay(Owner);
+		AttackEffect->OnAttackEffectHitDelegate.AddDynamic(this, &UModularAttackObject::OnEffectHit);
 		AttackEffect->OnAttackCompletedDelegate.AddDynamic(this, &UModularAttackObject::OnEffectCompleted);
 	}
 }
@@ -69,6 +70,11 @@ void UModularAttackObject::InterruptAttack()
 	{
 		AttackEffect->InterruptEffect();
 	}
+}
+
+void UModularAttackObject::OnEffectHit(UModularAttackEffectBase* Effect, AActor* AttackActor, AActor* HitActor)
+{
+	OnAttackHitDelegate.Broadcast(this, AttackActor, HitActor);
 }
 
 void UModularAttackObject::OnEffectCompleted(class UModularAttackEffectBase* Effect)

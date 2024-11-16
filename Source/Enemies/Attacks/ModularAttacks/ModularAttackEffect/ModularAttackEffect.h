@@ -6,6 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "ModularAttackEffect.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FAttackEffectHitSignature, class UModularAttackEffectBase*, AttackEffect, class AActor*, AttackActor, class AActor*, HitActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAttackEffectCompletedSignature, class UModularAttackEffectBase*, AttackEffect);
 
 /**
@@ -28,6 +29,7 @@ public:
 
 	virtual void OnAttackCompleted();
 
+	FAttackEffectHitSignature OnAttackEffectHitDelegate;
 	FAttackEffectCompletedSignature OnAttackCompletedDelegate;
 
 protected:

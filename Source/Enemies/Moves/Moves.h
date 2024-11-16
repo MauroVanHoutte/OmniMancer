@@ -7,6 +7,7 @@
 #include "Moves.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoveCompletedSignature, class UBaseMove*, Move);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMoveHitSignature, class UBaseMove*, Move, class AActor*, AttackActor, class AActor*, HitActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoveInterruptedSignature, class UBaseMove*, Move);
 
 UCLASS(Abstract, EditInlineNew, BlueprintType, Blueprintable)
@@ -36,6 +37,7 @@ public:
 	virtual bool WasActorHitBefore(AActor* TestActor, class UPrimitiveComponent* ColliderComponent) { return false; };
 
 	FMoveCompletedSignature OnMoveCompletedDelegate;
+	FMoveHitSignature OnMoveHitDelegate;
 	FMoveInterruptedSignature OnMoveInterruptedDelegate;
 
 protected:
@@ -67,6 +69,8 @@ private:
 	UFUNCTION()
 	void OnAttackComponentCompleted(class UBaseAttackObject* Attack);
 	UFUNCTION()
+	void OnAttackHit(class UBaseAttackObject* Attack, class AActor* AttackActor, class AActor* HitActor);
+	UFUNCTION()
 	void OnAttackComponentInterrupted(class UBaseAttackObject* Attack);
 
 	UPROPERTY(EditAnywhere)
@@ -97,6 +101,8 @@ public:
 private:
 	UFUNCTION()
 	void OnMoveComponentCompleted(class UBaseMove* Move);
+	UFUNCTION()
+	void OnMoveHit(class UBaseMove* Move, class AActor* AttackActor, class AActor* HitActor);
 
 	UPROPERTY(EditAnywhere)
 	bool bCheckFirstMoveRequirements = false;
@@ -130,6 +136,8 @@ public:
 private:
 	UFUNCTION()
 	void OnMoveComponentCompleted(class UBaseMove* Move);
+	UFUNCTION()
+	void OnMoveHit(class UBaseMove* Move, class AActor* AttackActor, class AActor* HitActor);
 
 	UPROPERTY(Instanced, EditAnywhere)
 	TArray<UBaseMove*> Moves;

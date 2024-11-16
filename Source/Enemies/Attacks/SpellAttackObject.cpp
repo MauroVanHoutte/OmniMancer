@@ -75,5 +75,5 @@ void USpellAttackObject::CooldownCompleted()
 
 void USpellAttackObject::OnSpellHit(ABaseSpell* Spell, AActor* HitActor)
 {
-	OnSpellHitDelegate.Broadcast(Spell, HitActor);
+	OnAttackHitDelegate.Broadcast(this, Spell, HitActor);
 }

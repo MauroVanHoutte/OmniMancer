@@ -42,11 +42,16 @@ void USpellCastAttackEffect::InterruptEffect()
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 }
 
+void USpellCastAttackEffect::OnSpellHit(ABaseSpell* Spell, AActor* HitActor)
+{
+	OnAttackEffectHitDelegate.Broadcast(this, Spell, HitActor);
+}
+
 void USpellCastAttackEffect::CastSpell()
 {
 	if (bAimDuringCasting)
 	{
-		GatherTargets(TargettedActor->GetActorLocation(), TargetActors, TargetLocations);
+		GatherTargets(IsValid(TargettedActor) ? TargettedActor->GetActorLocation() : FVector(0, 0, 0), TargetActors, TargetLocations);
 	}
 
 	if (bUseActorsAsTarget)
@@ -70,6 +75,7 @@ void USpellCastAttackEffect::CastSpell()
 			ABaseSpell* Spell = GetWorld()->SpawnActor<ABaseSpell>(*SpellClass, OwningActor->GetActorLocation(), FRotator(0, 0, 0), Params);
 			if (IsValid(Spell))
 			{
+				Spell->OnSpellHitDelegate.AddDynamic(this, &USpellCastAttackEffect::OnSpellHit);
 				Spell->InitSpell(Target, Cast<APawn>(OwningActor));
 			}
 		}
@@ -107,6 +113,7 @@ void USpellCastAttackEffect::CastSingleSpell()
 		ABaseSpell* Spell = GetWorld()->SpawnActor<ABaseSpell>(*SpellClass, OwningActor->GetActorLocation(), FRotator(0, 0, 0), Params);
 		if (IsValid(Spell))
 		{
+			Spell->OnSpellHitDelegate.AddDynamic(this, &USpellCastAttackEffect::OnSpellHit);
 			Spell->InitSpell(Target, Cast<APawn>(OwningActor));
 		}
 

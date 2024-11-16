@@ -49,6 +49,10 @@ void UDelayedProjectilesAttackObject::InterruptAttack()
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, Delegate, FiringInterval, !bFireSimultaneously, FiringDelay);
 }
 
+void UDelayedProjectilesAttackObject::OnProjectileHit(ABaseSpell* Spell, AActor* HitActor)
+{
+}
+
 void UDelayedProjectilesAttackObject::StoreProjectile()
 {
 	FVector LocalPosition = LocalProjectilePositions.Pop();
@@ -86,6 +90,7 @@ void UDelayedProjectilesAttackObject::FireProjectile()
 		Projectile->SetActorEnableCollision(true);
 		Projectile->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		Projectile->InitSpell(TargetActor->GetActorLocation(), Cast<APawn>(OwningActor));
+		Projectile->OnSpellHitDelegate.AddDynamic(this, &UDelayedProjectilesAttackObject::OnProjectileHit);
 	}
 
 	if (StoredProjectiles.IsEmpty())

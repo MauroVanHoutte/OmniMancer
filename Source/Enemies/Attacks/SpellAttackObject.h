@@ -6,8 +6,6 @@
 #include "Enemies/Attacks/BaseAttackObject.h"
 #include "SpellAttackObject.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSpellAttackHitSignature, ABaseSpell*, Spell, AActor*, HitActor);
-
 /**
  * 
  */
@@ -17,10 +15,7 @@ class UNREALPROJECT_API USpellAttackObject : public UBaseAttackObject
 	GENERATED_BODY()
 public:
 	virtual void OnEndPlay() override;
-
 	virtual void InitiateAttack(AActor* Target, const FVector& Location) override;
-
-	FOnSpellAttackHitSignature OnSpellHitDelegate;
 
 protected:
 	virtual void InterruptAttack() override;

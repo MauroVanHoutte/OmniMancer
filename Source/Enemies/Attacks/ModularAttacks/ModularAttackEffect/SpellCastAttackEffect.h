@@ -22,6 +22,8 @@ public:
 
 private:
 	UFUNCTION()
+	void OnSpellHit(class ABaseSpell* Spell, class AActor* HitActor);
+	UFUNCTION()
 	void CastSpell();
 	UFUNCTION()
 	void CastSingleSpell();

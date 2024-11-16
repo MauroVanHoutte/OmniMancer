@@ -22,6 +22,7 @@ void UAttackMove::OnBeginPlay(AActor* Owner)
 
     AttackObject->OnBeginPlay(Owner);
     AttackObject->OnAttackCompletedDelegate.AddDynamic(this, &UAttackMove::OnAttackComponentCompleted);
+    AttackObject->OnAttackHitDelegate.AddDynamic(this, &UAttackMove::OnAttackHit);
     AttackObject->OnAttackInterruptedDelegate.AddDynamic(this, &UAttackMove::OnAttackComponentInterrupted);
 }
 
@@ -66,6 +67,11 @@ void UAttackMove::OnAttackComponentCompleted(UBaseAttackObject* Attack)
     OnMoveCompletedDelegate.Broadcast(this);
 }
 
+void UAttackMove::OnAttackHit(UBaseAttackObject* Attack, AActor* AttackActor, AActor* HitActor)
+{
+    OnMoveHitDelegate.Broadcast(this, AttackActor, HitActor);
+}
+
 void UAttackMove::OnAttackComponentInterrupted(UBaseAttackObject* Attack)
 {
     OnMoveInterruptedDelegate.Broadcast(this);
@@ -88,6 +94,7 @@ void UMoveSequence::OnBeginPlay(AActor* Owner)
     for (UBaseMove* Move : MoveSequence)
     {
         Move->OnBeginPlay(Owner);
+        Move->OnMoveHitDelegate.AddDynamic(this, &UMoveSequence::OnMoveHit);
     }
 }
 
@@ -158,6 +165,10 @@ void UMoveSequence::OnMoveComponentCompleted(UBaseMove* Move)
     ActiveMoveIdx = -1;
     OnMoveCompletedDelegate.Broadcast(this);
 }
+void UMoveSequence::OnMoveHit(UBaseMove* Move, AActor* AttackActor, AActor* HitActor)
+{
+    OnMoveHitDelegate.Broadcast(Move, AttackActor, HitActor);
+}
 //~UMoveSequence
 
 //UParallelMoves
@@ -176,6 +187,7 @@ void UParallelMoves::OnBeginPlay(AActor* Owner)
     for (UBaseMove* Move : Moves)
     {
         Move->OnBeginPlay(Owner);
+        Move->OnMoveHitDelegate.AddDynamic(this, &UParallelMoves::OnMoveHit);
     }
 }
 
@@ -225,5 +237,10 @@ void UParallelMoves::OnMoveComponentCompleted(UBaseMove* Move)
     {
         OnMoveCompletedDelegate.Broadcast(this);
     }
+}
+
+void UParallelMoves::OnMoveHit(UBaseMove* Move, AActor* AttackActor, AActor* HitActor)
+{
+    OnMoveHitDelegate.Broadcast(Move, AttackActor, HitActor);
 }
 //~UParallelMoves

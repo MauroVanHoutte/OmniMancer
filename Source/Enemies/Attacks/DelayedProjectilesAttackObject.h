@@ -22,6 +22,8 @@ public:
 
 private:
 	virtual void InterruptAttack() override;
+	UFUNCTION()
+	void OnProjectileHit(class ABaseSpell* Spell, class AActor* HitActor);
 
 	UFUNCTION()
 	void StoreProjectile();
