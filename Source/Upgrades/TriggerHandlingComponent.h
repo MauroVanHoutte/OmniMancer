@@ -44,26 +44,26 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemoveTriggerEffect(TriggerCondition Condition, class UBaseTriggerEffect* TriggerEffect);
 	
-	void TriggerDamageDealt(AActor* DamageCause, AActor* DamagedActor, float Damage);
-	void TriggerEnemyKilled(AActor* DamageCause, AActor* KilledEnemy, float Damage);
+	UFUNCTION(BlueprintCallable)
+	virtual void TriggerDamageDealt(AActor* DamageCause, AActor* DamagedActor, float Damage);
+	UFUNCTION(BlueprintCallable)
+	virtual void TriggerEnemyKilled(AActor* DamageCause, AActor* KilledEnemy, float Damage);
+	UFUNCTION(BlueprintCallable)
+	virtual void TriggerSpellCasted(AActor* Caster, class ABaseSpell* Spell);
+	UFUNCTION(BlueprintCallable)
+	virtual void TriggerBasicAttackCasted(AActor* Caster, class ABaseSpell* Spell);
+	UFUNCTION(BlueprintCallable)
+	virtual void TriggerSpellHit(class ABaseSpell* Spell, AActor* HitActor);
+	UFUNCTION(BlueprintCallable)
+	virtual	void TriggerBasicAttackHit(class ABaseSpell* Spell, AActor* HitActor);
+	UFUNCTION(BlueprintCallable)
+	virtual void TriggerDamageTaken(class UBaseHealthComponent* DamagedComponent, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 protected:
 	virtual void BeginPlay() override;
-
-private:
-	UFUNCTION()
-	void TriggerSpellCasted(AActor* Caster, class ABaseSpell* Spell);
-	UFUNCTION()
-	void TriggerBasicAttackCasted(AActor* Caster, class ABaseSpell* Spell);
-	UFUNCTION()
-	void TriggerSpellHit(class ABaseSpell* Spell, AActor* HitActor);
-	UFUNCTION()
-	void TriggerBasicAttackHit(class ABaseSpell* Spell, AActor* HitActor);
-	UFUNCTION()
-	void TriggerDamageTaken(class UBaseHealthComponent* DamagedComponent, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 	void TriggerTriggerEffects(TriggerCondition Condition, ABaseSpell* Spell, AActor* Target, float Damage);
 
+private:
 	UPROPERTY(Transient)
 	TMap<TriggerCondition, FTriggerArray> TriggerEffects;
-	
 };
