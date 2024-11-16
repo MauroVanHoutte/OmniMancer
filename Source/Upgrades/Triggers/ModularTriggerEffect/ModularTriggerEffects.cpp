@@ -3,6 +3,7 @@
 
 #include "ModularTriggerEffects.h"
 #include <Engine/DamageEvents.h>
+#include "Health/AffiliationComponent.h"
 #include "Health/HealthManager.h"
 #include "SpellCasting/Spells/BaseProjectile.h"
 #include "SpellCasting/ElementManipulationComponent.h"
@@ -178,6 +179,34 @@ void USummonTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArr
 {
 	for (const FVector& Location : targetLocations)
 	{
-		GetWorld()->SpawnActor<AActor>(*SummonedClass, Location, FRotator(0, 0, 0));
+		FActorSpawnParameters Params{};
+		Params.Owner = instigator;
+		Params.Instigator = instigator;
+		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(*SummonedClass, Location, FRotator(0, 0, 0), Params);
+		UAffiliationComponent* Affiliation = SpawnedActor->GetComponentByClass<UAffiliationComponent>();
+		UAffiliationComponent* InstigatorAffiliation = IsValid(instigator) ? instigator->GetComponentByClass<UAffiliationComponent>() : nullptr;
+		if (IsValid(Affiliation) && IsValid(InstigatorAffiliation))
+		{
+			Affiliation->SetAffiliation(InstigatorAffiliation->GetAffiliation());
+		}
+
+		if (SummonLimit > 0)
+		{
+			SummonQueue.Enqueue(SpawnedActor);
+			if (QueueSize == SummonLimit)
+			{
+				AActor* OldSummon;
+				SummonQueue.Dequeue(OldSummon);
+				if (IsValid(OldSummon))
+				{
+					OldSummon->Destroy();
+				}
+			}
+			else
+			{
+				QueueSize++;
+			}
+		}
 	}
 }

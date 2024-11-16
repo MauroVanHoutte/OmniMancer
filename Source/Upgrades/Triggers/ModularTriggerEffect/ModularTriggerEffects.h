@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include <Containers/Queue.h>
 #include "UObject/NoExportTypes.h"
 #include "ModularTriggerEffects.generated.h"
 
@@ -164,4 +165,8 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<APawn> SummonedClass;
+	UPROPERTY(EditDefaultsOnly)
+	int SummonLimit = 5;
+	int QueueSize = 0;
+	TQueue<AActor*> SummonQueue;
 };
