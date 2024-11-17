@@ -50,10 +50,8 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	CompoundConditionOperation Operation;
 
-	UPROPERTY(EditDefaultsOnly, Instanced)
-	UModularExtraConditionsBase* ConditionOne;
-	UPROPERTY(EditDefaultsOnly, Instanced)
-	UModularExtraConditionsBase* ConditionTwo;
+	UPROPERTY(EditDefaultsOnly)
+	TArray<UModularExtraConditionsBase*> Conditions;
 };
 
 UCLASS(BlueprintType, EditInlineNew)

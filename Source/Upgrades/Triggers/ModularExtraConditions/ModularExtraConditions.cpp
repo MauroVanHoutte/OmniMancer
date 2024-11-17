@@ -7,16 +7,26 @@
 
 bool UCompoundModularCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
 {
-	bool CheckOne = ConditionOne->CheckCondition(triggerOwner, spell, target);
-	bool CheckTwo = ConditionTwo->CheckCondition(triggerOwner, spell, target);
-
 	switch (Operation)
 	{
 	case CompoundConditionOperation::AND:
-		return CheckOne && CheckTwo;
+		for (UModularExtraConditionsBase* Condition : Conditions)
+		{
+			if (!IsValid(Condition) || !Condition->CheckCondition(triggerOwner, spell, target))
+			{
+				return false;
+			}
+		}
+		return true;
 		break;
 	case CompoundConditionOperation::OR:
-		return CheckOne || CheckTwo;
+		for (UModularExtraConditionsBase* Condition : Conditions)
+		{
+			if (IsValid(Condition) && Condition->CheckCondition(triggerOwner, spell, target))
+			{
+				return true;
+			}
+		}
 		break;
 	default:
 		break;
@@ -26,8 +36,10 @@ bool UCompoundModularCondition::CheckCondition(AActor* triggerOwner, ABaseSpell*
 
 void UCompoundModularCondition::OnExecution(const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, APawn* instigator)
 {
-	ConditionOne->OnExecution(targetLocations, targetActors, Damage, instigator);
-	ConditionTwo->OnExecution(targetLocations, targetActors, Damage, instigator);
+	for (UModularExtraConditionsBase* Condition : Conditions)
+	{
+		Condition->OnExecution(targetLocations, targetActors, Damage, instigator);
+	}
 }
 
 bool USpellCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
