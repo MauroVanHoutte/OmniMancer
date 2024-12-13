@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include <Engine/EngineTypes.h>
 #include "CameraControllerComponent.generated.h"
 
 
@@ -21,6 +22,10 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+	void OnRootTransformUpdated(USceneComponent* UpdatedComponent, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport);
+	UFUNCTION()
+	void ReenableCameraLag();
+
 	UPROPERTY(EditDefaultsOnly)
 	float ActorToTargetLerp = 0.25f;
 

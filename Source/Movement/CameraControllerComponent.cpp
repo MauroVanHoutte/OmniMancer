@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Movement/CameraControllerComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 // Sets default values for this component's properties
 UCameraControllerComponent::UCameraControllerComponent()
@@ -17,6 +17,7 @@ void UCameraControllerComponent::Initialize(USceneComponent* CameraTarget, APlay
 {
 	Target = CameraTarget;
 	Controller = PlayerController;
+	GetOwner()->GetRootComponent()->TransformUpdated.AddUObject(this, &UCameraControllerComponent::OnRootTransformUpdated);
 }
 
 // Called every frame
@@ -37,6 +38,31 @@ void UCameraControllerComponent::TickComponent(float DeltaTime, ELevelTick TickT
 	else
 	{
 		Target->SetWorldLocation(Actor->GetActorLocation());
+	}
+}
+
+void UCameraControllerComponent::OnRootTransformUpdated(USceneComponent* UpdatedComponent, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
+{
+	if (Teleport == ETeleportType::ResetPhysics)
+	{
+		USpringArmComponent* SpringArm = GetOwner()->GetComponentByClass<USpringArmComponent>();
+		if (IsValid(SpringArm))
+		{
+			SpringArm->bEnableCameraLag = false;
+			FTimerDelegate Delegate;
+			Delegate.BindUObject(this, &UCameraControllerComponent::ReenableCameraLag);
+			FTimerHandle Handle;
+			GetWorld()->GetTimerManager().SetTimer(Handle, Delegate, 0.1, false);
+		}
+	}
+}
+
+void UCameraControllerComponent::ReenableCameraLag()
+{
+	USpringArmComponent* SpringArm = GetOwner()->GetComponentByClass<USpringArmComponent>();
+	if (IsValid(SpringArm))
+	{
+		SpringArm->bEnableCameraLag = true;
 	}
 }
 

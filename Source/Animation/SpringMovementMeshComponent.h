@@ -20,6 +20,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetMeshLocationAndRotation(const FVector& NewLocation, const FRotator& NewRotation);
+	UFUNCTION(BlueprintCallable)
+	void ResetToTarget();
 
 	UFUNCTION(BlueprintCallable)
 	void SetTarget(class USceneComponent* NewTarget);
@@ -30,6 +32,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	void OnRootTransformUpdated(USceneComponent* UpdatedComponent, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport);
 	UPROPERTY(BlueprintGetter = GetTarget, BlueprintSetter = SetTarget)
 	class USceneComponent* TargetLocation;
 

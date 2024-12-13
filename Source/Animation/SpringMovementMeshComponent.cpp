@@ -41,20 +41,20 @@ void USpringMovementMeshComponent::TickComponent(float DeltaTime, ELevelTick Tic
 	k2 = 1 / FMath::Pow((2 * PI * RFrequency), 2);
 	k3 = (RResponse * RDamping) / (2 * PI * RFrequency);
 
-	FQuat targetRotation = TargetLocation->GetComponentRotation().Quaternion();
+	FQuat TargetRotation = TargetLocation ? TargetLocation->GetComponentRotation().Quaternion() : FQuat::Identity;
 
-	if (!(Rotation.Equals(targetRotation)) || !AngularVelocity.IsNearlyZero())
+	if (!(Rotation.Equals(TargetRotation)) || !AngularVelocity.IsNearlyZero())
 	{
-		FQuat deltaRotation = targetRotation - OldInputRot;
+		FQuat deltaRotation = TargetRotation - OldInputRot;
 		FQuat inputRotationVelocity = deltaRotation * (1 / DeltaTime); //estimate input rotation speed
 
 		FQuat newRotation = Rotation + (AngularVelocity * DeltaTime).Quaternion();
 
-		FRotator newAngularVelocity = AngularVelocity + DeltaTime * (targetRotation.Rotator() + k3 * inputRotationVelocity.Rotator() - newRotation.Rotator() - k1 * AngularVelocity) * (1 / k2);
+		FRotator newAngularVelocity = AngularVelocity + DeltaTime * (TargetRotation.Rotator() + k3 * inputRotationVelocity.Rotator() - newRotation.Rotator() - k1 * AngularVelocity) * (1 / k2);
 
 		Rotation = newRotation;
 		AngularVelocity = newAngularVelocity;
-		OldInputRot = targetRotation;
+		OldInputRot = TargetRotation;
 
 		SetWorldRotation(Rotation);
 	}
@@ -65,6 +65,22 @@ void USpringMovementMeshComponent::SetMeshLocationAndRotation(const FVector& New
 	SetWorldLocationAndRotation(NewLocation, NewRotation);
 	Position = NewLocation;
 	Rotation = NewRotation.Quaternion();
+}
+
+void USpringMovementMeshComponent::ResetToTarget()
+{
+	FVector TargetPos = TargetLocation ? TargetLocation->GetComponentLocation() : FVector(0, 0, 0);
+	FQuat TargetRotation = TargetLocation ? TargetLocation->GetComponentRotation().Quaternion() : FQuat::Identity;
+
+	SetMeshLocationAndRotation(TargetPos, TargetRotation.Rotator());
+
+	OldInputPos = TargetPos;
+	Position = TargetPos;
+	Velocity = FVector::ZeroVector;
+
+	OldInputRot = TargetRotation;
+	Rotation = TargetRotation;
+	AngularVelocity = FRotator( 0,0,0 );
 }
 
 void USpringMovementMeshComponent::SetTarget(USceneComponent* NewTarget)
@@ -81,11 +97,21 @@ void USpringMovementMeshComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	GetOwner()->GetRootComponent()->TransformUpdated.AddUObject(this, &USpringMovementMeshComponent::OnRootTransformUpdated);
+
 	if (IsValid(TargetLocation))
 	{
 		FTransform Transform = TargetLocation->GetComponentTransform();
 		SetMeshLocationAndRotation(Transform.GetLocation(), Transform.GetRotation().Rotator());
 		OldInputPos = Position;
 		OldInputRot = Rotation;
+	}
+}
+
+void USpringMovementMeshComponent::OnRootTransformUpdated(USceneComponent* UpdatedComponent, EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport)
+{
+	if (Teleport == ETeleportType::ResetPhysics)
+	{
+		GetWorld()->GetTimerManager().SetTimerForNextTick(this, &USpringMovementMeshComponent::ResetToTarget);
 	}
 }
