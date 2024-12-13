@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Rooms/RoomTypes.h"
 #include "WizardCharacter.h"
 #include "OmnimancerGameInstance.generated.h"
 
@@ -39,6 +40,8 @@ public:
 	void SetCompletedRoomCount(int NewRoomCount);
 	UFUNCTION(BlueprintCallable)
 	int IncrementCompletedRoomCount();
+	UFUNCTION(BlueprintCallable)
+	void SetPortalTypes(TArray<class ARoomPortal*> InOutPortals);
 
 	UFUNCTION(BlueprintCallable)
 	int GetCurrency();

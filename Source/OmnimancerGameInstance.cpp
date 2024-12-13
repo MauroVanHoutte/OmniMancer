@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "OmnimancerSaveGame.h"
 #include "Json.h"
+#include "Rooms/RoomPortal.h"
 #include "Misc/FileHelper.h"
 
 void UOmnimancerGameInstance::Init()
@@ -87,6 +88,15 @@ void UOmnimancerGameInstance::SetCompletedRoomCount(int NewRoomCount)
 int UOmnimancerGameInstance::IncrementCompletedRoomCount()
 {
 	return ++CompletedRooms;
+}
+
+void UOmnimancerGameInstance::SetPortalTypes(TArray<ARoomPortal*> InOutPortals)
+{
+	TArray<RoomType> Types {RoomType::FireReward, RoomType::IceReward, RoomType::WindReward};
+	for (size_t i = 0; i < InOutPortals.Num(); i++)
+	{
+		InOutPortals[i]->SetRoomType(Types[i % Types.Num()]);
+	}
 }
 
 int UOmnimancerGameInstance::GetCurrency()
