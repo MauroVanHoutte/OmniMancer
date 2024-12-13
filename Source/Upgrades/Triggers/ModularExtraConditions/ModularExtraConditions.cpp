@@ -3,6 +3,7 @@
 
 #include "ModularExtraConditions.h"
 #include "SpellCasting/Spells/BaseSpell.h"
+#include "SpellCasting/ElementManipulationComponent.h"
 #include "StatusEffects/StatusEffectHandlingComponent.h"
 
 bool UCompoundModularCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
@@ -101,4 +102,23 @@ bool UNthActivationCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* s
 {
 	ActivatonCount++;
 	return ActivatonCount % ActivationInterval == 0;
+}
+
+bool USpellElementCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
+{
+	UElementManipulationComponent* SpellCasting = triggerOwner->GetComponentByClass<UElementManipulationComponent>();
+	if (IsValid(SpellCasting))
+	{
+		const TArray<FSpellConfig>& Configs = SpellCasting->GetSpellConfigs();
+		const FSpellConfig* Config = Configs.FindByPredicate([spell](const FSpellConfig& Config)
+		{
+			return Config.Spell->IsChildOf(spell->GetClass());
+		});
+
+		if (Config && Config->ElementCombination.Contains(Element))
+		{
+			return true;
+		}
+	}
+	return false;
 }

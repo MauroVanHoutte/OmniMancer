@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "SpellCasting/Elements.h"
 #include "ModularExtraConditions.generated.h"
 
 UENUM(BlueprintType)
@@ -140,4 +141,16 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	int ActivationInterval = 4;
 	int ActivatonCount = 0;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class USpellElementCondition : public UModularExtraConditionsBase
+{
+	GENERATED_BODY()
+public:
+	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	WizardElement Element;
 };
