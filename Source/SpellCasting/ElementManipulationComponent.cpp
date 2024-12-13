@@ -146,26 +146,19 @@ void UElementManipulationComponent::LearnElement(WizardElement Element)
 	OnElementLearnedDelegate.Broadcast(Element);
 }
 
-const TArray<FSpellConfig>& UElementManipulationComponent::GetSpellConfig()
+const TArray<FSpellConfig>& UElementManipulationComponent::GetSpellConfigs()
 {
 	return SpellConfiguration;
 }
 
 void UElementManipulationComponent::AddCooldownMultiplier(TSubclassOf<ABaseSpell> ApplicableSpell, float CooldownMultiplier)
 {
-	if (SpellCooldownMultipliers.Contains(ApplicableSpell))
-	{
-		SpellCooldownMultipliers[ApplicableSpell] *= CooldownMultiplier;
-	}
-	else
-	{
-		SpellCooldownMultipliers.Add(ApplicableSpell, 1 * CooldownMultiplier);
-	}
+	SpellCooldownMultipliers.FindOrAdd(ApplicableSpell, 1) *= CooldownMultiplier;
 }
 
 void UElementManipulationComponent::AddCooldownMultiplierForElement(WizardElement Element, float CooldownMultiplier)
 {
-	ElementCooldownMultipliers[Element] *= CooldownMultiplier;
+	ElementCooldownMultipliers.FindOrAdd(Element, 1) *= CooldownMultiplier;
 }
 
 TMap<TSubclassOf<class ABaseSpell>, float>& UElementManipulationComponent::GetSpellCooldowns()
@@ -236,6 +229,7 @@ void UElementManipulationComponent::OnSpellHit(ABaseSpell* Spell, AActor* HitAct
 void UElementManipulationComponent::OnBasicAttackHit(ABaseSpell* Spell, AActor* HitActor)
 {
 	OnBasicAttackHitDelegate.Broadcast(Spell, HitActor);
+	OnSpellHitDelegate.Broadcast(Spell, HitActor);
 }
 
 float UElementManipulationComponent::CalculateSpellCooldown(TSubclassOf<class ABaseSpell> Spell)

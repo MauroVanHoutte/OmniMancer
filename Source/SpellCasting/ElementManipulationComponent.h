@@ -64,7 +64,7 @@ public:
 	void LearnElement(WizardElement Element);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	const TArray<FSpellConfig>& GetSpellConfig();
+	const TArray<FSpellConfig>& GetSpellConfigs();
 
 	UFUNCTION(BlueprintCallable)
 	void AddCooldownMultiplier(TSubclassOf<ABaseSpell> ApplicableSpell, float CooldownMultiplier);
@@ -78,6 +78,9 @@ public:
 
 	class USceneComponent* GetBasicAttackOrigin() const;
 	void SetBasicAttackOrigin(class USceneComponent* NewBasicAttackOrigin);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float CalculateSpellCooldown(TSubclassOf<class ABaseSpell> Spell);
 
 	UPROPERTY(BlueprintAssignable)
 	FElementAddedSignature OnElementAddedDelegate;
@@ -106,7 +109,6 @@ private:
 	void OnSpellHit(ABaseSpell* Spell, AActor* HitActor);
 	UFUNCTION()
 	void OnBasicAttackHit(ABaseSpell* Spell, AActor* HitActor);
-	float CalculateSpellCooldown(TSubclassOf<class ABaseSpell> Spell);
 
 	UPROPERTY(EditDefaultsOnly)
 	TSet<WizardElement> LearnedElements { WizardElement::Fire };
