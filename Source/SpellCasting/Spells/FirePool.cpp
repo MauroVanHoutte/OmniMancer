@@ -56,7 +56,9 @@ void AFirePool::BeginPlay()
 		}, ApplicationInterval, true);
 }
 
-void AFirePool::OnDeath()
+void AFirePool::Destroyed()
 {
+	Super::Destroyed();
+
 	GetWorld()->GetTimerManager().ClearTimer(ApplicationTimer);
 }

@@ -2,6 +2,7 @@
 
 
 #include "BaseSpell.h"
+#include <Engine/DamageEvents.h>
 #include "Health/AffiliationComponent.h"
 #include "StatusEffects/StatusEffectHandlingComponent.h"
 
@@ -33,17 +34,6 @@ bool ABaseSpell::WasActorHitBefore_Implementation(AActor* TriggeringActor, class
 	return HitActors.Contains(TriggeringActor);
 }
 // end IHitTriggerInterface implementations
-
-void ABaseSpell::Destroy()
-{
-	OnDeath();
-	AActor::Destroy();
-}
-
-void ABaseSpell::OnDeath()
-{
-	OnSpellDestroyedDelegate.Broadcast(this);
-}
 
 //void ABaseSpell::AddStatusEffect(const FStatusEffect& effect)
 //{
@@ -203,6 +193,13 @@ float ABaseSpell::GetDamageMultiplier()
 void ABaseSpell::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ABaseSpell::Destroyed()
+{
+	Super::Destroyed();
+
+	OnSpellDestroyedDelegate.Broadcast(this);
 }
 
 // Called every frame

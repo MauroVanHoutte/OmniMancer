@@ -26,7 +26,7 @@ public:
 
 protected:
 	void BeginPlay() override;
-	virtual void OnDeath() override;
+	virtual void Destroyed() override;
 
 private:
 	UPROPERTY(EditAnywhere)

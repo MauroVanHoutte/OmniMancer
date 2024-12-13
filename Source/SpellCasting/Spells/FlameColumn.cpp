@@ -25,11 +25,6 @@ void AFlameColumn::BeginPlay()
 	CylinderMesh->SetCollisionProfileName(TEXT("NoCollision"));
 }
 
-void AFlameColumn::OnDeath()
-{
-
-}
-
 // Called every frame
 void AFlameColumn::Tick(float DeltaTime)
 {
@@ -56,6 +51,13 @@ void AFlameColumn::InitSpell(const FVector& TargetLocation, APawn* Caster)
 
 	ImpactTimer = ImpactDelay;
 	SetLifeSpan(ImpactDelay + VisualLinger);
+}
+
+void AFlameColumn::SetScale(float NewScale)
+{
+	CircleScale = NewScale;
+	FVector Scale = CylinderMesh->GetRelativeScale3D();
+	CylinderMesh->SetRelativeScale3D(FVector(CircleScale, CircleScale, Scale.Z));
 }
 
 void AFlameColumn::OnHit(AActor* HitActor)

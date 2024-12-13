@@ -28,8 +28,6 @@ public:
 	virtual bool WasActorHitBefore_Implementation(class AActor* TriggeringActor, class UPrimitiveComponent* CollisionComponent);
 	//end IHitTriggerInterface implementations
 
-	virtual void Destroy();
-
 	UFUNCTION(BlueprintCallable)
 	virtual void InitSpell(const FVector& targetLocation, APawn* caster);
 
@@ -67,7 +65,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void OnDeath();
+	virtual void Destroyed() override;
 
 	UPROPERTY(EditDefaultsOnly)
 	float Damage = 0;

@@ -19,14 +19,13 @@ public:
 
 	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
 
-	virtual void SetScale(float NewScale) override { CircleScale = NewScale; };
+	virtual void SetScale(float NewScale) override;
 	virtual float GetScale() const override { return CircleScale; };
 
 	virtual void OnHit(AActor* hitActor) override;
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void OnDeath() override;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")

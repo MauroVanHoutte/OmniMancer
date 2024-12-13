@@ -58,8 +58,10 @@ void AVortex::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AVortex::OnDeath()
+void AVortex::Destroyed()
 {
+	Super::Destroyed();
+
 	Damage = FinalDamage;
 	TArray<AActor*> overlapping;
 	GetOverlappingActors(overlapping, ABaseCharacter::StaticClass());

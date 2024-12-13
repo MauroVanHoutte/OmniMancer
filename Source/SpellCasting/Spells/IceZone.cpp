@@ -47,8 +47,10 @@ void AIceZone::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	GetWorld()->GetTimerManager().ClearTimer(ApplicationTimer);
 }
 
-void AIceZone::OnDeath()
+void AIceZone::Destroyed()
 {
+	Super::Destroyed();
+
 	GetWorld()->GetTimerManager().ClearTimer(ApplicationTimer);
 }
 
