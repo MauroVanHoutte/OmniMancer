@@ -7,6 +7,8 @@
 #include "SpellCasting/Elements.h"
 #include "CharacterUpgradesComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPerkRequestSignature, WizardElement, Element);
+
 USTRUCT(BlueprintType)
 struct FUpgradesArray
 {
@@ -32,9 +34,14 @@ public:
 	virtual void ApplyUpgrade(class UCharacterUpgrade* Upgrade);
 	UFUNCTION(BlueprintCallable)
 	virtual void RemoveUpgrade(class UCharacterUpgrade* Upgrade);
+	UFUNCTION(BlueprintCallable)
+	void RequestPerkSelection(WizardElement Element);
 
 	UFUNCTION(BlueprintCallable)
 	const FUpgradesArray& GetUpgradesArrayForElement(WizardElement Element);
+
+	UPROPERTY(BlueprintAssignable)
+	FPerkRequestSignature OnPerkRequestedDelegate;
 
 private:
 	UPROPERTY(Transient, VisibleAnywhere)

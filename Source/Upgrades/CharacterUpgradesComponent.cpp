@@ -44,6 +44,11 @@ void UCharacterUpgradesComponent::RemoveUpgrade(UCharacterUpgrade* Upgrade)
 	ActiveUpgrades.Remove(Upgrade);
 }
 
+void UCharacterUpgradesComponent::RequestPerkSelection(WizardElement Element)
+{
+	OnPerkRequestedDelegate.Broadcast(Element);
+}
+
 const FUpgradesArray& UCharacterUpgradesComponent::GetUpgradesArrayForElement(WizardElement Element)
 {
 	return AvailableLevelUpUpgrades[Element];
