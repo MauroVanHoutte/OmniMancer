@@ -198,7 +198,8 @@ void USummonTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArr
 			{
 				AActor* OldSummon;
 				SummonQueue.Dequeue(OldSummon);
-				if (IsValid(OldSummon))
+				//Outer would sometimes be an unloaded level streaming resulting in a crash when calling destroy
+				if (IsValid(OldSummon) && IsValid(OldSummon->GetOuter()))
 				{
 					OldSummon->Destroy();
 				}
