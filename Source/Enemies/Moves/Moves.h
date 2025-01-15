@@ -102,12 +102,17 @@ private:
 	UFUNCTION()
 	void OnMoveComponentCompleted(class UBaseMove* Move);
 	UFUNCTION()
+	void BroadcastMoveCompleted();
+	UFUNCTION()
 	void OnMoveHit(class UBaseMove* Move, class AActor* AttackActor, class AActor* HitActor);
 
 	UPROPERTY(EditAnywhere)
 	bool bCheckFirstMoveRequirements = false;
 	UPROPERTY(EditAnywhere)
 	bool bCheckSubsequentMoveRequirements = false;
+	UPROPERTY(EditAnywhere)
+	float MoveCompletionDelay = 0.f;
+	FTimerHandle CompletionDelayHandle;
 
 	UPROPERTY(Instanced, EditAnywhere)
 	TArray<UBaseMove*> MoveSequence;

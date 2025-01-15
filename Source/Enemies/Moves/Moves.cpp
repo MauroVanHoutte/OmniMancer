@@ -126,7 +126,7 @@ bool UMoveSequence::CanBeExecuted(AActor* Target)
 
 bool UMoveSequence::CanBeInterrupted()
 {
-    return MoveSequence[ActiveMoveIdx]->CanBeInterrupted();
+    return ActiveMoveIdx < 0 ? true : MoveSequence[ActiveMoveIdx]->CanBeInterrupted();
 }
 
 void UMoveSequence::Interrupt()
@@ -163,8 +163,24 @@ void UMoveSequence::OnMoveComponentCompleted(UBaseMove* Move)
     }
 
     ActiveMoveIdx = -1;
+    if (MoveCompletionDelay > 0)
+    {
+        FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+        FTimerDelegate Delegate;
+        Delegate.BindUObject(this, &UMoveSequence::BroadcastMoveCompleted);
+        TimerManager.SetTimer(CompletionDelayHandle, Delegate, MoveCompletionDelay, false);
+    }
+    else
+    {
+        BroadcastMoveCompleted();
+    }
+}
+
+void UMoveSequence::BroadcastMoveCompleted()
+{
     OnMoveCompletedDelegate.Broadcast(this);
 }
+
 void UMoveSequence::OnMoveHit(UBaseMove* Move, AActor* AttackActor, AActor* HitActor)
 {
     OnMoveHitDelegate.Broadcast(Move, AttackActor, HitActor);
