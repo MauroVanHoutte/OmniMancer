@@ -115,7 +115,7 @@ public:
 		//UKismetSystemLibrary::SphereOverlapActors(triggerOwner->GetWorld(), triggerOwner->GetActorLocation(), Radius, TArray<TEnumAsByte<EObjectTypeQuery>>(), ABaseCharacter::StaticClass(), ignore, outActors);
 		for (AActor* actor : outActors)
 		{
-			auto enemy = Cast<ABaseCharacter>(actor);
+			//auto enemy = Cast<ABaseCharacter>(actor);
 			//if (IsValid(enemy))
 				//enemy->AddStatusEffect(FStatusEffect{ Type::Slow, -1, Slow , Duration, triggerOwner });
 		}

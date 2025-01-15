@@ -12,7 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSpellHitSignature, ABaseSpell*, 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSpellDestroyedSignature, ABaseSpell*, Spell);
 
 class AWizardCharacter;
-class ABaseCharacter;
+//class ABaseCharacter;
 
 UCLASS(Abstract)
 class UNREALPROJECT_API ABaseSpell : public AActor, public IHitTriggerInterface
