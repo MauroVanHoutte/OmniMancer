@@ -32,6 +32,7 @@ protected:
 	UFUNCTION()
 	void OnAnimationCompleted();
 
+	UPROPERTY(Transient)
 	class UUMGSequencePlayer* SequencePlayer;
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	class UImage* OverlayImage;
