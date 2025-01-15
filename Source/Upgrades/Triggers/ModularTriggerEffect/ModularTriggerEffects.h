@@ -168,5 +168,6 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	int SummonLimit = 5;
 	int QueueSize = 0;
-	TQueue<AActor*> SummonQueue;
+	UPROPERTY(Transient)
+	TArray<AActor*> SummonQueue;
 };

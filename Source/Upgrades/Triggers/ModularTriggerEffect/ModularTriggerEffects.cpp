@@ -193,13 +193,12 @@ void USummonTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArr
 
 		if (SummonLimit > 0)
 		{
-			SummonQueue.Enqueue(SpawnedActor);
+			SummonQueue.Insert(SpawnedActor, 0);
 			if (QueueSize == SummonLimit)
 			{
-				AActor* OldSummon;
-				SummonQueue.Dequeue(OldSummon);
+				AActor* OldSummon = SummonQueue.Pop(false);
 				//Outer would sometimes be an unloaded level streaming resulting in a crash when calling destroy
-				if (IsValid(OldSummon) && IsValid(OldSummon->GetOuter()))
+				if (IsValid(OldSummon))
 				{
 					OldSummon->Destroy();
 				}
