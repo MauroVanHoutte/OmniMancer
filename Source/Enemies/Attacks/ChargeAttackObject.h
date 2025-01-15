@@ -32,7 +32,9 @@ private:
 	void CooldownCompleted();
 
 	UPROPERTY(EditAnywhere)
-	float Range = 900.f;
+	float AttackRange = 900.f;
+	UPROPERTY(EditAnywhere)
+	float ChargeDistance = 900.f;
 	UPROPERTY(EditAnywhere)
 	float ChargeSpeed = 900.f;
 	UPROPERTY(EditAnywhere)

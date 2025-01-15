@@ -21,9 +21,9 @@ void UChargeAttackObject::TickAttack(float DeltaTime)
 	if (bCharging)
 	{
 		float DistanceToMove = ChargeSpeed * DeltaTime;
-		if (DistanceToMove + ChargedDistance > Range)
+		if (DistanceToMove + ChargedDistance > ChargeDistance)
 		{
-			DistanceToMove = Range - ChargedDistance;
+			DistanceToMove = ChargeDistance - ChargedDistance;
 			bCharging = false;
 		}
 		else
@@ -50,7 +50,7 @@ void UChargeAttackObject::TickAttack(float DeltaTime)
 bool UChargeAttackObject::AreAttackRequirementsMet(AActor* Target)
 {
 	float DistSquared = FVector::DistSquared(OwningActor->GetActorLocation(), Target->GetActorLocation());
-	if (DistSquared < Range * Range)
+	if (DistSquared < AttackRange * AttackRange)
 	{
 		FHitResult Hit;
 		TArray<AActor*> IgnoreActors;
