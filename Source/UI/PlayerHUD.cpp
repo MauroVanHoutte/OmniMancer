@@ -2,17 +2,17 @@
 #include <Components/Image.h>
 #include <Components/TextBlock.h>
 #include <Components/ProgressBar.h>
-#include "OmnimancerGameInstance.h"
 #include "SpellCasting/ElementManipulationComponent.h"
 #include "SpellCasting/Elements.h"
+#include "Upgrades/StatUpgrades/StatComponent.h"
 #include "WizardCharacter.h"
 
 void UPlayerHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (GameInstance)
-		SetCurrency(GameInstance->GetCurrency());
+	if (StatComponent)
+		SetCurrency(StatComponent->GetCurrency());
 }
 
 void UPlayerHUD::SetCurrency(int currency)
@@ -29,5 +29,5 @@ void UPlayerHUD::Setup()
 {
 	Player = GetOwningPlayer()->GetPawn();
 	SpellCastingComponent = Player->GetComponentByClass<UElementManipulationComponent>();
-	GameInstance = GetGameInstance<UOmnimancerGameInstance>();
+	StatComponent = Player->GetComponentByClass<UStatComponent>();
 }

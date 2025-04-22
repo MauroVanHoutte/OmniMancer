@@ -29,5 +29,5 @@ protected:
 	AActor* Player;
 	UPROPERTY(BlueprintReadOnly)
 	class UElementManipulationComponent* SpellCastingComponent;
-	class UOmnimancerGameInstance* GameInstance;
+	class UStatComponent* StatComponent;
 };
