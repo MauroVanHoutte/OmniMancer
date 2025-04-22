@@ -28,10 +28,24 @@ void UCharacterUpgradesComponent::BeginPlay()
 
 void UCharacterUpgradesComponent::ApplyUpgrade(UCharacterUpgrade* Upgrade)
 {
-	if (Upgrade->CurrentLevel == 0)
+	bool bLevelUpUpgrade = false;
+	for (auto kvp : AvailableLevelUpUpgrades)
 	{
-		ActiveUpgrades.Add(Upgrade);
+		for (UCharacterUpgrade* LevelUpUpgrade : kvp.Value.Upgrades)
+		{
+			if (LevelUpUpgrade == Upgrade)
+			{
+				bLevelUpUpgrade = true;
+				break;
+			}
+		}
 	}
+
+	if (!bLevelUpUpgrade)
+		Upgrade = DuplicateObject(Upgrade, GetOwner());
+
+	if (Upgrade->CurrentLevel == 0)
+		ActiveUpgrades.Add(Upgrade);
 
 	Upgrade->CurrentLevel++;
 	Upgrade->Apply(GetOwner());
