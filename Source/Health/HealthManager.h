@@ -35,7 +35,21 @@ public:
 	void RemoveHealthComponent(class UBaseHealthComponent* Component);
 
 	UFUNCTION(BlueprintCallable)
+	void SetInvulnerability(bool NewInvulnerability);
+
+	UFUNCTION(BlueprintCallable)
 	int GetLiveHealthComponentCount();
+	UFUNCTION(BlueprintCallable)
+	TArray<class UBaseHealthComponent*>& GetHealthComponents();
+	UFUNCTION(BlueprintCallable)
+	float GetTotalRemainingHealth();
+	UFUNCTION(BlueprintCallable)
+	float GetTotalRemainingHealthPercentage();
+	UFUNCTION(BlueprintCallable)
+	void ResetHealthComponents();
+
+	UFUNCTION(BlueprintCallable)
+	void Kill(const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	UFUNCTION()
 	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
@@ -46,10 +60,13 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FManagerFatalDamageTakenSignature OnFatalDamageTakenDelegate;
 
-private:
+protected:
 	UPROPERTY(Transient)
 	TArray<class UBaseHealthComponent*> HealthComponents;
 
 	UPROPERTY(Transient)
 	class UTriggerHandlingComponent* PlayerTriggerHandling;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	bool bInvulnerable = false;
 };

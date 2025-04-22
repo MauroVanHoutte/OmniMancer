@@ -118,20 +118,81 @@ void UHealthManager::RemoveHealthComponent(UBaseHealthComponent* Component)
 		});
 }
 
+void UHealthManager::SetInvulnerability(bool NewInvulnerability)
+{
+	bInvulnerable = NewInvulnerability;
+}
+
 int UHealthManager::GetLiveHealthComponentCount()
 {
 	return HealthComponents.FilterByPredicate([](const UBaseHealthComponent* HealthComponent) {return !HealthComponent->IsDepleted(); }).Num();
 }
 
+TArray<class UBaseHealthComponent*>& UHealthManager::GetHealthComponents()
+{
+	return HealthComponents;
+}
+
+float UHealthManager::GetTotalRemainingHealth()
+{
+	float RemainingHealth = 0;
+
+	for (const UBaseHealthComponent* HealthComp : HealthComponents)
+	{
+		if (!HealthComp->IsDepleted())
+		{
+			RemainingHealth += HealthComp->GetCurrentHealth();
+		}
+	}
+
+	return RemainingHealth;
+}
+
+float UHealthManager::GetTotalRemainingHealthPercentage()
+{
+	float RemainingHealth = 0.f;
+	float TotalHealth = 0.f;
+
+	for (const UBaseHealthComponent* HealthComp : HealthComponents)
+	{
+		if (!HealthComp->IsDepleted())
+		{
+			RemainingHealth += HealthComp->GetCurrentHealth();
+			TotalHealth += HealthComp->GetMaxHealth();
+		}
+	}
+
+	return RemainingHealth / TotalHealth;
+}
+
+void UHealthManager::ResetHealthComponents()
+{
+	for (UBaseHealthComponent* HealthComp : HealthComponents)
+	{
+		HealthComp->ResetHealth();
+	}
+}
+
+void UHealthManager::Kill(const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	for (UBaseHealthComponent* HealthComp : HealthComponents)
+	{
+		HealthComp->Kill(DamageType, InstigatedBy, DamageCauser);
+	}
+}
+
 void UHealthManager::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
+	if (bInvulnerable)
+		return;
+
 	//Health components are kept sorted by priority
 	for (size_t i = 0; i < HealthComponents.Num(); i++)
 	{
 		if (!HealthComponents[i]->IsDepleted())
 		{
-			HealthComponents[i]->TakeDamage(DamagedActor, Damage, DamageType, InstigatedBy, DamageCauser);
 			OnDamageTakenDelegate.Broadcast(HealthComponents[i], Damage, DamageType, InstigatedBy, DamageCauser);
+			HealthComponents[i]->TakeDamage(DamagedActor, Damage, DamageType, InstigatedBy, DamageCauser);
 
 			if (IsValid(InstigatedBy))
 			{
