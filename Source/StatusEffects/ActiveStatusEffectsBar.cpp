@@ -35,7 +35,7 @@ void UActiveStatusEffectsBar::UpdateTimers(const TArray<class UBaseStatusEffect*
 		UCircularProgressBar** Widget = ActiveStatusEffects.Find(StatusEffect);
 		if (Widget)
 		{
-			(*Widget)->SetFillPercentage(1 - (StatusEffect->RemainingDuration / StatusEffect->TotalDuration));
+			(*Widget)->SetFillPercentage((StatusEffect->RemainingDuration / StatusEffect->TotalDuration));
 		}
 	}
 }
