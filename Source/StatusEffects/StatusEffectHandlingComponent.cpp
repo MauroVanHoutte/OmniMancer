@@ -21,6 +21,20 @@ void UStatusEffectHandlingComponent::BindStatusEffectsBar(UActiveStatusEffectsBa
 	StatusEffectsBar = Widget;
 }
 
+void UStatusEffectHandlingComponent::ClearStatusEffects()
+{
+	for (UBaseStatusEffect* StatusEffect : ActiveStatusEffects)
+	{
+		StatusEffect->Remove(GetOwner(), ActiveStatusEffects);
+		StatusEffectPooling->ReturnStatusEffectInstance(StatusEffect);
+		if (IsValid(StatusEffectsBar))
+		{
+			StatusEffectsBar->RemoveStatusEffect(StatusEffect);
+		}
+	}
+	ActiveStatusEffects.Empty();
+}
+
 
 // Called when the game starts
 void UStatusEffectHandlingComponent::BeginPlay()

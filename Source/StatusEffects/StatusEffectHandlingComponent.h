@@ -19,6 +19,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void BindStatusEffectsBar(class UActiveStatusEffectsBar* Widget);
+	UFUNCTION(BlueprintCallable)
+	void ClearStatusEffects();
 
 protected:
 	// Called when the game starts
