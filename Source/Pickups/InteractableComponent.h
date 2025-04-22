@@ -18,6 +18,8 @@ public:
 	UInteractableComponent();
 
 	virtual void OnRegister() override;
+	virtual void Activate(bool bReset = false) override;
+	virtual void Deactivate() override;
 
 	UPROPERTY(BlueprintAssignable)
 	FInteractRangeEnteredSignature OnInteractRangeEnteredDelegate;
@@ -41,6 +43,9 @@ private:
 	void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	UFUNCTION()
 	void OnInteractAction(AActor* Player);
+
+	void HandleBeginOverlap(class AWizardController* Controller, AActor* Actor);
+	void HandleEndOverlap(class AWizardController* Controller, AActor* Actor);
 
 	void SetMappedKeyOnWidget(class AWizardController* Controller);
 

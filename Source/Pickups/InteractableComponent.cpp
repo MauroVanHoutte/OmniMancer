@@ -20,6 +20,21 @@ void UInteractableComponent::OnRegister()
 	Widget->SetupAttachment(this);
 }
 
+void UInteractableComponent::Activate(bool bReset)
+{
+	Super::Activate(bReset);
+	SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void UInteractableComponent::Deactivate()
+{
+	Super::Deactivate();
+	Widget->SetVisibility(false);
+	Widget->UpdateWidget();
+	SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	OnInteractActionDelegate.Clear();
+}
+
 void UInteractableComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -36,10 +51,7 @@ void UInteractableComponent::OnBeginOverlap(UPrimitiveComponent* OverlappedCompo
 		AWizardController* Controller = OtherActor->GetInstigatorController<AWizardController>();
 		if (IsValid(Controller))
 		{
-			Controller->OnInteractActionDelegate.AddDynamic(this, &UInteractableComponent::OnInteractAction);
-			SetMappedKeyOnWidget(Controller);
-			Widget->SetVisibility(true);
-			OnInteractRangeEnteredDelegate.Broadcast(OtherActor);
+			HandleBeginOverlap(Controller, OtherActor);
 		}
 	}
 }
@@ -51,9 +63,7 @@ void UInteractableComponent::OnEndOverlap(UPrimitiveComponent* OverlappedCompone
 		AWizardController* Controller = OtherActor->GetInstigatorController<AWizardController>();
 		if (IsValid(Controller))
 		{
-			Controller->OnInteractActionDelegate.RemoveDynamic(this, &UInteractableComponent::OnInteractAction);
-			Widget->SetVisibility(false);
-			OnInteractRangeExitedDelegate.Broadcast(OtherActor);
+			HandleEndOverlap(Controller, OtherActor);
 		}
 	}
 }
@@ -61,6 +71,34 @@ void UInteractableComponent::OnEndOverlap(UPrimitiveComponent* OverlappedCompone
 void UInteractableComponent::OnInteractAction(AActor* Player)
 {
 	OnInteractActionDelegate.Broadcast(Player);
+}
+
+void UInteractableComponent::HandleBeginOverlap(AWizardController* Controller, AActor* Actor)
+{
+	TArray<UObject*> BoundObjects = Controller->OnInteractActionDelegate.GetAllObjects();
+	for (UObject* Object : BoundObjects)
+	{
+		if (UInteractableComponent* InteractableComp = Cast<UInteractableComponent>(Object))
+		{
+			if (IsValid(InteractableComp))
+			{
+				InteractableComp->HandleEndOverlap(Controller, Actor);
+			}
+		}
+	}
+
+	Controller->OnInteractActionDelegate.Clear();
+	Controller->OnInteractActionDelegate.AddDynamic(this, &UInteractableComponent::OnInteractAction);
+	SetMappedKeyOnWidget(Controller);
+	Widget->SetVisibility(true);
+	OnInteractRangeEnteredDelegate.Broadcast(Actor);
+}
+
+void UInteractableComponent::HandleEndOverlap(AWizardController* Controller, AActor* Actor)
+{
+	Controller->OnInteractActionDelegate.RemoveDynamic(this, &UInteractableComponent::OnInteractAction);
+	Widget->SetVisibility(false);
+	OnInteractRangeExitedDelegate.Broadcast(Actor);
 }
 
 void UInteractableComponent::SetMappedKeyOnWidget(AWizardController* Controller)
