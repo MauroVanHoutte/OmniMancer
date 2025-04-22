@@ -15,78 +15,121 @@ class UNREALPROJECT_API UBaseStatBoost : public UObject
 {
 	GENERATED_BODY()
 public:
-	virtual void Apply(AWizardCharacter* character) {};
-	virtual void Remove(AWizardCharacter* character) {};
+	virtual void Apply(AActor* character);
+	virtual void Remove(AActor* character) {};
+
+	virtual FFormatNamedArguments GetDescriptionArguments() { return FFormatNamedArguments(); };
+
+protected:
+	UPROPERTY(Transient)
+	class UStatComponent* StatComponent;
 };
 
 UCLASS(EditInlineNew, BlueprintType)
-class UNREALPROJECT_API UBurnDurationBoost : public UBaseStatBoost
+class UNREALPROJECT_API USpellCooldownBoost : public UBaseStatBoost
 {
 	GENERATED_BODY()
 public:
-	void Apply(AWizardCharacter* character) override
-	{
-		character->SetBurnDurationMultiplier(character->GetBurnDurationMultiplier() + MultiplierIncrease);
-	};
-	void Remove(AWizardCharacter* character) override
-	{
-		character->SetBurnDurationMultiplier(character->GetBurnDurationMultiplier() - MultiplierIncrease);
-	};
+	void Apply(AActor* character) override;
+	void Remove(AActor* character) override;
 
-	UPROPERTY(EditAnywhere)
-	float MultiplierIncrease = 0.5f;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float CooldownMultiplier = 0.5f;
 };
 
 UCLASS(EditInlineNew, BlueprintType)
-class UNREALPROJECT_API USlowDurationBoost : public UBaseStatBoost
+class UNREALPROJECT_API UElementSpellCooldownBoost : public UBaseStatBoost
 {
 	GENERATED_BODY()
 public:
-	void Apply(AWizardCharacter* character) override
-	{
-		character->SetSlowDurationMultiplier(character->GetSlowDurationMultiplier() + MultiplierIncrease);
-	};
-	void Remove(AWizardCharacter* character) override
-	{
-		character->SetSlowDurationMultiplier(character->GetSlowDurationMultiplier() - MultiplierIncrease);
-	};
+	void Apply(AActor* character) override;
+	void Remove(AActor* character) override;
 
-	UPROPERTY(EditAnywhere)
-	float MultiplierIncrease = 0.5f;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	WizardElement Element = WizardElement::None;
+	UPROPERTY(EditDefaultsOnly)
+	float CooldownMultiplier = 0.5f;
 };
 
 UCLASS(EditInlineNew, BlueprintType)
-class UNREALPROJECT_API UStunDurationBoost : public UBaseStatBoost
+class UNREALPROJECT_API USpellDamageBoost : public UBaseStatBoost
 {
 	GENERATED_BODY()
 public:
-	void Apply(AWizardCharacter* character) override
-	{
-		character->SetStunDurationMultiplier(character->GetStunDurationMultiplier() + MultiplierIncrease);
-	};
-	void Remove(AWizardCharacter* character) override
-	{
-		character->SetStunDurationMultiplier(character->GetStunDurationMultiplier() - MultiplierIncrease);
-	};
+	void Apply(AActor* character) override;
+	void Remove(AActor* character) override;
 
-	UPROPERTY(EditAnywhere)
-	float MultiplierIncrease = 0.5f;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float DamageMultiplier = 1.5f;
 };
 
 UCLASS(EditInlineNew, BlueprintType)
-class UNREALPROJECT_API UDashDistanceBoost : public UBaseStatBoost
+class UNREALPROJECT_API UElementSpellDamageBoost : public UBaseStatBoost
 {
 	GENERATED_BODY()
 public:
-	void Apply(AWizardCharacter* character) override
-	{
-		character->SetDashForce(character->GetDashForce() * Multiplier);
-	};
-	void Remove(AWizardCharacter* character) override
-	{
-		character->SetDashForce(character->GetDashForce() / Multiplier);
-	};
+	void Apply(AActor* character) override;
+	void Remove(AActor* character) override;
 
-	UPROPERTY(EditAnywhere)
-	float Multiplier = 1.5f;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	WizardElement Element = WizardElement::None;
+	UPROPERTY(EditDefaultsOnly)
+	float DamageMultiplier = 1.5f;
+};
+
+UCLASS(EditInlineNew, BlueprintType)
+class UNREALPROJECT_API UBasicAttackDamageBoost : public UBaseStatBoost
+{
+	GENERATED_BODY()
+public:
+	void Apply(AActor* character) override;
+	void Remove(AActor* character) override;
+
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float DamageMultiplier = 1.5f;
+};
+
+UCLASS(EditInlineNew, BlueprintType)
+class UNREALPROJECT_API UBasicAttackCooldownBoost : public UBaseStatBoost
+{
+	GENERATED_BODY()
+public:
+	void Apply(AActor* character) override;
+	void Remove(AActor* character) override;
+
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float CooldownMultiplier = 0.5f;
+};
+
+UCLASS(EditInlineNew, BlueprintType)
+class UNREALPROJECT_API UExtraBouncesBoost : public UBaseStatBoost
+{
+	GENERATED_BODY()
+public:
+	void Apply(AActor* character) override;
+	void Remove(AActor* character) override;
+
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	int ExtraBounces = 1;
 };

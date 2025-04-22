@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "SpellCasting/Elements.h"
 #include "StatComponent.generated.h"
 
 
@@ -20,14 +21,6 @@ public:
 	void Initialize(class UCharacterMovementComponent* MovementComponent);
 
 	//BaseAttack
-	UFUNCTION(BlueprintCallable)
-	void SetBaseAttackSpread(int newSpread);
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int GetBaseAttackSpread();
-	UFUNCTION(BlueprintCallable)
-	void SetBaseAttackBounces(int newBounces);
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	int GetBaseAttackBounces();
 	UFUNCTION(BlueprintCallable)
 	void SetBaseAttackCooldownMultiplier(float newMultiplier);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -47,6 +40,14 @@ public:
 	void SetSpellDamageMultiplier(float newSpellDamageMultiplier);
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	float GetSpellDamageMultiplier();
+	void SetDamageMultiplierForElement(WizardElement Element, float newDamageMultiplier);
+	float GetDamageMultiplierForElement(WizardElement Element);
+	void SetCooldownMultiplierForElement(WizardElement Element, float newCooldownMultiplier);
+	float GetCooldownMultiplierForElement(WizardElement Element);
+	UFUNCTION(BlueprintCallable)
+	void SetExtraBounces(int newBounces);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int GetExtraBounces();
 	//~Spells
 
 	//Mobility
@@ -64,11 +65,16 @@ public:
 	float GetDashCooldownMultiplier();
 	//~Mobility
 
+	//Gold
+	UFUNCTION(BlueprintCallable)
+	void SetCurrency(int NewCurrency);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int GetCurrency();
+	//~Gold
+
 private:
 
 	//BaseAttack
-	int BaseAttackSpread = 0;
-	int BaseAttackBounces = 0;
 	float BaseAttackCooldownMultiplier = 1.f;
 	float BaseAttackDamageMultiplier = 1.f;
 	//~BaseAttack
@@ -76,6 +82,9 @@ private:
 	//Spells
 	float SpellCooldownMultiplier = 1.f;
 	float SpellDamageMultiplier = 1.f;
+	TMap<WizardElement, float> ElementDamageMultipliers;
+	TMap<WizardElement, float> ElementCooldownMultipliers;
+	int ExtraBounces = 0;
 	//~Spells
 
 	//Mobility
@@ -86,4 +95,8 @@ private:
 	UPROPERTY(Transient)
 	class UCharacterMovementComponent* CharacterMovementComponent;
 	//~Mobility
+
+	//Gold
+	int Currency = 0;
+	//~Gold
 };

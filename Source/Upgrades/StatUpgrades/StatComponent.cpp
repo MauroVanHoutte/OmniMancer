@@ -19,26 +19,6 @@ void UStatComponent::Initialize(UCharacterMovementComponent* MovementComponent)
 	}
 }
 
-void UStatComponent::SetBaseAttackSpread(int newSpread)
-{
-	BaseAttackSpread = newSpread;
-}
-
-int UStatComponent::GetBaseAttackSpread()
-{
-	return BaseAttackSpread;
-}
-
-void UStatComponent::SetBaseAttackBounces(int newBounces)
-{
-	BaseAttackBounces = newBounces;
-}
-
-int UStatComponent::GetBaseAttackBounces()
-{
-	return BaseAttackBounces;
-}
-
 void UStatComponent::SetBaseAttackCooldownMultiplier(float newMultiplier)
 {
 	BaseAttackCooldownMultiplier = newMultiplier;
@@ -79,6 +59,36 @@ float UStatComponent::GetSpellDamageMultiplier()
 	return SpellDamageMultiplier;
 }
 
+void UStatComponent::SetDamageMultiplierForElement(WizardElement Element, float newDamageMultiplier)
+{
+	ElementDamageMultipliers.FindOrAdd(Element) = newDamageMultiplier;
+}
+
+float UStatComponent::GetDamageMultiplierForElement(WizardElement Element)
+{
+	return ElementDamageMultipliers.FindOrAdd(Element, 1);
+}
+
+void UStatComponent::SetCooldownMultiplierForElement(WizardElement Element, float newCooldownMultiplier)
+{
+	ElementCooldownMultipliers.FindOrAdd(Element) = newCooldownMultiplier;
+}
+
+float UStatComponent::GetCooldownMultiplierForElement(WizardElement Element)
+{
+	return ElementCooldownMultipliers.FindOrAdd(Element, 1);
+}
+
+void UStatComponent::SetExtraBounces(int newBounces)
+{
+	ExtraBounces = newBounces;
+}
+
+int UStatComponent::GetExtraBounces()
+{
+	return ExtraBounces;
+}
+
 void UStatComponent::SetSpeedMultiplier(float newSpeedMultiplier)
 {
 	MovementSpeedMultiplier = newSpeedMultiplier;
@@ -111,4 +121,12 @@ float UStatComponent::GetDashCooldownMultiplier()
 	return DashCooldownMultiplier;
 }
 
+void UStatComponent::SetCurrency(int NewCurrency)
+{
+	Currency = NewCurrency;
+}
 
+int UStatComponent::GetCurrency()
+{
+	return Currency;
+}
