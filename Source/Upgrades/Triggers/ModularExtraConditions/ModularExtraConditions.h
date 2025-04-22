@@ -24,6 +24,7 @@ class UModularExtraConditionsBase : public UObject
 public:
 	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target) { return true; };
 	virtual void OnExecution(const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) {};
+	virtual FFormatNamedArguments GetDescriptionArguments() { return FFormatNamedArguments(); };
 };
 
 UCLASS(Abstract, Blueprintable, EditInlineNew)
@@ -45,13 +46,14 @@ class UCompoundModularCondition : public UModularExtraConditionsBase
 public:
 	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target) override;
 	virtual void OnExecution(const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator);
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
 	
 	UPROPERTY(EditDefaultsOnly)
 	CompoundConditionOperation Operation;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Instanced)
 	TArray<UModularExtraConditionsBase*> Conditions;
 };
 
@@ -61,8 +63,10 @@ class USpellCondition : public UModularExtraConditionsBase
 	GENERATED_BODY()
 public:
 	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// AllowedSpell Description arguments are named AllowedSpellN starting at 0
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TSubclassOf<class ABaseSpell>> AllowedSpellTypes;
 };
@@ -73,8 +77,10 @@ class USpellStatusEffectCondition : public UModularExtraConditionsBase
 	GENERATED_BODY()
 public:
 	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// Description argument is named RequiredSpellStatusEffect
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UBaseStatusEffect> RequiredStatusEffect;
 };
@@ -86,8 +92,10 @@ class UCooldownCondition : public UModularExtraConditionsBase
 public:
 	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
 	virtual void OnExecution(const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator);
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// Description argument is named CooldownTime
 	UPROPERTY(EditDefaultsOnly)
 	float CooldownTime = 5;
 	FTimerHandle TimerHandle;
@@ -99,8 +107,10 @@ class UTargetAffectedByStatusEffectCondition : public UModularExtraConditionsBas
 	GENERATED_BODY()
 public:
 	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// Description argument is named RequiredAffectingStatusEffect
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UBaseStatusEffect> RequiredStatusEffectType;
 };
@@ -111,8 +121,10 @@ class UTargetInRangeCondition : public UModularExtraConditionsBase
 	GENERATED_BODY()
 public:
 	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// Description argument is named MaximumDistance
 	UPROPERTY(EditDefaultsOnly)
 	float Range = 700.f;
 };
@@ -123,10 +135,12 @@ class URandomChanceCondition : public UModularExtraConditionsBase
 	GENERATED_BODY()
 public:
 	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// Percentage, Description argument is named ActivationChance
 	UPROPERTY(EditDefaultsOnly)
-	float Chance = 0.7;
+	float Chance = 70;
 };
 
 UCLASS(BlueprintType, EditInlineNew)
@@ -135,9 +149,10 @@ class UNthActivationCondition : public UModularExtraConditionsBase
 	GENERATED_BODY()
 public:
 	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
-	//Condition is satisfied every N activations
+	//Condition is satisfied every N activations, Description argument is named ActivationInterval
 	UPROPERTY(EditDefaultsOnly)
 	int ActivationInterval = 4;
 	int ActivatonCount = 0;
@@ -149,8 +164,24 @@ class USpellElementCondition : public UModularExtraConditionsBase
 	GENERATED_BODY()
 public:
 	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// Description argument is named SpellElement
 	UPROPERTY(EditDefaultsOnly)
 	WizardElement Element;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class ULatestElementCondition : public UModularExtraConditionsBase
+{
+	GENERATED_BODY()
+public:
+	virtual bool CheckCondition(class AActor* triggerOwner, class ABaseSpell* spell, class AActor* target);
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+private:
+	// Description argument is named LatestElement
+	UPROPERTY(EditDefaultsOnly)
+	WizardElement Element = WizardElement::Fire;
 };

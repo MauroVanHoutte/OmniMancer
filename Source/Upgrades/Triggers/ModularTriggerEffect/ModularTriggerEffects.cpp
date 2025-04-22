@@ -2,11 +2,13 @@
 
 
 #include "ModularTriggerEffects.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include <Engine/DamageEvents.h>
 #include "Health/AffiliationComponent.h"
 #include "Health/HealthManager.h"
-#include "SpellCasting/Spells/BaseProjectile.h"
 #include "SpellCasting/ElementManipulationComponent.h"
+#include "SpellCasting/PlayerCasts/BasePlayerCast.h"
+#include "SpellCasting/Spells/BaseProjectile.h"
 #include "StatusEffects/StatusEffectHandlingComponent.h"
 #include "StatusEffects/StatusEffect.h"
 
@@ -21,6 +23,13 @@ void UStatusEffectTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, cons
 			StatusEffectHandlingComp->ApplyStatusEffect(StatusEffect);
 		}
 	}
+}
+
+FFormatNamedArguments UStatusEffectTriggerEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Append(StatusEffect->GetDescriptionArguments());
+	return Args;
 }
 
 void URadialProjectilesTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, APawn* instigator)
@@ -54,6 +63,13 @@ void URadialProjectilesTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell,
 	}
 }
 
+FFormatNamedArguments URadialProjectilesTriggerEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("ProjectileCount"), ProjectileCount);
+	return Args;
+}
+
 void UHealTargets::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, APawn* instigator)
 {
 	for (const AActor* Actor : targetActors)
@@ -66,9 +82,23 @@ void UHealTargets::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArray<FVect
 	}
 }
 
+FFormatNamedArguments UHealTargets::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("HealAmount"), HealAmount);
+	return Args;
+}
+
 void UDamagePerHitActorOnSpellEndTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, APawn* instigator)
 {
 	TriggeringSpell->OnSpellDestroyedDelegate.AddDynamic(this, &UDamagePerHitActorOnSpellEndTriggerEffect::OnSpellDestroyed);
+}
+
+FFormatNamedArguments UDamagePerHitActorOnSpellEndTriggerEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("DamagePerTarget"), DamagePerTarget);
+	return Args;
 }
 
 void UDamagePerHitActorOnSpellEndTriggerEffect::OnSpellDestroyed(ABaseSpell* Spell)
@@ -100,6 +130,13 @@ void UCastSpellTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const T
 	}
 }
 
+FFormatNamedArguments UCastSpellTriggerEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("SpellToCast"), FText::FromName(SpellToCast->GetDefaultObjectName()));
+	return Args;
+}
+
 void UCastOnSpellDestroyedTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, APawn* instigator)
 {
 	if (!IsValid(Instigator))
@@ -117,6 +154,13 @@ void UCastOnSpellDestroyedTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpe
 		}
 		TargetLocations.Add(TriggeringSpell, Locations);
 	}
+}
+
+FFormatNamedArguments UCastOnSpellDestroyedTriggerEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("SpellToCast"), FText::FromName(SpellToCast->GetDefaultObjectName()));
+	return Args;
 }
 
 void UCastOnSpellDestroyedTriggerEffect::CastSpell(ABaseSpell* Spell)
@@ -145,6 +189,15 @@ void URecastDamageSizeMulTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpel
 	}
 }
 
+FFormatNamedArguments URecastDamageSizeMulTriggerEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("RecastCount"), RecastCount);
+	Args.Add(TEXT("SizeMultiplier"), SizeMultiplier * 100);
+	Args.Add(TEXT("DamageMultiplier"), DamageMultiplier * 100);
+	return Args;
+}
+
 void URecastDamageSizeMulTriggerEffect::CastSpell(ABaseSpell* Spell)
 {
 	int CurrentRecastCount = RecastTracker.Contains(Spell) ? RecastTracker[Spell] : 0;
@@ -156,7 +209,7 @@ void URecastDamageSizeMulTriggerEffect::CastSpell(ABaseSpell* Spell)
 		{
 			ABaseSpell* NewSpell = SpellCasting->TriggeredCast(Spell->GetClass(), Spell->GetActorLocation(), Spell->GetActorLocation(), bSendSpellEvents);
 			NewSpell->SetScale(Spell->GetScale() * SizeMultiplier);
-			NewSpell->SetBaseDamage(Spell->GetBaseDamage() * DamageMultiplier);
+			NewSpell->SetDamageMultiplier(Spell->GetDamageMultiplier() * DamageMultiplier);
 			CurrentRecastCount++;
 			RecastTracker.Add(NewSpell, CurrentRecastCount);
 
@@ -175,15 +228,22 @@ void UAddBouncesTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const 
 	}
 }
 
+FFormatNamedArguments UAddBouncesTriggerEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("ExtraBounces"), ExtraBounces);
+	return Args;
+}
+
 void USummonTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, APawn* instigator)
 {
 	for (const FVector& Location : targetLocations)
 	{
-		FActorSpawnParameters Params{};
-		Params.Owner = instigator;
-		Params.Instigator = instigator;
-		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(*SummonedClass, Location, FRotator(0, 0, 0), Params);
+		UActorPoolingSubsystem* PoolingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UActorPoolingSubsystem>();
+		AActor* SpawnedActor = PoolingSystem->GetActorFromPool(SummonedClass);
+		SpawnedActor->SetActorLocationAndRotation(Location, FRotator(0, 0, 0));
+		SpawnedActor->SetInstigator(instigator);
+		SpawnedActor->SetOwner(instigator);
 		UAffiliationComponent* Affiliation = SpawnedActor->GetComponentByClass<UAffiliationComponent>();
 		UAffiliationComponent* InstigatorAffiliation = IsValid(instigator) ? instigator->GetComponentByClass<UAffiliationComponent>() : nullptr;
 		if (IsValid(Affiliation) && IsValid(InstigatorAffiliation))
@@ -200,7 +260,10 @@ void USummonTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArr
 				//Outer would sometimes be an unloaded level streaming resulting in a crash when calling destroy
 				if (IsValid(OldSummon))
 				{
-					OldSummon->Destroy();
+					if (IsValid(PoolingSystem))
+						PoolingSystem->ReturnActorToPoolOrDestroy(OldSummon);
+					else
+						OldSummon->Destroy();
 				}
 			}
 			else
@@ -209,4 +272,43 @@ void USummonTriggerEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArr
 			}
 		}
 	}
+}
+
+FFormatNamedArguments USummonTriggerEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("SummonedClass"), FText::FromName(SummonedClass->GetDefaultObjectName()));
+	Args.Add(TEXT("SummonLimit"), SummonLimit);
+	return Args;
+}
+
+void UReduceCooldownsForActiveElementsEffect::ExecuteEffect(ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, APawn* instigator)
+{
+	for (const AActor* Actor : targetActors)
+	{
+		UElementManipulationComponent* SpellCastingComp = Actor->GetComponentByClass<UElementManipulationComponent>();
+
+		if (IsValid(SpellCastingComp))
+		{
+			const TArray<WizardElement>& ActiveElements = SpellCastingComp->GetActiveElements();
+			TArray<FSpellCastConfig>& SpellCastConfigs = SpellCastingComp->GetSpellCastConfigs();
+			for (FSpellCastConfig& CastConfig : SpellCastConfigs)
+			{
+				if (CastConfig.ElementCombination.Contains(ActiveElements[0]) && CastConfig.ElementCombination.Contains(ActiveElements[1]))
+				{
+					if (CastConfig.CastObject->GetRemainingCooldown() > 0)
+					{
+						CastConfig.CastObject->SetRemainingCooldown(CastConfig.CastObject->GetRemainingCooldown() - ReductionAmount);
+					}
+				}
+			}
+		}
+	}
+}
+
+FFormatNamedArguments UReduceCooldownsForActiveElementsEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("CooldownReductionAmount"), ReductionAmount);
+	return Args;
 }

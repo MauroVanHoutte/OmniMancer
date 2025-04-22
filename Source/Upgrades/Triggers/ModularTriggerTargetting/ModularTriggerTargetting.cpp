@@ -37,6 +37,13 @@ void UTargetActorsProximateToTarget::GatherTargets(AActor* inTriggerOwner, ABase
 	}
 }
 
+FFormatNamedArguments UTargetActorsProximateToTarget::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("RadiusAroundTarget"), Radius);
+	return Args;
+}
+
 void UTargetActorsProximateToOwner::GatherTargets(AActor* inTriggerOwner, ABaseSpell* inSpell, AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<class AActor*>& outTargetActors)
 {
 	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), inTriggerOwner->GetActorLocation(), Radius, {}, AActor::StaticClass(), {}, outTargetActors);
@@ -51,6 +58,13 @@ void UTargetActorsProximateToOwner::GatherTargets(AActor* inTriggerOwner, ABaseS
 				return TriggerAffiliation && ActorAffiliation && ActorAffiliation->GetAffiliation() == TriggerAffiliation->GetAffiliation();
 			});
 	}
+}
+
+FFormatNamedArguments UTargetActorsProximateToOwner::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("RadiusAroundCaster"), Radius);
+	return Args;
 }
 
 void UTargetHitActors::GatherTargets(AActor* inTriggerOwner, ABaseSpell* inSpell, AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<class AActor*>& outTargetActors)

@@ -12,6 +12,7 @@ class UModularTriggerTargettingBase : public UObject
 	GENERATED_BODY()
 public:
 	virtual void GatherTargets(class AActor* inTriggerOwner, class ABaseSpell* inSpell, class AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<class AActor*>& outTargetActors) {};
+	virtual FFormatNamedArguments GetDescriptionArguments() { return FFormatNamedArguments(); };
 };
 
 UCLASS(Abstract, Blueprintable)
@@ -47,8 +48,10 @@ class UTargetActorsProximateToTarget : public UModularTriggerTargettingBase
 	GENERATED_BODY()
 public:
 	virtual void GatherTargets(class AActor* inTriggerOwner, class ABaseSpell* inSpell, class AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<class AActor*>& outTargetActors) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// Description argument is named RadiusAroundTarget
 	UPROPERTY(EditDefaultsOnly)
 	float Radius = 400.f;
 	UPROPERTY(EditDefaultsOnly)
@@ -61,8 +64,10 @@ class UTargetActorsProximateToOwner : public UModularTriggerTargettingBase
 	GENERATED_BODY()
 public:
 	virtual void GatherTargets(class AActor* inTriggerOwner, class ABaseSpell* inSpell, class AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<class AActor*>& outTargetActors) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// Description argument is named RadiusAroundCaster
 	UPROPERTY(EditDefaultsOnly)
 	float Radius = 400.f;
 	UPROPERTY(EditDefaultsOnly)
@@ -76,3 +81,4 @@ class UTargetHitActors : public UModularTriggerTargettingBase
 public:
 	virtual void GatherTargets(class AActor* inTriggerOwner, class ABaseSpell* inSpell, class AActor* inTarget, TArray<FVector>& outTargetLocations, TArray<class AActor*>& outTargetActors) override;
 };
+

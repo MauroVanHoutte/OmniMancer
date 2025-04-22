@@ -5,6 +5,7 @@
 #include "SpellCasting/Spells/BaseSpell.h"
 #include "SpellCasting/ElementManipulationComponent.h"
 #include "StatusEffects/StatusEffectHandlingComponent.h"
+#include "UObject/Class.h"
 
 bool UCompoundModularCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
 {
@@ -43,6 +44,16 @@ void UCompoundModularCondition::OnExecution(const TArray<FVector>& targetLocatio
 	}
 }
 
+FFormatNamedArguments UCompoundModularCondition::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	for (UModularExtraConditionsBase* Condition : Conditions)
+	{
+		Args.Append(Condition->GetDescriptionArguments());
+	}
+	return Args;
+}
+
 bool USpellCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
 {
 	for (const TSubclassOf<ABaseSpell>& SpellType : AllowedSpellTypes)
@@ -52,6 +63,16 @@ bool USpellCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AA
 	}
 
 	return false;
+}
+
+FFormatNamedArguments USpellCondition::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	for (size_t i = 0; i < AllowedSpellTypes.Num(); i++)
+	{
+		Args.Add(TEXT("AllowedSpell") + FString::FromInt(i), AllowedSpellTypes[i]->GetDisplayNameText());
+	}
+	return Args;
 }
 
 bool UCooldownCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
@@ -64,9 +85,23 @@ void UCooldownCondition::OnExecution(const TArray<FVector>& targetLocations, con
 	instigator->GetWorld()->GetTimerManager().SetTimer(TimerHandle, CooldownTime, false);
 }
 
+FFormatNamedArguments UCooldownCondition::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("CooldownTime"), CooldownTime);
+	return Args;
+}
+
 bool USpellStatusEffectCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
 {
 	return spell->GetStatusEffectsRef().FindByPredicate([this](const UBaseStatusEffect* StatusEffect) {return StatusEffect->IsA(RequiredStatusEffect); }) != nullptr;
+}
+
+FFormatNamedArguments USpellStatusEffectCondition::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("RequiredSpellStatusEffect"), RequiredStatusEffect->GetDisplayNameText());
+	return Args;
 }
 
 bool UTargetAffectedByStatusEffectCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
@@ -85,6 +120,13 @@ bool UTargetAffectedByStatusEffectCondition::CheckCondition(AActor* triggerOwner
 	return FoundEffect != nullptr;
 }
 
+FFormatNamedArguments UTargetAffectedByStatusEffectCondition::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("RequiredAffectingStatusEffect"), RequiredStatusEffectType->GetDisplayNameText());
+	return Args;
+}
+
 bool UTargetInRangeCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
 {
 	if (!IsValid(triggerOwner) || !IsValid(target))
@@ -93,15 +135,36 @@ bool UTargetInRangeCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* s
 	return FVector::DistSquared(triggerOwner->GetActorLocation(), target->GetActorLocation()) < Range * Range;
 }
 
+FFormatNamedArguments UTargetInRangeCondition::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("MaximumDistance"), Range);
+	return Args;
+}
+
 bool URandomChanceCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
 {
-	return FMath::FRand() <= Chance;
+	return FMath::FRand() <= (Chance/100.f);
+}
+
+FFormatNamedArguments URandomChanceCondition::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("ActivationChance"), Chance);
+	return Args;
 }
 
 bool UNthActivationCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
 {
 	ActivatonCount++;
 	return ActivatonCount % ActivationInterval == 0;
+}
+
+FFormatNamedArguments UNthActivationCondition::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("ActivationInterval"), ActivationInterval);
+	return Args;
 }
 
 bool USpellElementCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
@@ -121,4 +184,32 @@ bool USpellElementCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* sp
 		}
 	}
 	return false;
+}
+
+FFormatNamedArguments USpellElementCondition::GetDescriptionArguments()
+{
+	const UEnum* WizardElementEnum = FindObject<UEnum>(ANY_PACKAGE, TEXT("WizardElement"));
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("SpellElement"), WizardElementEnum->GetDisplayNameTextByValue((int64)Element));
+	return Args;
+}
+
+bool ULatestElementCondition::CheckCondition(AActor* triggerOwner, ABaseSpell* spell, AActor* target)
+{
+	UElementManipulationComponent* SpellCastingComp = triggerOwner->GetComponentByClass<UElementManipulationComponent>();
+	if (IsValid(SpellCastingComp))
+	{
+		const TArray<WizardElement>& ActiveElements = SpellCastingComp->GetActiveElements();
+		if (!ActiveElements.IsEmpty() && ActiveElements[0] == Element)
+			return true;
+	}
+	return false;
+}
+
+FFormatNamedArguments ULatestElementCondition::GetDescriptionArguments()
+{
+	const UEnum* WizardElementEnum = FindObject<UEnum>(ANY_PACKAGE, TEXT("WizardElement"));
+	FFormatNamedArguments Args;
+	Args.Add(TEXT("LatestElement"), WizardElementEnum->GetDisplayNameTextByValue((int64)Element));
+	return Args;
 }

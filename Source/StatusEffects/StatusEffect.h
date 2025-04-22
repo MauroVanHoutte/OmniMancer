@@ -63,11 +63,14 @@ public:
 
 	virtual void SetParamsFrom(UBaseStatusEffect* StatusEffect);
 
+	virtual FFormatNamedArguments GetDescriptionArguments();
+
 	UPROPERTY(EditDefaultsOnly)
 	FName Identifier;
 	UPROPERTY()
 	class APawn* Instigator;
-
+	
+	// Description argument is named TotalDuration
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float TotalDuration = 3.f;
 	UPROPERTY(VisibleAnywhere)
@@ -101,6 +104,14 @@ class UBaseStackingStatusEffect : public UBaseStatusEffect
 public:
 	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 	virtual void AddStack() {};
+
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+protected:
+	// Description argument is named StackLimit
+	UPROPERTY(EditDefaultsOnly)
+	int StackLimit = -1;
+	int CurrentStacks = 0;
 };
 
 UCLASS(BlueprintType, EditInlineNew)
@@ -112,6 +123,9 @@ public:
 	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+	// Description argument is named SpeedReduction(%)
 	UPROPERTY(EditDefaultsOnly)
 	float SpeedMultiplier = 0.5f;
 };
@@ -126,10 +140,14 @@ public:
 	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 	virtual void Update(float DeltaTime, AActor* Target) override;
 
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+	// Description argument is named DamageInterval
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float Interval = 0.5f;
 	UPROPERTY()
 	float Timer = 0.f;
+	// Description argument is named TickDamage
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float Damage = 2.f;
 };
@@ -145,8 +163,12 @@ public:
 	UFUNCTION()
 	void OnFatalDamageTaken(UBaseHealthComponent* DamagedComponent, float DamageTaken, float OverkillDamage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+	// Description argument is named CurseDamage
 	UPROPERTY(EditDefaultsOnly)
 	float Damage;
+	// Description argument is named SpreadRange
 	UPROPERTY(EditDefaultsOnly)
 	float SpreadRange;
 };
@@ -160,12 +182,16 @@ public:
 	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
 private:
 	UFUNCTION()
 	void OnHitTaken(AActor* HittingObject, AActor* HitActor);
 
+	// Description argument is named MarkDamage
 	UPROPERTY(EditDefaultsOnly)
 	float Damage = 5;
+	// Description argument is named TriggerSpell
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class ABaseSpell> TriggerSpell;
 	UPROPERTY(EditDefaultsOnly)
@@ -181,9 +207,13 @@ public:
 	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
 private:
+	// Description argument is named ApplicableSpellN
 	UPROPERTY(EditDefaultsOnly)
 	TArray<TSubclassOf<ABaseSpell>> ApplicableSpells;
+	// Description argument is named CooldownReduction(%)
 	UPROPERTY(EditDefaultsOnly)
 	float CooldownMultiplier = 0.5f;
 	UPROPERTY(Transient)
@@ -199,10 +229,13 @@ public:
 	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
 private:
 	UFUNCTION()
 	void OnDamageTaken(class UBaseHealthComponent* DamagedComponent, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
+	// Description argument is named ExecutionThreshold(%)
 	UPROPERTY(EditDefaultsOnly)
 	float ExecutionThreshold = 0.2f;
 	UPROPERTY(Transient)
@@ -224,15 +257,51 @@ public:
 	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
 
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
 private:
 	UFUNCTION()
 	void OnDamageTaken(class UBaseHealthComponent* DamagedComponent, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
+	// Description argument is named TransferPercentage(%)
 	UPROPERTY(EditDefaultsOnly)
 	float TransferPercentage = 0.25f;
+	// Description argument is named ChainRange
 	UPROPERTY(EditDefaultsOnly)
-	float MaxRange = 800.f;
+	float Range = 800.f;
 	UPROPERTY(Transient)
 	class UHealthManager* HealthManager;
 	static TArray<TPair<UChainDamageEffect*, AActor*>> ActiveChainEffects;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UInvulnerabilityEffect : public UBaseStatusEffect
+{
+	GENERATED_BODY()
+
+public:
+	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+
+private:
+	UFUNCTION()
+	void OnHitRegistered(AActor* HittingObject, AActor* HitActor);
+	UPROPERTY(EditDefaultsOnly)
+	class USoundBase* Sound;
+};
+
+UCLASS(BlueprintType, EditInlineNew)
+class UTemporaryStatBoostEffect : public UBaseStatusEffect
+{
+	GENERATED_BODY()
+
+public:
+	virtual bool Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+	virtual void Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects) override;
+
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Instanced)
+	class UBaseStatBoost* StatBoost;
 };

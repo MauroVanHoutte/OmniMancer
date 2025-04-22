@@ -37,7 +37,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	bool bStartActive = false;
 
-private:
+protected:
 	virtual FFormatNamedArguments GetDescriptionArguments() { return FFormatNamedArguments(); };
 };
 
@@ -49,6 +49,9 @@ class UNREALPROJECT_API UTriggerUpgrade : public UCharacterUpgrade
 public:
 	virtual void Apply(AActor* character) override;
 	virtual void Remove(AActor* character) override;
+
+protected:
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -66,29 +69,12 @@ public:
 	virtual void Apply(AActor* character) override;
 	virtual void Remove(AActor* character) override;
 
+protected:
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
 private:
 	UPROPERTY(EditDefaultsOnly, Instanced)
 	class UBaseStatBoost* StatBoost;
-};
-
-//Cooldown upgrade
-UCLASS(BlueprintType, EditInlineNew)
-class UNREALPROJECT_API UCooldownMultiplierUpgrade : public UCharacterUpgrade
-{
-	GENERATED_BODY()
-public:
-	virtual void Apply(AActor* character) override;
-	virtual void Remove(AActor* character) override;
-
-private:
-	UPROPERTY(EditDefaultsOnly)
-	float Multiplier = 0.8f;
-	UPROPERTY(EditDefaultsOnly)
-	bool bSpellMultiplier = true;
-	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "bSpellMultiplier"))
-	TSubclassOf<class ABaseSpell> SpellType;
-	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "!bSpellMultiplier"))
-	WizardElement Element = WizardElement::None;
 };
 
 //Repeating effect
@@ -114,7 +100,7 @@ public:
 	virtual void Remove(AActor* character) override;
 
 protected:
-	virtual FFormatNamedArguments GetDescriptionArguments();
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 	UPROPERTY(EditDefaultsOnly, Instanced)
 	class UBaseHealthComponent* ShieldComponent;

@@ -13,6 +13,7 @@ class UModularTriggerEffectBase : public UObject
 	GENERATED_BODY()
 public:
 	virtual void ExecuteEffect(class ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) {};
+	virtual FFormatNamedArguments GetDescriptionArguments() { return FFormatNamedArguments(); };
 };
 
 UCLASS(Abstract, Blueprintable)
@@ -35,6 +36,7 @@ class UStatusEffectTriggerEffect : public UModularTriggerEffectBase
 	GENERATED_BODY()
 public:
 	virtual void ExecuteEffect(class ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Instanced)
@@ -47,10 +49,12 @@ class URadialProjectilesTriggerEffect : public UModularTriggerEffectBase
 	GENERATED_BODY()
 public:
 	virtual void ExecuteEffect(class ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class ABaseProjectile> ProjectileType;
+	// Description Argument is named ProjectileCount
 	UPROPERTY(EditDefaultsOnly)
 	int ProjectileCount = 5;
 };
@@ -61,8 +65,10 @@ class UHealTargets : public UModularTriggerEffectBase
 	GENERATED_BODY()
 public:
 	virtual void ExecuteEffect(class ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// Description Argument is named HealAmount
 	UPROPERTY(EditDefaultsOnly)
 	float HealAmount = 5.f;
 };
@@ -73,10 +79,12 @@ class UDamagePerHitActorOnSpellEndTriggerEffect : public UModularTriggerEffectBa
 	GENERATED_BODY()
 public:
 	virtual void ExecuteEffect(class ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
 	UFUNCTION()
 	void OnSpellDestroyed(class ABaseSpell* Spell);
+	// Description Argument is named DamagePerTarget
 	UPROPERTY(EditDefaultsOnly)
 	float DamagePerTarget = 3.f;
 };
@@ -87,8 +95,10 @@ class UCastSpellTriggerEffect : public UModularTriggerEffectBase
 	GENERATED_BODY()
 public:
 	virtual void ExecuteEffect(class ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// Description Argument is named SpellToCast
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class ABaseSpell> SpellToCast;
 	UPROPERTY(EditDefaultsOnly)
@@ -104,10 +114,13 @@ class UCastOnSpellDestroyedTriggerEffect : public UModularTriggerEffectBase
 	GENERATED_BODY()
 public:
 	virtual void ExecuteEffect(class ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
 	UFUNCTION()
 	void CastSpell(class ABaseSpell* Spell);
+
+	// Description Argument is named SpellToCast
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class ABaseSpell> SpellToCast;
 	UPROPERTY(EditDefaultsOnly)
@@ -126,16 +139,20 @@ class URecastDamageSizeMulTriggerEffect : public UModularTriggerEffectBase
 	GENERATED_BODY()
 public:
 	virtual void ExecuteEffect(class ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
 	UFUNCTION()
 	void CastSpell(class ABaseSpell* Spell);
+	// Description Argument is named RecastCount
 	UPROPERTY(EditDefaultsOnly)
 	int RecastCount;
 	UPROPERTY(EditDefaultsOnly)
 	bool bSendSpellEvents = false;
+	// Description Argument is named SizeMultiplier
 	UPROPERTY(EditDefaultsOnly)
 	float SizeMultiplier = 1.75f;
+	// Description Argument is named DamageMultiplier
 	UPROPERTY(EditDefaultsOnly)
 	float DamageMultiplier = 0.5f;
 	UPROPERTY(Transient)
@@ -149,8 +166,10 @@ class UAddBouncesTriggerEffect : public UModularTriggerEffectBase
 	GENERATED_BODY()
 public:
 	virtual void ExecuteEffect(class ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// Description Argument is named ExtraBounces
 	UPROPERTY(EditDefaultsOnly)
 	int ExtraBounces = 1;
 };
@@ -161,13 +180,30 @@ class USummonTriggerEffect : public UModularTriggerEffectBase
 	GENERATED_BODY()
 public:
 	virtual void ExecuteEffect(class ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
 
 private:
+	// Description Argument is SummonedClass
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<APawn> SummonedClass;
+	TSubclassOf<class APooledActor> SummonedClass;
+	// Description Argument is SummonLimit
 	UPROPERTY(EditDefaultsOnly)
 	int SummonLimit = 5;
 	int QueueSize = 0;
 	UPROPERTY(Transient)
 	TArray<AActor*> SummonQueue;
+};
+
+UCLASS()
+class UReduceCooldownsForActiveElementsEffect : public UModularTriggerEffectBase
+{
+	GENERATED_BODY()
+public:
+	virtual void ExecuteEffect(class ABaseSpell* TriggeringSpell, const TArray<FVector>& targetLocations, const TArray<class AActor*>& targetActors, float Damage, class APawn* instigator) override;
+	virtual FFormatNamedArguments GetDescriptionArguments() override;
+
+private:
+	// Description Argument is CooldownReductionAmount
+	UPROPERTY(EditDefaultsOnly)
+	float ReductionAmount = 0.3f;
 };

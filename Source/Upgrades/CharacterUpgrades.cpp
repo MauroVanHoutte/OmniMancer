@@ -33,46 +33,24 @@ void UTriggerUpgrade::Remove(AActor* character)
 	}
 }
 
-void UStatUpgrade::Remove(AActor* character)
+FFormatNamedArguments UTriggerUpgrade::GetDescriptionArguments()
 {
-
+	return TriggerEffect->GetDescriptionArguments();
 }
 
 void UStatUpgrade::Apply(AActor* character)
 {
-
+	StatBoost->Apply(character);
 }
 
-void UCooldownMultiplierUpgrade::Apply(AActor* character)
+void UStatUpgrade::Remove(AActor* character)
 {
-	UElementManipulationComponent* SpellCasting = character->GetComponentByClass<UElementManipulationComponent>();
-	if (IsValid(SpellCasting))
-	{
-		if (bSpellMultiplier)
-		{
-			SpellCasting->AddCooldownMultiplier(SpellType, Multiplier);
-		}
-		else
-		{
-			SpellCasting->AddCooldownMultiplierForElement(Element, Multiplier);
-		}
-	}
+	StatBoost->Remove(character);
 }
 
-void UCooldownMultiplierUpgrade::Remove(AActor* character)
+FFormatNamedArguments UStatUpgrade::GetDescriptionArguments()
 {
-	UElementManipulationComponent* SpellCasting = character->GetComponentByClass<UElementManipulationComponent>();
-	if (IsValid(SpellCasting))
-	{
-		if (bSpellMultiplier)
-		{
-			SpellCasting->AddCooldownMultiplier(SpellType, 1/Multiplier);
-		}
-		else
-		{
-			SpellCasting->AddCooldownMultiplierForElement(Element, 1/Multiplier);
-		}
-	}
+	return StatBoost->GetDescriptionArguments();
 }
 
 void URepeatingEffectUpgrade::Apply(AActor* character)
@@ -126,7 +104,7 @@ void UShieldUpgrade::Remove(AActor* character)
 FFormatNamedArguments UShieldUpgrade::GetDescriptionArguments()
 {
 	FFormatNamedArguments Args;
-	Args.Add("ShieldHealthPerLevel", ShieldHealthPerLevel * CurrentLevel + 1);
+	Args.Add("TotalShieldHealth", BaseShieldHealth + (ShieldHealthPerLevel * (CurrentLevel + 1)));
 	return Args;
 }
 

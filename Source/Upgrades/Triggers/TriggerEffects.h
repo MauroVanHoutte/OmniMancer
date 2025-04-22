@@ -15,7 +15,6 @@
 #include "StatusEffects/StatusEffect.h"
 #include "StatusEffects/StatusEffectHandlingComponent.h"
 #include <Engine/DamageEvents.h>
-
 #include "TriggerEffects.generated.h"
 
 UCLASS(Abstract, EditInlineNew)
@@ -26,6 +25,7 @@ public:
 	virtual void Trigger(AActor* triggerOwner, ABaseSpell* spell, AActor* target, float Damage) {};
 	UPROPERTY(BlueprintReadOnly)
 	class APawn* Instigator;
+	virtual FFormatNamedArguments GetDescriptionArguments() { return FFormatNamedArguments(); };
 };
 
 UCLASS(Abstract, Blueprintable, EditInlineNew)
@@ -70,6 +70,19 @@ public:
 
 		EffectModule->ExecuteEffect(spell, targetLocations, targetActors, Damage, Instigator);
 	}
+
+	virtual FFormatNamedArguments GetDescriptionArguments() 
+	{ 
+		FFormatNamedArguments Arguments;
+		if (IsValid(ConditionsModule))
+			Arguments.Append(ConditionsModule->GetDescriptionArguments());
+		if (IsValid(TargettingModule))
+			Arguments.Append(TargettingModule->GetDescriptionArguments());
+		if (IsValid(EffectModule))
+			Arguments.Append(EffectModule->GetDescriptionArguments());
+		
+		return Arguments; 
+	};
 
 private:
 	UPROPERTY(EditDefaultsOnly, Instanced)
@@ -384,7 +397,6 @@ private:
 	float HealAmount = 10.f;
 };
 
-//
 UCLASS(BlueprintType, EditInlineNew)
 class UDamagePerHitActorOnSpellEndTrigger : public UBaseTriggerEffect
 {

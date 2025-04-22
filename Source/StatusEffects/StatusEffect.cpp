@@ -9,10 +9,12 @@
 #include "Health/BaseHealthComponent.h"
 #include "Health/HealthManager.h"
 #include "Health/HitHandlingComponent.h"
+#include <Kismet/GameplayStatics.h>
 #include <NiagaraComponent.h>
 #include "Upgrades/StatUpgrades/StatComponent.h"
 #include "SpellCasting/ElementManipulationComponent.h"
 #include "StatusEffectHandlingComponent.h"
+#include "Upgrades/StatUpgrades/StatBoosts.h"
 
 //FStatusEffect::FStatusEffect(Type type, float interval, float value, float duration, UObject* cause)
 //	: EffectType{type}
@@ -72,6 +74,13 @@ void UBaseStatusEffect::SetParamsFrom(UBaseStatusEffect* StatusEffect)
 {
 	ensure(StaticClass() == StatusEffect->StaticClass());
 	UEngine::CopyPropertiesForUnrelatedObjects(StatusEffect, this);
+}
+
+FFormatNamedArguments UBaseStatusEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Add("TotalDuration", TotalDuration);
+	return Args;
 }
 
 bool UBaseStackingStatusEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
@@ -147,6 +156,15 @@ void UDamageOverTimeStatusEffect::Update(float DeltaTime, AActor* Target)
 	}
 }
 
+FFormatNamedArguments UDamageOverTimeStatusEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Append(Super::GetDescriptionArguments());
+	Args.Add(TEXT("TickDamage"), Damage);
+	Args.Add(TEXT("DamageInterval"), Interval);
+	return Args;
+}
+
 bool UCurseStatusEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
 {
 	bool bNotRefreshed = Super::Apply(Target, ActiveEffects);
@@ -203,6 +221,15 @@ void UCurseStatusEffect::OnFatalDamageTaken(UBaseHealthComponent* DamagedCompone
 	}
 }
 
+FFormatNamedArguments UCurseStatusEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Append(Super::GetDescriptionArguments());
+	Args.Add(TEXT("CurseDamage"), Damage);
+	Args.Add(TEXT("SpreadRange"), SpreadRange);
+	return Args;
+}
+
 bool UMovementSpeedStatusEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
 {
 	bool bNotRefreshed = Super::Apply(Target, ActiveEffects);
@@ -226,6 +253,14 @@ void UMovementSpeedStatusEffect::Remove(AActor* Target, TArray<UBaseStatusEffect
 	{
 		Stats->SetSpeedMultiplier(Stats->GetSpeedMultiplier() / SpeedMultiplier);
 	}
+}
+
+FFormatNamedArguments UMovementSpeedStatusEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Append(Super::GetDescriptionArguments());
+	Args.Add(TEXT("SpeedReduction"), (1 - SpeedMultiplier) * 100);
+	return Args;
 }
 
 bool UStunStatusEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
@@ -281,6 +316,14 @@ void UStunStatusEffect::Remove(AActor* Target, TArray<UBaseStatusEffect*>& Activ
 	}
 }
 
+FFormatNamedArguments UBaseStackingStatusEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Append(Super::GetDescriptionArguments());
+	Args.Add(TEXT("StackLimit"), StackLimit);
+	return Args;
+}
+
 bool USpellMark::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
 {
 	bool bNotRefreshed = Super::Apply(Target, ActiveEffects);
@@ -300,6 +343,15 @@ void USpellMark::Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffect
 	UHitHandlingComponent* HitHandling = Target->GetComponentByClass<UHitHandlingComponent>();
 	if (IsValid(HitHandling))
 		HitHandling->OnHitRegisteredDelegate.RemoveDynamic(this, &USpellMark::OnHitTaken);
+}
+
+FFormatNamedArguments USpellMark::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Append(Super::GetDescriptionArguments());
+	Args.Add(TEXT("TriggerSpell"), TriggerSpell->GetDisplayNameText());
+	Args.Add(TEXT("MarkDamage"), Damage);
+	return Args;
 }
 
 void USpellMark::OnHitTaken(AActor* HittingObject, AActor* HitActor)
@@ -349,6 +401,21 @@ void UTempCooldownReduction::Remove(AActor* Target, TArray<UBaseStatusEffect*>& 
 	}
 }
 
+FFormatNamedArguments UTempCooldownReduction::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Append(Super::GetDescriptionArguments());
+	for (size_t i = 0; i < ApplicableSpells.Num(); i++)
+	{
+		if (IsValid(ApplicableSpells[i]))
+		{
+			Args.Add(TEXT("ApplicableSpell") + i, ApplicableSpells[i]->GetDisplayNameText());
+		}
+	}
+	Args.Add(TEXT("CooldownReduction"), (1 - CooldownMultiplier) * 100);
+	return Args;
+}
+
 bool UExecuteEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
 {
 	bool bNotRefreshed = Super::Apply(Target, ActiveEffects);
@@ -372,6 +439,14 @@ void UExecuteEffect::Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEf
 	{
 		HealthManager->OnDamageTakenDelegate.RemoveDynamic(this, &UExecuteEffect::OnDamageTaken);
 	}
+}
+
+FFormatNamedArguments UExecuteEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Append(Super::GetDescriptionArguments());
+	Args.Add(TEXT("ExecutionThreshold"), ExecutionThreshold * 100);
+	return Args;
 }
 
 void UExecuteEffect::OnDamageTaken(UBaseHealthComponent* DamagedComponent, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
@@ -413,6 +488,15 @@ void UChainDamageEffect::Remove(AActor* Target, TArray<UBaseStatusEffect*>& Acti
 	}
 }
 
+FFormatNamedArguments UChainDamageEffect::GetDescriptionArguments()
+{
+	FFormatNamedArguments Args;
+	Args.Append(Super::GetDescriptionArguments());
+	Args.Add(TEXT("TransferPercentage"), TransferPercentage * 100);
+	Args.Add(TEXT("ChainRange"), Range);
+	return Args;
+}
+
 void UChainDamageEffect::OnDamageTaken(UBaseHealthComponent* DamagedComponent, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (!IsValid(DamageType) || !DamageType->IsA(UChainDamageType::StaticClass()))
@@ -430,7 +514,7 @@ void UChainDamageEffect::OnDamageTaken(UBaseHealthComponent* DamagedComponent, f
 				{
 					for (size_t i = 0; i < ReachedActors.Num(); i++)
 					{
-						if (IsValid(ReachedActors[i]) && FVector::DistSquared(ReachedActors[i]->GetActorLocation(), Pair.Value->GetActorLocation()) < MaxRange * MaxRange)
+						if (IsValid(ReachedActors[i]) && FVector::DistSquared(ReachedActors[i]->GetActorLocation(), Pair.Value->GetActorLocation()) < Range * Range)
 						{
 							ReachedActors.Add(Pair.Value);
 							NewlyReachedActors++;
@@ -451,4 +535,69 @@ void UChainDamageEffect::OnDamageTaken(UBaseHealthComponent* DamagedComponent, f
 			}
 		}
 	}
+}
+
+bool UInvulnerabilityEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	bool bNotRefreshed = Super::Apply(Target, ActiveEffects);
+	if (bNotRefreshed)
+	{
+		if (IsValid(Target))
+		{
+			UHealthManager* HealthManager = Target->GetComponentByClass<UHealthManager>();
+			if (IsValid(HealthManager))
+			{
+				HealthManager->SetInvulnerability(true);
+			}
+			UHitHandlingComponent* HitHandling = Target->GetComponentByClass<UHitHandlingComponent>();
+			if (IsValid(HitHandling))
+			{
+				HitHandling->OnHitRegisteredDelegate.AddDynamic(this, &UInvulnerabilityEffect::OnHitRegistered);
+			}
+		}
+	}
+	return bNotRefreshed;
+}
+
+void UInvulnerabilityEffect::Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	if (IsValid(Target))
+	{
+		UHealthManager* HealthManager = Target->GetComponentByClass<UHealthManager>();
+		if (IsValid(HealthManager))
+		{
+			HealthManager->SetInvulnerability(false);
+		}
+		UHitHandlingComponent* HitHandling = Target->GetComponentByClass<UHitHandlingComponent>();
+		if (IsValid(HitHandling))
+		{
+			HitHandling->OnHitRegisteredDelegate.RemoveDynamic(this, &UInvulnerabilityEffect::OnHitRegistered);
+		}
+	}
+}
+
+void UInvulnerabilityEffect::OnHitRegistered(AActor* HittingObject, AActor* HitActor)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Hit registered while invulnerable"));
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), Sound, HitActor->GetActorLocation());
+}
+
+bool UTemporaryStatBoostEffect::Apply(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	bool bNotRefreshed = Super::Apply(Target, ActiveEffects);
+	if (bNotRefreshed)
+	{
+		StatBoost->Apply(Target);
+	}
+	return bNotRefreshed;
+}
+
+void UTemporaryStatBoostEffect::Remove(AActor* Target, TArray<UBaseStatusEffect*>& ActiveEffects)
+{
+	StatBoost->Remove(Target);
+}
+
+FFormatNamedArguments UTemporaryStatBoostEffect::GetDescriptionArguments()
+{
+	return StatBoost->GetDescriptionArguments();
 }
