@@ -2,11 +2,13 @@
 
 
 #include "Coin.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include "WizardCharacter.h"
 #include "OmnimancerGameInstance.h"
 #include <GameFramework/ProjectileMovementComponent.h>
 #include <Components/SphereComponent.h>
 #include "Upgrades/ExperienceComponent.h"
+#include "Upgrades/StatUpgrades/StatComponent.h"
 
 // Sets default values
 ACoin::ACoin()
@@ -62,6 +64,7 @@ void ACoin::HomeInToTarget(AActor* Target)
 	{
 		HomeInTarget = Target;
 	}
+	CollisionComponent->SetEnableGravity(false);
 }
 
 int ACoin::GetValue()
@@ -71,11 +74,25 @@ int ACoin::GetValue()
 
 void ACoin::OnTriggeredByPlayer_Implementation(AActor* Player)
 {
-	UExperienceComponent* ExperienceComponent = Player->GetComponentByClass<UExperienceComponent>();
-	
-	if (IsValid(ExperienceComponent))
-		ExperienceComponent->AddExperience(Value);
+	if (bIsExperience)
+	{
+		UExperienceComponent* ExperienceComponent = Player->GetComponentByClass<UExperienceComponent>();
 
-	Destroy();
+		if (IsValid(ExperienceComponent))
+			ExperienceComponent->AddExperience(Value);
+	}
+	else
+	{
+		UStatComponent* Stats = Player->GetComponentByClass<UStatComponent>();
+		if (IsValid(Stats))
+			Stats->SetCurrency(Stats->GetCurrency() + Value);
+	}
+
+
+
+	HomeInTarget = nullptr;
+	Time = 0;
+	CollisionComponent->SetEnableGravity(true);
+	ReturnToPoolOrDestroy();
 }
 

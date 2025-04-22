@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ActorPool/PooledActor.h"
 #include "GameFramework/Actor.h"
 #include "Curves/CurveFloat.h"
 #include "PlayerTriggerInterace.h"
@@ -13,7 +14,7 @@ class USphereComponent;
 class AWizardCharacter;
 
 UCLASS()
-class UNREALPROJECT_API ACoin : public AActor, public IPlayerTriggerInterface
+class UNREALPROJECT_API ACoin : public APooledActor, public IPlayerTriggerInterface
 {
 	GENERATED_BODY()
 	
@@ -42,7 +43,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* Mesh;
 	UPROPERTY(EditAnywhere)
-	bool IsExperience = true;
+	bool bIsExperience = true;
 	UPROPERTY(EditAnywhere)
 	int Value = 1;
 	UPROPERTY(EditAnywhere)
