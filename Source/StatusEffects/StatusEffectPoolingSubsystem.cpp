@@ -52,7 +52,7 @@ void UStatusEffectPoolingSubsystem::ReturnStatusEffectInstance(const UBaseStatus
             {
                 return StatusEffect == PooledStatusEffect.StatusEffect;
             });
-        ensure(Instance);
-        Instance->bInUse = false;
+        if (ensure(Instance))
+            Instance->bInUse = false;
     }
 }
