@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BossCombatEncounterManager.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include "Health/HealthManager.h"
 #include "Rooms/SpawnLocation.h"
 
@@ -10,18 +11,19 @@ void UBossCombatEncounterManager::StartEncounter()
 
 	if (!BossOptions.IsEmpty())
 	{
+		UActorPoolingSubsystem* PoolingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UActorPoolingSubsystem>();
 		TSubclassOf<APawn> Chosen = BossOptions[FMath::RandRange(0, BossOptions.Num() - 1)];
 		if (IsValid(SpawnLocationClass))
 		{
-			ASpawnLocation* BossSpawnLocation = GetWorld()->SpawnActor<ASpawnLocation>(SpawnLocationClass, GetComponentLocation(), FRotator(0, 0, 0));
+			ASpawnLocation* BossSpawnLocation = Cast<ASpawnLocation>(PoolingSystem->GetActorFromPool(SpawnLocationClass));
+			BossSpawnLocation->SetActorLocationAndRotation(GetComponentLocation(), FRotator(0, 0, 0));
 			BossSpawnLocation->StartSpawnTimer(4.f, Chosen, 0.5f);
 			BossSpawnLocation->OnEnemySpawnedDelegate.AddDynamic(this, &UBossCombatEncounterManager::OnBossSpawned);
 		}
 		else
 		{
-			FActorSpawnParameters Params;
-			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			AActor* Boss = GetWorld()->SpawnActor<AActor>(Chosen, GetComponentLocation(), FRotator(0, 0, 0), Params);
+			AActor* Boss = PoolingSystem->GetActorFromPool(Chosen);
+			Boss->SetActorLocationAndRotation(GetComponentLocation(), FRotator(0, 0, 0));
 
 			UHealthManager* HealthManager = Boss->GetComponentByClass<UHealthManager>();
 			if (IsValid(HealthManager))

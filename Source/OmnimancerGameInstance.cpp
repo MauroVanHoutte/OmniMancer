@@ -2,11 +2,12 @@
 
 
 #include "OmnimancerGameInstance.h"
-#include "Kismet/GameplayStatics.h"
-#include "OmnimancerSaveGame.h"
 #include "Json.h"
-#include "Rooms/RoomPortal.h"
+#include "Kismet/GameplayStatics.h"
 #include "Misc/FileHelper.h"
+#include "OmnimancerSaveGame.h"
+#include "Rooms/RoomPortal.h"
+#include "Rooms/RoomFlowData.h"
 
 void UOmnimancerGameInstance::Init()
 {
@@ -90,13 +91,28 @@ int UOmnimancerGameInstance::IncrementCompletedRoomCount()
 	return ++CompletedRooms;
 }
 
-void UOmnimancerGameInstance::SetPortalTypes(TArray<ARoomPortal*> InOutPortals)
+void UOmnimancerGameInstance::SetPortalTypes(TArray<ARoomPortal*>& InOutPortals)
 {
-	TArray<RoomType> Types {RoomType::FireReward, RoomType::IceReward, RoomType::WindReward};
-	for (size_t i = 0; i < InOutPortals.Num(); i++)
+	if (IsValid(RoomOptions))
 	{
-		InOutPortals[i]->SetRoomType(Types[i % Types.Num()]);
+		TArray<RoomType> Types;
+		RoomOptions->GetRoomOptionsForRoomCount(CompletedRooms, Types);
+		for (ARoomPortal* Portal : InOutPortals)
+		{
+			if (!Types.IsEmpty())
+			{
+				Portal->SetRoomType(Types.Pop());
+				Portal->SetActorHiddenInGame(false);
+				Portal->SetActorEnableCollision(true);
+			}
+			else
+			{
+				Portal->SetActorHiddenInGame(true);
+				Portal->SetActorEnableCollision(false);
+			}
+		}
 	}
+	GEngine->AddOnScreenDebugMessage(443343123, 4, FColor::Blue, FString::FromInt(CompletedRooms));
 }
 
 int UOmnimancerGameInstance::GetCurrency()

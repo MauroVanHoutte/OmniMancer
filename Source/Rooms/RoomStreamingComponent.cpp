@@ -3,21 +3,41 @@
 #include "Rooms/RoomStreamingComponent.h"
 #include <Engine/LevelStreamingDynamic.h>
 #include <Kismet/GameplayStatics.h>
+#include "Rooms/RoomTypeLevels.h"
 
-ULevelStreaming* URoomStreamingComponent::LoadNextRoom()
+ULevelStreaming* URoomStreamingComponent::LoadNextRoom(RoomType Type)
 {
-	TSoftObjectPtr<UWorld> ChosenLevel = PossibleLevels[0];
-	FTransform Transform;
-	Transform.SetLocation(GetOwner()->GetActorLocation() + FVector(10000, 0, 0));
-	bool bSucces;
-	LevelStreamingInstance = ULevelStreamingDynamic::LoadLevelInstanceBySoftObjectPtr(GetWorld(), ChosenLevel, Transform, bSucces);
-
-	if (IsValid(LevelStreamingInstance))
+	if (IsValid(Levels) && Levels->LevelArrays.Contains(Type))
 	{
-		LevelStreamingInstance->OnLevelShown.AddDynamic(this, &URoomStreamingComponent::OnLevelShown);
+		FLevelArray* LevelsForType = Levels->LevelArrays.Find(Type);
+		if (!LevelsForType->LevelArray.IsEmpty())
+		{
+			FTransform Transform;
+			Transform.SetLocation(GetOwner()->GetActorLocation() + FVector(10000, 0, 0));
+			GEngine->AddOnScreenDebugMessage(1213, 10, FColor::Red, Transform.GetLocation().ToString());
+			int NrOptions = LevelsForType->LevelArray.Num();
+			TSoftObjectPtr<UWorld> ChosenLevel = LevelsForType->LevelArray[FMath::RandRange(0, NrOptions - 1)];
+			bool bSucces;
+			LevelStreamingInstance = ULevelStreamingDynamic::LoadLevelInstanceBySoftObjectPtr(GetWorld(), ChosenLevel, Transform, bSucces);
+
+			if (IsValid(LevelStreamingInstance))
+			{
+				LevelStreamingInstance->OnLevelShown.AddDynamic(this, &URoomStreamingComponent::OnLevelShown);
+			}
+
+			return LevelStreamingInstance;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("RoomTypeLevels asset does not contain any levels for type"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RoomTypeLevels asset invalid or does not contain any levels for type"));
 	}
 
-	return LevelStreamingInstance;
+	return nullptr;
 }
 
 void URoomStreamingComponent::UnloadPastRooms()

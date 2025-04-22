@@ -1,11 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "WaveCombatEncounterManager.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include <Components/ShapeComponent.h>
 #include <Kismet/KismetMathLibrary.h>
 #include <Kismet/GameplayStatics.h>
 #include <NavigationSystem.h>
 #include "Rooms/SpawnLocation.h"
+
+UWaveCombatEncounterManager::UWaveCombatEncounterManager()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+	SetComponentTickEnabled(true);
+}
 
 void UWaveCombatEncounterManager::StartEncounter()
 {
@@ -13,7 +20,15 @@ void UWaveCombatEncounterManager::StartEncounter()
 
 	if (PossibleEncounters.Num() > 0)
 	{
-		StartWaves();
+		SelectedEncounterIndex = FMath::RandRange(0, PossibleEncounters.Num() - 1);
+		if (IsValid(PossibleEncounters[SelectedEncounterIndex]))
+		{
+			StartWaves();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Encounter at index %d on %s is invalid"), SelectedEncounterIndex, *GetOwner()->GetActorNameOrLabel());
+		}
 	}
 }
 
@@ -132,16 +147,21 @@ void UWaveCombatEncounterManager::QueuePackSpawn(const FVector& PackCenter, cons
 {
 	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(GetWorld());
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	for (const UEnemySpawnParams* EnemyParams : SpawnParams->PackComposition)
+	UActorPoolingSubsystem* PoolingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UActorPoolingSubsystem>();
+	if (IsValid(PoolingSystem))
 	{
-		FNavLocation NavLocation;
-		NavSystem->GetRandomReachablePointInRadius(PackCenter, SpawnParams->PackRadius, NavLocation);
-		ASpawnLocation* SpawnWarning = GetWorld()->SpawnActor<ASpawnLocation>(EnemyParams->SpawnIndicatorClass, NavLocation.Location, FRotator(0,0,0));
-		float Delay = EnemyParams->BaseDelay + FMath::RandRange(0.f, EnemyParams->DelayVariance);
-		float Duration = EnemyParams->BaseWarningTime + FMath::RandRange(0.f, EnemyParams->WarningTimeVariance);
-		TrackSpawnedEnemy(SpawnWarning);
-		SpawnWarning->OnEnemySpawnedDelegate.AddDynamic(this, &UWaveCombatEncounterManager::TrackSpawnedEnemy);
-		SpawnWarning->StartSpawnTimer(Duration, EnemyParams->EnemyClass, Delay);
+		for (const UEnemySpawnParams* EnemyParams : SpawnParams->PackComposition)
+		{
+			FNavLocation NavLocation;
+			NavSystem->GetRandomReachablePointInRadius(PackCenter, SpawnParams->PackRadius, NavLocation);
+			ASpawnLocation* SpawnWarning = Cast<ASpawnLocation>(PoolingSystem->GetActorFromPool(EnemyParams->SpawnIndicatorClass));
+			SpawnWarning->SetActorLocationAndRotation(NavLocation.Location, FRotator(0, 0, 0));
+			float Delay = EnemyParams->BaseDelay + FMath::RandRange(0.f, EnemyParams->DelayVariance);
+			float Duration = EnemyParams->BaseWarningTime + FMath::RandRange(0.f, EnemyParams->WarningTimeVariance);
+			TrackSpawnedEnemy(SpawnWarning);
+			SpawnWarning->OnEnemySpawnedDelegate.AddUniqueDynamic(this, &UWaveCombatEncounterManager::TrackSpawnedEnemy);
+			SpawnWarning->StartSpawnTimer(Duration, EnemyParams->EnemyClass, Delay);
+		}
 	}
 }
 
@@ -224,17 +244,34 @@ void UWaveCombatEncounterManager::TrackSpawnedEnemy(AActor* SpawnedActor)
 {
 	if (IsValid(SpawnedActor))
 	{
-		SpawnedActor->OnEndPlay.AddDynamic(this, &UWaveCombatEncounterManager::OnTrackedEnemyDestroyed);
+		if (IPooledActorInterface* PoolingInterface = Cast<IPooledActorInterface>(SpawnedActor))
+		{
+			PoolingInterface->GetReturnedToPoolDelegate().AddUniqueDynamic(this, &UWaveCombatEncounterManager::OnTrackedEnemyDestroyed);
+		}
+		else
+		{
+			SpawnedActor->OnDestroyed.AddUniqueDynamic(this, &UWaveCombatEncounterManager::OnTrackedEnemyDestroyed);
+		}
+
 		SpawnedEnemies.Add(SpawnedActor);
 	}
 }
 
-void UWaveCombatEncounterManager::OnTrackedEnemyDestroyed(AActor* Actor, EEndPlayReason::Type EndPlayReason)
+void UWaveCombatEncounterManager::OnTrackedEnemyDestroyed(AActor* Actor)
 {
+	if (IPooledActorInterface* PoolingInterface = Cast<IPooledActorInterface>(Actor))
+	{
+		PoolingInterface->GetReturnedToPoolDelegate().RemoveDynamic(this, &UWaveCombatEncounterManager::OnTrackedEnemyDestroyed);
+	}
+	else
+	{
+		Actor->OnDestroyed.RemoveDynamic(this, &UWaveCombatEncounterManager::OnTrackedEnemyDestroyed);
+	}
+
 	SpawnedEnemies.Remove(Actor);
 	UEncounterParams* Encounter = PossibleEncounters[SelectedEncounterIndex];
 	int TotalWaves = Encounter->bSpecifiedWaves ? Encounter->WavePacks.Num() - 1 : Encounter->NrOfWaves;
-	if (CurrentWave >= TotalWaves && SpawnedEnemies.Num() == 0)
+	if (CurrentWave > TotalWaves && SpawnedEnemies.Num() == 0)
 	{
 		EncounterCompleted();
 	}

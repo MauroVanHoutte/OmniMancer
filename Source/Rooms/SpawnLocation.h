@@ -2,12 +2,13 @@
 
 #pragma once
 #include "CoreMinimal.h"
+#include "ActorPool/PooledActor.h"
 #include "SpawnLocation.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemySpawnedSignature, AActor*, SpawnedEnemy);
 
 UCLASS()
-class UNREALPROJECT_API ASpawnLocation : public AActor
+class UNREALPROJECT_API ASpawnLocation : public APooledActor
 {
 	GENERATED_BODY()
 

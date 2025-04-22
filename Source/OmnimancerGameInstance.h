@@ -41,7 +41,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int IncrementCompletedRoomCount();
 	UFUNCTION(BlueprintCallable)
-	void SetPortalTypes(TArray<class ARoomPortal*> InOutPortals);
+	void SetPortalTypes(TArray<class ARoomPortal*>& InOutPortals);
 
 	UFUNCTION(BlueprintCallable)
 	int GetCurrency();
@@ -63,6 +63,8 @@ public:
 	FCurrencyChanged OnCurrencyChanged;
 
 private:
+	UPROPERTY(EditDefaultsOnly)
+	class URoomFlowData* RoomOptions;
 	int CompletedRooms = 0;
 	int Currency = 500;
 	TSet<FString> UnlockedUpgrades{};

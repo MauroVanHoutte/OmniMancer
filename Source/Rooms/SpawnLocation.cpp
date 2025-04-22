@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SpawnLocation.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include <Components/DecalComponent.h>
 
 ASpawnLocation::ASpawnLocation()
@@ -46,6 +47,7 @@ void ASpawnLocation::BeginPlay()
 	Super::BeginPlay();
 
 	Decal->SetVisibility(false);
+	PoolingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UActorPoolingSubsystem>();
 }
 
 void ASpawnLocation::EnableWarning()
@@ -57,9 +59,8 @@ void ASpawnLocation::SpawnEnemy()
 {
 	if (IsValid(TypeToSpawn))
 	{
-		FActorSpawnParameters Params;
-		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		AActor* SpawnedEnemy = GetWorld()->SpawnActor<AActor>(TypeToSpawn.Get(), GetActorLocation(), FRotator(0, 0, 0), Params);
+		AActor* SpawnedEnemy = PoolingSystem->GetActorFromPool(TypeToSpawn);
+		SpawnedEnemy->SetActorLocationAndRotation(GetActorLocation(), FRotator(0, 0, 0));
 		OnEnemySpawnedDelegate.Broadcast(SpawnedEnemy);
 	}
 }

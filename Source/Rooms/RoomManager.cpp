@@ -1,5 +1,7 @@
 #include "Rooms/RoomManager.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include "Pickups/ElementPerkPickup.h"
+#include "Pickups/HealthIncreasePickup.h"
 #include <Kismet/GameplayStatics.h>
 #include "Rooms/RoomPortal.h"
 
@@ -15,14 +17,22 @@ void ARoomManager::SetRoomType(RoomType NewType)
 	Type = NewType;
 }
 
+bool ARoomManager::HasEncounterStarted()
+{
+	return bHasStarted;
+}
+
 void ARoomManager::StartEncounter()
 {
+	bHasStarted = true;
+
 	switch (Type)
 	{
 	case RoomType::FireReward:
 	case RoomType::IceReward:
 	case RoomType::WindReward:
 	case RoomType::HealReward:
+	case RoomType::Shop:
 		StartEnemyWavesEncounter();
 		break;
 	case RoomType::Boss:
@@ -44,8 +54,9 @@ void ARoomManager::StartEnemyWavesEncounter_Implementation()
 	OnEncounterCompleted();
 }
 
-void ARoomManager::StartBossEncounter()
+void ARoomManager::StartBossEncounter_Implementation()
 {
+	OnEncounterCompleted();
 }
 
 void ARoomManager::SpawnReward()
@@ -58,8 +69,13 @@ void ARoomManager::SpawnReward()
 		SpawnElementReward();
 		break;
 	case RoomType::HealReward:
+		SpawnHealthReward();
 		break;
 	case RoomType::Boss:
+		SpawnBossReward();
+		break;
+	case RoomType::Shop:
+		OpenShop();
 		break;
 	default:
 		ActivatePortals();
@@ -71,27 +87,45 @@ void ARoomManager::SpawnElementReward()
 {
 	if (IsValid(PerkPickupClass))
 	{
-		AElementPerkPickup* PerkPickup = GetWorld()->SpawnActor<AElementPerkPickup>(PerkPickupClass, GetActorLocation(), FRotator(0,0,0));
-		PerkPickup->OnPerkClaimedDelegate.AddDynamic(this, &ARoomManager::OnPerkRewardClaimed);
-		switch (Type)
+		UActorPoolingSubsystem* PoolingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UActorPoolingSubsystem>();
+		AElementPerkPickup* PerkPickup = Cast<AElementPerkPickup>(PoolingSystem->GetActorFromPool(PerkPickupClass));
+		PerkPickup->SetActorLocationAndRotation(GetActorLocation(), FRotator(0, 0, 0));
+		if (IsValid(PerkPickup))
 		{
-		case RoomType::FireReward:
-			PerkPickup->SetElement(WizardElement::Fire);
-			break;
-		case RoomType::IceReward:
-			PerkPickup->SetElement(WizardElement::Frost);
-			break;
-		case RoomType::WindReward:
-			PerkPickup->SetElement(WizardElement::Wind);
-			break;
-		default:
-			break;
+			PerkPickup->OnPickupClaimedDelegate.AddUniqueDynamic(this, &ARoomManager::OnPerkRewardClaimed);
+			switch (Type)
+			{
+			case RoomType::FireReward:
+				PerkPickup->SetElement(WizardElement::Fire);
+				break;
+			case RoomType::IceReward:
+				PerkPickup->SetElement(WizardElement::Frost);
+				break;
+			case RoomType::WindReward:
+				PerkPickup->SetElement(WizardElement::Wind);
+				break;
+			default:
+				break;
+			}
 		}
 	}
 	else
 	{
 		ActivatePortals();
 	}
+}
+
+void ARoomManager::SpawnBossReward()
+{
+	ActivatePortals();
+}
+
+void ARoomManager::SpawnHealthReward()
+{
+	UActorPoolingSubsystem* PoolingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UActorPoolingSubsystem>();
+	AHealthIncreasePickup* HealthPickup = Cast<AHealthIncreasePickup>(PoolingSystem->GetActorFromPool(HealthPickupClass));
+	HealthPickup->SetActorLocationAndRotation(GetActorLocation(), FRotator(0, 0, 0));
+	HealthPickup->OnPickupClaimedDelegate.AddUniqueDynamic(this, &ARoomManager::OnPerkRewardClaimed);
 }
 
 void ARoomManager::ActivatePortals()
@@ -105,6 +139,11 @@ void ARoomManager::ActivatePortals()
 			Portal->EnablePortal();
 		}
 	}
+}
+
+void ARoomManager::OpenShop_Implementation()
+{
+	ActivatePortals();
 }
 
 void ARoomManager::OnPerkRewardClaimed(AActor* ClaimingPlayer)

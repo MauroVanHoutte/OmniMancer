@@ -82,6 +82,8 @@ class UNREALPROJECT_API UWaveCombatEncounterManager : public UBaseCombatEncounte
 	GENERATED_BODY()
 
 public:
+	UWaveCombatEncounterManager();
+	
 	virtual void StartEncounter() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -97,7 +99,7 @@ protected:
 	UFUNCTION()
 	virtual void TrackSpawnedEnemy(AActor* SpawnedActor);
 	UFUNCTION()
-	virtual void OnTrackedEnemyDestroyed(AActor* Actor, EEndPlayReason::Type EndPlayReason);
+	virtual void OnTrackedEnemyDestroyed(AActor* Actor);
 private:
 	UPROPERTY(Transient)
 	TArray<class UShapeComponent*> SpawnZones;

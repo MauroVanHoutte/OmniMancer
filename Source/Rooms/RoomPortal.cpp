@@ -85,6 +85,12 @@ void ARoomPortal::OnInteractAction(AActor* Player)
 	{
 		OnFadeCompleted();
 	}
+
+	AWizardController* Controller = Player->GetInstigatorController<AWizardController>();
+	if (IsValid(Controller))
+	{
+		Controller->OnInteractActionDelegate.RemoveDynamic(this, &ARoomPortal::OnInteractAction);
+	}
 }
 
 void ARoomPortal::OnRoomLoaded(ULevelStreaming* LoadedLevel)
@@ -106,11 +112,7 @@ void ARoomPortal::OnRoomLoaded(ULevelStreaming* LoadedLevel)
 		if (IsValid(GameInstance))
 		{
 			GameInstance->SetPortalTypes(NewPortals);
-		}
-
-		for (ARoomPortal* NewPortal : NewPortals)
-		{
-			NewPortal->SetActorHiddenInGame(false);
+			GameInstance->IncrementCompletedRoomCount();
 		}
 
 		for (AActor* Actor : LoadedLevel->GetLoadedLevel()->Actors)
@@ -147,5 +149,5 @@ void ARoomPortal::OnFadeCompleted()
 	}
 
 	RoomStreamingComponent->UnloadPastRooms();
-	RoomStreamingComponent->LoadNextRoom();
+	RoomStreamingComponent->LoadNextRoom(TargetRoomType);
 }

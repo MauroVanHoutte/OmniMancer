@@ -31,7 +31,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UWidgetComponent* PortalTypeWidget;
 
-	UPROPERTY(BlueprintReadWrite);
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere);
 	RoomType TargetRoomType = RoomType::FireReward;
 
 private:

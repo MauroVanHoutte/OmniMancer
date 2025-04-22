@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Rooms/RoomTypes.h"
 #include "RoomStreamingComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoomLoadedSignature, ULevelStreaming*, Level);
@@ -15,7 +16,7 @@ class UNREALPROJECT_API URoomStreamingComponent : public UActorComponent
 
 public:	
 	UFUNCTION(BlueprintCallable)
-	ULevelStreaming* LoadNextRoom();
+	ULevelStreaming* LoadNextRoom(RoomType Type);
 	UFUNCTION(BlueprintCallable)
 	void UnloadPastRooms();
 
@@ -26,8 +27,8 @@ private:
 	UFUNCTION()
 	void OnLevelShown();
 
-	UPROPERTY(EditAnywhere)
-	TArray<TSoftObjectPtr<UWorld>> PossibleLevels;
+	UPROPERTY(EditAnywhere, NoClear)
+	class URoomTypeLevels* Levels;
 	UPROPERTY(Transient)
 	class ULevelStreaming* LevelStreamingInstance;
 };

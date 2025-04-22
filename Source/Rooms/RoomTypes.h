@@ -8,5 +8,7 @@ enum class RoomType : uint8
 	IceReward,
 	WindReward,
 	HealReward,
-	Boss
+	Boss,
+	Shop,
+	FloorBoss
 };
