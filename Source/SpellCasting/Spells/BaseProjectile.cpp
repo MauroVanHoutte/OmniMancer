@@ -2,6 +2,7 @@
 
 
 #include "BaseProjectile.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include <Kismet/KismetSystemLibrary.h>
 #include "Enemies/BaseCharacter.h"
 #include <Kismet/GameplayStatics.h>
@@ -77,6 +78,8 @@ void ABaseProjectile::InitSpell(const FVector& targetLocation, APawn* caster)
 
 	//SetDamageMultiplier(wizard->GetBaseProjecileDamageMultiplier() * wizard->GetSpellDamageMultiplier());
 	//TotalBounces = wizard->GetBounces();
+	TotalBounces = DefaultBounces;
+	BounceCount = 0;
 	FVector LaunchDirection = (targetLocation - GetActorLocation());
 	if (bFireHorizontally) LaunchDirection.Z = 0;
 	LaunchDirection.Normalize();
@@ -127,7 +130,8 @@ void ABaseProjectile::OnHit(AActor* hitActor)
 			}
 		}
 	}
-	Destroy();
+
+	OnLifeTimeEnd();
 }
 
 void ABaseProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -136,7 +140,8 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActor* OtherAc
 	{
 		if(Explosive)
 			Explode();
-		Destroy();
+
+		OnLifeTimeEnd();
 	}
 }
 

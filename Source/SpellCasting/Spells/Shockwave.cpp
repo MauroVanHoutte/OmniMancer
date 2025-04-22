@@ -42,6 +42,9 @@ void AShockwave::InitSpell(const FVector& targetLocation, APawn* caster)
 {
 	Super::InitSpell(targetLocation, caster);
 
+	GrowthTimer = 0;
+	CollisionComponent->SetSphereRadius(InitialRadius);
+	StaticMeshComponent->SetRelativeScale3D(FVector(1, 1, 1));
 	SetActorLocation(caster->GetActorLocation());
 	SetLifeSpan(GrowthDuration + LingerDuration);
 }

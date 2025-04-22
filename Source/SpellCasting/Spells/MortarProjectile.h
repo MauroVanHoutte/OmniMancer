@@ -3,15 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseSpell.h"
-
+#include "ActorPool/PooledActor.h"
 #include "MortarProjectile.generated.h"
 
 class USphereComponent;
 class UProjectileMovementComponent;
 
 UCLASS()
-class UNREALPROJECT_API AMortarProjectile : public AActor
+class UNREALPROJECT_API AMortarProjectile : public APooledActor
 {
 	GENERATED_BODY()
 	

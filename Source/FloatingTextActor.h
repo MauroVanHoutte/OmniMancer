@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ActorPool/PooledActor.h"
 #include "GameFramework/Actor.h"
 #include "FloatingTextActor.generated.h"
 
 UCLASS()
-class UNREALPROJECT_API AFloatingTextActor : public AActor
+class UNREALPROJECT_API AFloatingTextActor : public APooledActor
 {
 	GENERATED_BODY()
 	

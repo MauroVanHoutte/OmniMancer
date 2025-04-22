@@ -28,6 +28,7 @@ protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual void Destroyed() override;
+	virtual void OnLifeTimeEnd() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UStaticMeshComponent* CylinderMesh;

@@ -33,12 +33,6 @@ void AIceZone::BeginPlay()
 	CylinderMesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
 	Super::BeginPlay();
-
-	GetWorld()->GetTimerManager().SetTimer(ApplicationTimer, [this]()
-		{
-			SetActorEnableCollision(false);
-			SetActorEnableCollision(true);
-		}, ApplicationInterval, true);
 }
 
 void AIceZone::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -68,5 +62,16 @@ void AIceZone::InitSpell(const FVector& targetLocation, APawn* caster)
 	SetActorLocation(Hit.bBlockingHit ? Hit.ImpactPoint : targetLocation);
 
 	SetRadius(CircleScale);
+
+	GetWorld()->GetTimerManager().SetTimer(ApplicationTimer, [this]()
+		{
+			SetActorEnableCollision(false);
+			SetActorEnableCollision(true);
+		}, ApplicationInterval, true);
 }
 
+void AIceZone::OnLifeTimeEnd()
+{
+	GetWorld()->GetTimerManager().ClearTimer(ApplicationTimer);
+	Super::OnLifeTimeEnd();
+}

@@ -60,7 +60,8 @@ protected:
 
 	//Amount of times the projectile will bounce to nearby enemies
 	UPROPERTY(EditDefaultsOnly)
-	int TotalBounces = 0;
+	int DefaultBounces = 0;
+	int TotalBounces = DefaultBounces;
 	int BounceCount = 0;
 	//Maximum distance between enemies while still able to bounce
 	UPROPERTY(EditDefaultsOnly)

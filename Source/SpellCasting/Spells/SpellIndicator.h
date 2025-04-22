@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "ActorPool/PooledActor.h"
 #include "SpellIndicator.generated.h"
 
 UCLASS()
-class UNREALPROJECT_API ASpellIndicator : public AActor
+class UNREALPROJECT_API ASpellIndicator : public APooledActor
 {
 	GENERATED_BODY()
 	

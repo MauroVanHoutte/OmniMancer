@@ -18,6 +18,12 @@ AFlameColumn::AFlameColumn()
 	CylinderMesh->SetStaticMesh(mesh);
 }
 
+void AFlameColumn::OnActorTakenFromPool_Implementation()
+{
+	Super::OnActorTakenFromPool_Implementation();
+	CircleScale = DefaultCircleScale;
+}
+
 // Called when the game starts or when spawned
 void AFlameColumn::BeginPlay()
 {
@@ -41,6 +47,7 @@ void AFlameColumn::Tick(float DeltaTime)
 
 void AFlameColumn::InitSpell(const FVector& TargetLocation, APawn* Caster)
 {
+	CylinderMesh->SetCollisionProfileName(TEXT("NoCollision"));
 	Super::InitSpell(TargetLocation, Caster);
 
 	FHitResult Hit;
@@ -48,7 +55,7 @@ void AFlameColumn::InitSpell(const FVector& TargetLocation, APawn* Caster)
 	SetActorLocation(Hit.bBlockingHit ? Hit.ImpactPoint : TargetLocation);	
 
 	CylinderMesh->SetRelativeScale3D(FVector(CircleScale, CircleScale, 1.f));
-
+	SetOff = false;
 	ImpactTimer = ImpactDelay;
 	SetLifeSpan(ImpactDelay + VisualLinger);
 }

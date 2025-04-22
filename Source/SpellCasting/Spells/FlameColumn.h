@@ -15,6 +15,10 @@ class UNREALPROJECT_API AFlameColumn : public ABaseSpell
 public:	
 	AFlameColumn();
 
+	//IPooledActorInterface implementations
+	virtual void OnActorTakenFromPool_Implementation() override;
+	//end IPooledActorInterface implementations
+
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void InitSpell(const FVector& targetLocation, APawn* caster) override;
@@ -36,7 +40,8 @@ private:
 	float VisualLinger = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Base Parameters")
-	float CircleScale = 7.f;
+	float DefaultCircleScale = 7.f;
+	float CircleScale = DefaultCircleScale;
 
 	bool SetOff = false;
 

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "ActorPool/PooledActor.h"
 #include "StatusEffects/StatusEffect.h"
 #include "Health/HitTriggerInterface.h"
 #include "BaseSpell.generated.h"
@@ -15,7 +15,7 @@ class AWizardCharacter;
 //class ABaseCharacter;
 
 UCLASS(Abstract)
-class UNREALPROJECT_API ABaseSpell : public AActor, public IHitTriggerInterface
+class UNREALPROJECT_API ABaseSpell : public APooledActor, public IHitTriggerInterface
 {
 	GENERATED_BODY()
 	
@@ -28,8 +28,14 @@ public:
 	virtual bool WasActorHitBefore_Implementation(class AActor* TriggeringActor, class UPrimitiveComponent* CollisionComponent);
 	//end IHitTriggerInterface implementations
 
+	//IPooledActorInterface implementations
+	virtual void OnActorTakenFromPool_Implementation() override;
+	virtual void OnActorReturnedToPool_Implementation() override;
+	//end IPooledActorInterface implementations
+
 	UFUNCTION(BlueprintCallable)
 	virtual void InitSpell(const FVector& targetLocation, APawn* caster);
+	virtual void SetLifeSpan(float NewLifeTime) override;
 
 	virtual void Tick(float DeltaTime) override;
 	
@@ -69,6 +75,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	float Damage = 0;
+	UPROPERTY(EditDefaultsOnly)
+	float DefaultLifeTime = 4.f;
+	FTimerHandle LifeTimeHandle;
+
+	virtual void OnLifeTimeEnd();
 
 	UPROPERTY(EditDefaultsOnly, Instanced)
 	TArray<UBaseStatusEffect*> StatusEffects{}; //status effects get applied to entities hit

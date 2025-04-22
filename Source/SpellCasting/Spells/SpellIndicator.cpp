@@ -49,7 +49,7 @@ void ASpellIndicator::Tick(float DeltaTime)
 		CylinderProgressMesh->SetRelativeScale3D(newScale);
 		if (Timer > Duration)
 		{
-			Destroy();
+			ReturnToPoolOrDestroy();
 		}
 	}
 

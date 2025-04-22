@@ -47,6 +47,7 @@ void AIceWall::InitSpell(const FVector& targetLocation, APawn* caster)
 	FVector startLocation = Hit.bBlockingHit ? Hit.ImpactPoint : targetLocation;
 	startLocation.Z -= (WallHeight*100)/2; //lower wall into floor
 
+	RiseTimer = 0;
 	TargetLocation = targetLocation;
 	StartLocation = startLocation;
 	SetActorLocation(startLocation);

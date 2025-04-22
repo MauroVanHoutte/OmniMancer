@@ -2,6 +2,7 @@
 
 
 #include "MortarProjectile.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include "WizardCharacter.h"
 #include <GameFramework/ProjectileMovementComponent.h>
 #include <Components/SphereComponent.h>
@@ -42,9 +43,9 @@ void AMortarProjectile::OnHit(UPrimitiveComponent* OverlappedComp, AActor* Other
 {
 	if (OtherComp->GetCollisionObjectType() == ECollisionChannel::ECC_WorldStatic && ProjectileMovement->Velocity.Z < 0)
 	{
-		CollisionComponent->SetCollisionProfileName("NoCollision"); //will collide multiple times before actually being destroyed
 		if (IsValid(this))
 			SpawnExplosion(GetActorLocation());
-		Destroy();
+
+		ReturnToPoolOrDestroy();
 	}
 }

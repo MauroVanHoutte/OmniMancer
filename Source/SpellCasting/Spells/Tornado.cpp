@@ -41,7 +41,7 @@ void ATornado::FireInDirection(const FVector& direction)
 void ATornado::InitSpell(const FVector& targetLocation, APawn* caster)
 {
 	Super::InitSpell(targetLocation, caster);
-
+	Mesh->SetWorldScale3D(FVector(StartScale, StartScale, StartScale));
 	FireInDirection((targetLocation - caster->GetActorLocation()).GetSafeNormal());
 }
 

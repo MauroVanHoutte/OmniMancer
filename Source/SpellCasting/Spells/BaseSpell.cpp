@@ -2,6 +2,7 @@
 
 
 #include "BaseSpell.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include <Engine/DamageEvents.h>
 #include "Health/AffiliationComponent.h"
 #include "StatusEffects/StatusEffectHandlingComponent.h"
@@ -32,6 +33,22 @@ UAffiliationComponent* ABaseSpell::GetAffiliation_Implementation()
 bool ABaseSpell::WasActorHitBefore_Implementation(AActor* TriggeringActor, class UPrimitiveComponent* ColliderComponent)
 {
 	return HitActors.Contains(TriggeringActor);
+}
+void ABaseSpell::OnActorTakenFromPool_Implementation()
+{
+	SetActorHiddenInGame(false);
+	SetActorTickEnabled(true);
+	OnSpellDestroyedDelegate.Clear();
+	OnSpellHitDelegate.Clear();
+	DamageMultiplier = 1;
+	HitActors.Empty();
+}
+void ABaseSpell::OnActorReturnedToPool_Implementation()
+{
+	SetActorHiddenInGame(true);
+	SetActorTickEnabled(false);
+	SetActorEnableCollision(false);
+	OnSpellDestroyedDelegate.Broadcast(this);
 }
 // end IHitTriggerInterface implementations
 
@@ -158,6 +175,7 @@ void ABaseSpell::InitSpell(const FVector& targetLocation, APawn* caster)
 		StatusEffect->Instigator = caster;
 	}
 
+	SetLifeSpan(DefaultLifeTime);
 	SetActorEnableCollision(true);
 
 	/*FireLevel = wizard->GetCurrentElementLevel(WizardElement::Fire);
@@ -167,6 +185,13 @@ void ABaseSpell::InitSpell(const FVector& targetLocation, APawn* caster)
 	StunDurationMultiplier = wizard->GetStunDurationMultiplier();
 	BurnDurationMultiplier = wizard->GetBurnDurationMultiplier();
 	DamageMultiplier = wizard->GetSpellDamageMultiplier();*/
+}
+
+void ABaseSpell::SetLifeSpan(float NewLifeTime)
+{
+	FTimerDelegate Delegate;
+	Delegate.BindUObject(this, &ABaseSpell::OnLifeTimeEnd);
+	GetWorld()->GetTimerManager().SetTimer(LifeTimeHandle, Delegate, NewLifeTime, false);
 }
 
 void ABaseSpell::SetBaseDamage(float damage)
@@ -200,6 +225,11 @@ void ABaseSpell::Destroyed()
 	Super::Destroyed();
 
 	OnSpellDestroyedDelegate.Broadcast(this);
+}
+
+void ABaseSpell::OnLifeTimeEnd()
+{
+	ReturnToPoolOrDestroy();
 }
 
 // Called every frame
