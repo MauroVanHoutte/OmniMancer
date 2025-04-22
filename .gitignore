@@ -19,3 +19,4 @@ Build/WindowsNoEditor/Manifest_NonUFSFiles_Win64.txt
 Build/WindowsNoEditor/UnrealProject.exe
 Build/WindowsNoEditor/UnrealProject/Content/Paks/UnrealProject-WindowsNoEditor.pak
 *.zip
+/Build
