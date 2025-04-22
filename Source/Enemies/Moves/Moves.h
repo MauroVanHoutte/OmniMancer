@@ -9,6 +9,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoveCompletedSignature, class UBaseMove*, Move);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FMoveHitSignature, class UBaseMove*, Move, class AActor*, AttackActor, class AActor*, HitActor);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoveInterruptedSignature, class UBaseMove*, Move);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMoveExecutionStartedSignature, class UBaseMove*, Move);
 
 UCLASS(Abstract, EditInlineNew, BlueprintType, Blueprintable)
 class UNREALPROJECT_API UBaseMove : public UObject
@@ -19,11 +20,11 @@ public:
 	virtual void TickMove(float DeltaTime) {};
 
 	UFUNCTION(BlueprintCallable)
-	virtual void OnBeginPlay(AActor* Owner) { OwningActor = Owner; };
+	virtual void OnBeginPlay(AActor* Owner, class UMovesetComponent* MovesetComponent) { OwningActor = Owner; };
 	UFUNCTION(BlueprintCallable)
 	virtual void OnEndPlay() {};
 	UFUNCTION(BlueprintCallable)
-	virtual void Execute(AActor* Target, const FVector& TargetLocation) {};
+	virtual void Execute(AActor* Target, const FVector& TargetLocation);
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanBeExecuted(AActor* Target);
 	UFUNCTION(BlueprintCallable)
@@ -39,10 +40,11 @@ public:
 	FMoveCompletedSignature OnMoveCompletedDelegate;
 	FMoveHitSignature OnMoveHitDelegate;
 	FMoveInterruptedSignature OnMoveInterruptedDelegate;
+	FMoveExecutionStartedSignature OnMoveExecutionStartedDelegate;
 
 protected:
 	UPROPERTY(EditAnywhere, Instanced)
-	class UBaseMoveRequirement* ExtraRequirement;
+	TArray<class UBaseMoveRequirement*> ExtraRequirements;
 	UPROPERTY(Transient)
 	AActor* OwningActor = nullptr;
 };
@@ -54,8 +56,11 @@ class UNREALPROJECT_API UAttackMove : public UBaseMove
 
 public:
 	virtual void TickMove(float DeltaTime) override;
-	virtual void OnBeginPlay(AActor* Owner) override;
+	virtual void OnBeginPlay(AActor* Owner, class UMovesetComponent* MovesetComponent) override;
 	virtual void OnEndPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	class UBaseAttackObject* GetAttackObject();
 
 	virtual void Execute(AActor* Target, const FVector& TargetLocation) override;
 	virtual bool CanBeExecuted(AActor* Target) override;
@@ -87,7 +92,7 @@ class UNREALPROJECT_API UMoveSequence : public UBaseMove
 
 public:
 	virtual void TickMove(float DeltaTime) override;
-	virtual void OnBeginPlay(AActor* Owner) override;
+	virtual void OnBeginPlay(AActor* Owner, class UMovesetComponent* MovesetComponent) override;
 	virtual void OnEndPlay() override;
 
 	virtual void Execute(AActor* Target, const FVector& TargetLocation) override;
@@ -105,6 +110,8 @@ private:
 	void BroadcastMoveCompleted();
 	UFUNCTION()
 	void OnMoveHit(class UBaseMove* Move, class AActor* AttackActor, class AActor* HitActor);
+	UFUNCTION()
+	void OnMoveExecutionStarted(class UBaseMove* Move);
 
 	UPROPERTY(EditAnywhere)
 	bool bCheckFirstMoveRequirements = false;
@@ -130,7 +137,7 @@ class UNREALPROJECT_API UParallelMoves : public UBaseMove
 
 public:
 	virtual void TickMove(float DeltaTime) override;
-	virtual void OnBeginPlay(AActor* Owner) override;
+	virtual void OnBeginPlay(AActor* Owner, class UMovesetComponent* MovesetComponent) override;
 	virtual void OnEndPlay() override;
 
 	virtual void Execute(AActor* Target, const FVector& TargetLocation) override;
@@ -138,11 +145,16 @@ public:
 	virtual bool CanBeInterrupted() override;
 	virtual void Interrupt() override;
 
+	virtual void OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent);
+	virtual bool WasActorHitBefore(AActor* TestActor, class UPrimitiveComponent* ColliderComponent);
+
 private:
 	UFUNCTION()
 	void OnMoveComponentCompleted(class UBaseMove* Move);
 	UFUNCTION()
 	void OnMoveHit(class UBaseMove* Move, class AActor* AttackActor, class AActor* HitActor);
+	UFUNCTION()
+	void OnMoveExecutionStarted(class UBaseMove* Move);
 
 	UPROPERTY(Instanced, EditAnywhere)
 	TArray<UBaseMove*> Moves;

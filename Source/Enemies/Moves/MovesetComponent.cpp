@@ -33,7 +33,7 @@ bool UMovesetComponent::CanExecuteAttack(AActor* Target)
 	return false;
 }
 
-bool UMovesetComponent::ExecuteAttack(AActor* Target)
+UBaseMove* UMovesetComponent::ExecuteAttack(AActor* Target)
 {
 	TArray<UBaseMove*> ValidMoves = Moves.FilterByPredicate([Target](UBaseMove* Move)
 		{
@@ -42,17 +42,22 @@ bool UMovesetComponent::ExecuteAttack(AActor* Target)
 
 	if (ValidMoves.IsEmpty())
 	{
-		return false;
+		return nullptr;
+	}
+
+	if (bAvoidRepeatedMove && ValidMoves.Num() > 1)
+	{
+		ValidMoves.Remove(LastUsedMove);
 	}
 
 	int RandIdx = FMath::RandRange(0, ValidMoves.Num() - 1);
 	if (IsValid(ValidMoves[RandIdx]))
 	{
 		ActiveMove = ValidMoves[RandIdx];
-		ValidMoves[RandIdx]->Execute(Target, IsValid(Target) ? Target->GetActorLocation() : FVector(0, 0, 0));
-		return true;
+		ActiveMove->Execute(Target, IsValid(Target) ? Target->GetActorLocation() : FVector(0, 0, 0));
+		return ActiveMove;
 	}
-	return false;
+	return nullptr;
 }
 
 bool UMovesetComponent::CanBeInterrupted()
@@ -95,10 +100,11 @@ void UMovesetComponent::BeginPlay()
 
 	for (UBaseMove* Move : Moves)
 	{ 
-		Move->OnBeginPlay(GetOwner());
+		Move->OnBeginPlay(GetOwner(), this);
 		Move->OnMoveCompletedDelegate.AddDynamic(this, &UMovesetComponent::OnMoveComponentCompleted);
 		Move->OnMoveHitDelegate.AddDynamic(this, &UMovesetComponent::OnMoveComponentHit);
 		Move->OnMoveInterruptedDelegate.AddDynamic(this, &UMovesetComponent::OnMoveComponentInterrupted);
+		Move->OnMoveExecutionStartedDelegate.AddDynamic(this, &UMovesetComponent::OnMoveExecutionStarted);
 	}
 }
 
@@ -114,7 +120,13 @@ void UMovesetComponent::EndPlay(EEndPlayReason::Type Reason)
 void UMovesetComponent::OnMoveComponentCompleted(UBaseMove* Move)
 {
 	ActiveMove = nullptr;
-	OnAttackCompletedDelegate.Broadcast(this);
+	LastUsedMove = Move;
+	OnAttackCompletedDelegate.Broadcast(this, Move);
+}
+
+void UMovesetComponent::OnSubMoveCompleted(UBaseMove* Move)
+{
+	OnSubMoveCompletedDelegate.Broadcast(this, Move);
 }
 
 void UMovesetComponent::OnMoveComponentHit(UBaseMove* Move, AActor* AttackActor, AActor* HitActor)
@@ -125,5 +137,10 @@ void UMovesetComponent::OnMoveComponentHit(UBaseMove* Move, AActor* AttackActor,
 void UMovesetComponent::OnMoveComponentInterrupted(UBaseMove* Move)
 {
 	ActiveMove = nullptr;
-	OnAttackInterruptedDelegate.Broadcast(this);
+	OnAttackInterruptedDelegate.Broadcast(this, Move);
+}
+
+void UMovesetComponent::OnMoveExecutionStarted(UBaseMove* Move)
+{
+	OnMoveExecutionStartedDelegate.Broadcast(this, Move);
 }

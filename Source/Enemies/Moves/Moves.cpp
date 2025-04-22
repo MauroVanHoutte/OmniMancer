@@ -4,10 +4,38 @@
 #include "Enemies/Moves/Moves.h"
 #include "Enemies/Attacks/BaseAttackObject.h"
 #include "Enemies/Moves/MoveRequirements.h"
+#include "Enemies/Moves/MovesetComponent.h"
+
+void UBaseMove::Execute(AActor* Target, const FVector& TargetLocation)
+{
+    if (ExtraRequirements.Num() > 0)
+    {
+        for (UBaseMoveRequirement* ExtraRequirement : ExtraRequirements)
+        {
+            if (IsValid(ExtraRequirement))
+            {
+                ExtraRequirement->OnAttackExecuted(OwningActor, Target);
+            }
+        }
+    }
+
+    OnMoveExecutionStartedDelegate.Broadcast(this);
+}
 
 bool UBaseMove::CanBeExecuted(AActor* Target)
 {
-    return IsValid(ExtraRequirement) ? ExtraRequirement->AreRequirementsMet(OwningActor, Target) : true;
+    bool bExtraRequirementsMet = true;
+    for (UBaseMoveRequirement* ExtraRequirement : ExtraRequirements)
+    {
+        if (IsValid(ExtraRequirement))
+        {
+            if (!ExtraRequirement->AreRequirementsMet(OwningActor, Target))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 //UAttackMove
@@ -16,9 +44,9 @@ void UAttackMove::TickMove(float DeltaTime)
     AttackObject->TickAttack(DeltaTime);
 }
 
-void UAttackMove::OnBeginPlay(AActor* Owner)
+void UAttackMove::OnBeginPlay(AActor* Owner, UMovesetComponent* MovesetComponent)
 {
-    Super::OnBeginPlay(Owner);
+    Super::OnBeginPlay(Owner, MovesetComponent);
 
     AttackObject->OnBeginPlay(Owner);
     AttackObject->OnAttackCompletedDelegate.AddDynamic(this, &UAttackMove::OnAttackComponentCompleted);
@@ -32,8 +60,14 @@ void UAttackMove::OnEndPlay()
     AttackObject->ConditionalBeginDestroy();
 }
 
+UBaseAttackObject* UAttackMove::GetAttackObject()
+{
+    return AttackObject;
+}
+
 void UAttackMove::Execute(AActor* Target, const FVector& TargetLocation)
 {
+    Super::Execute(Target, TargetLocation);
     AttackObject->InitiateAttack(Target, TargetLocation);
 }
 
@@ -54,7 +88,8 @@ void UAttackMove::Interrupt()
 
 void UAttackMove::OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent)
 {
-    AttackObject->OnHitTriggered(HitActor, ColliderComponent);
+    if (!AttackObject->WasActorHitBefore(HitActor, ColliderComponent))
+        AttackObject->OnHitTriggered(HitActor, ColliderComponent);
 }
 
 bool UAttackMove::WasActorHitBefore(AActor* TestActor, class UPrimitiveComponent* ColliderComponent)
@@ -87,14 +122,16 @@ void UMoveSequence::TickMove(float DeltaTime)
     }
 }
 
-void UMoveSequence::OnBeginPlay(AActor* Owner)
+void UMoveSequence::OnBeginPlay(AActor* Owner, UMovesetComponent* MovesetComponent)
 {
-    Super::OnBeginPlay(Owner);
+    Super::OnBeginPlay(Owner, MovesetComponent);
 
     for (UBaseMove* Move : MoveSequence)
     {
-        Move->OnBeginPlay(Owner);
+        Move->OnBeginPlay(Owner, MovesetComponent);
         Move->OnMoveHitDelegate.AddDynamic(this, &UMoveSequence::OnMoveHit);
+        Move->OnMoveExecutionStartedDelegate.AddDynamic(this, &UMoveSequence::OnMoveExecutionStarted);
+        Move->OnMoveCompletedDelegate.AddDynamic(MovesetComponent, &UMovesetComponent::OnSubMoveCompleted);
     }
 }
 
@@ -109,6 +146,8 @@ void UMoveSequence::OnEndPlay()
 
 void UMoveSequence::Execute(AActor* Target, const FVector& TargetLocation)
 {
+    Super::Execute(Target, TargetLocation);
+
     if (ActiveMoveIdx < 0 && !MoveSequence.IsEmpty())
     {
         TargetActor = Target;
@@ -131,15 +170,19 @@ bool UMoveSequence::CanBeInterrupted()
 
 void UMoveSequence::Interrupt()
 {
-    MoveSequence[ActiveMoveIdx]->Interrupt();
-    MoveSequence[ActiveMoveIdx]->OnMoveCompletedDelegate.RemoveDynamic(this, &UMoveSequence::OnMoveComponentCompleted);
-    ActiveMoveIdx = -1;
-    OnMoveInterruptedDelegate.Broadcast(this);
+    if (ActiveMoveIdx >= 0)
+    {
+        MoveSequence[ActiveMoveIdx]->Interrupt();
+        MoveSequence[ActiveMoveIdx]->OnMoveCompletedDelegate.RemoveDynamic(this, &UMoveSequence::OnMoveComponentCompleted);
+        ActiveMoveIdx = -1;
+        OnMoveInterruptedDelegate.Broadcast(this);
+    }
 }
 
 void UMoveSequence::OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent)
 {
-    MoveSequence[ActiveMoveIdx]->OnHitTriggered(HitActor, ColliderComponent);
+    if (ActiveMoveIdx >= 0 && ActiveMoveIdx < MoveSequence.Num())
+        MoveSequence[ActiveMoveIdx]->OnHitTriggered(HitActor, ColliderComponent);
 }
 
 bool UMoveSequence::WasActorHitBefore(AActor* TestActor, class UPrimitiveComponent* ColliderComponent)
@@ -185,6 +228,10 @@ void UMoveSequence::OnMoveHit(UBaseMove* Move, AActor* AttackActor, AActor* HitA
 {
     OnMoveHitDelegate.Broadcast(Move, AttackActor, HitActor);
 }
+void UMoveSequence::OnMoveExecutionStarted(UBaseMove* Move)
+{
+    OnMoveExecutionStartedDelegate.Broadcast(Move);
+}
 //~UMoveSequence
 
 //UParallelMoves
@@ -196,14 +243,16 @@ void UParallelMoves::TickMove(float DeltaTime)
     }
 }
 
-void UParallelMoves::OnBeginPlay(AActor* Owner)
+void UParallelMoves::OnBeginPlay(AActor* Owner, UMovesetComponent* MovesetComponent)
 {
-    Super::OnBeginPlay(Owner);
+    Super::OnBeginPlay(Owner, MovesetComponent);
 
     for (UBaseMove* Move : Moves)
     {
-        Move->OnBeginPlay(Owner);
+        Move->OnBeginPlay(Owner, MovesetComponent);
         Move->OnMoveHitDelegate.AddDynamic(this, &UParallelMoves::OnMoveHit);
+        Move->OnMoveExecutionStartedDelegate.AddDynamic(this, &UParallelMoves::OnMoveExecutionStarted);
+        Move->OnMoveCompletedDelegate.AddDynamic(MovesetComponent, &UMovesetComponent::OnSubMoveCompleted);
     }
 }
 
@@ -218,16 +267,24 @@ void UParallelMoves::OnEndPlay()
 
 void UParallelMoves::Execute(AActor* Target, const FVector& TargetLocation)
 {
+    Super::Execute(Target, TargetLocation);
+
     ActiveMoves = Moves;
     for (UBaseMove* Move : ActiveMoves)
     {
-        Move->Execute(Target, TargetLocation);
         Move->OnMoveCompletedDelegate.AddDynamic(this, &UParallelMoves::OnMoveComponentCompleted);
+        Move->Execute(Target, TargetLocation);
     }
 }
 
 bool UParallelMoves::CanBeExecuted(AActor* Target)
 {
+    for (UBaseMove* Move : Moves)
+    {
+        if (!Move->CanBeExecuted(Target))
+            return false;
+    }
+
     return Super::CanBeExecuted(Target);
 }
 
@@ -244,6 +301,19 @@ void UParallelMoves::Interrupt()
     }
 }
 
+void UParallelMoves::OnHitTriggered(AActor* HitActor, UPrimitiveComponent* ColliderComponent)
+{
+    for (UBaseMove* Move : Moves)
+    {
+        Move->OnHitTriggered(HitActor, ColliderComponent);
+    }
+}
+
+bool UParallelMoves::WasActorHitBefore(AActor* TestActor, UPrimitiveComponent* ColliderComponent)
+{
+    return false;
+}
+
 void UParallelMoves::OnMoveComponentCompleted(UBaseMove* Move)
 {
     Move->OnMoveCompletedDelegate.RemoveDynamic(this, &UParallelMoves::OnMoveComponentCompleted);
@@ -258,5 +328,10 @@ void UParallelMoves::OnMoveComponentCompleted(UBaseMove* Move)
 void UParallelMoves::OnMoveHit(UBaseMove* Move, AActor* AttackActor, AActor* HitActor)
 {
     OnMoveHitDelegate.Broadcast(Move, AttackActor, HitActor);
+}
+
+void UParallelMoves::OnMoveExecutionStarted(UBaseMove* Move)
+{
+    OnMoveExecutionStartedDelegate.Broadcast(Move);
 }
 //~UParallelMoves
