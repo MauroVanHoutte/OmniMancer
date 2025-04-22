@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "SpellCasting/Elements.h"
 #include "Upgrades/Triggers/TriggerEffects.h"
 #include "TriggerHandlingComponent.generated.h"
 
@@ -16,7 +17,8 @@ enum class TriggerCondition : uint8
 	OnBasicAttackHit,
 	OnTakeHit,
 	OnDamageDealt,
-	OnEnemyKiled
+	OnEnemyKiled,
+	OnElementAdded
 };
 
 USTRUCT()
@@ -49,15 +51,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void TriggerEnemyKilled(AActor* DamageCause, AActor* KilledEnemy, float Damage);
 	UFUNCTION(BlueprintCallable)
-	virtual void TriggerSpellCasted(AActor* Caster, class ABaseSpell* Spell);
+	virtual void TriggerSpellCasted(class UElementManipulationComponent* CastingComponent, class UBasePlayerCast* CastObject, class ABaseSpell* Spell);
 	UFUNCTION(BlueprintCallable)
-	virtual void TriggerBasicAttackCasted(AActor* Caster, class ABaseSpell* Spell);
+	virtual void TriggerBasicAttackCasted(class UElementManipulationComponent* CastingComponent, class UBasePlayerCast* CastObject, class ABaseSpell* Spell);
 	UFUNCTION(BlueprintCallable)
-	virtual void TriggerSpellHit(class ABaseSpell* Spell, AActor* HitActor);
+	virtual void TriggerSpellHit(class UElementManipulationComponent* CastingComponent, class UBasePlayerCast* CastObject, class ABaseSpell* Spell, AActor* HitActor);
 	UFUNCTION(BlueprintCallable)
-	virtual	void TriggerBasicAttackHit(class ABaseSpell* Spell, AActor* HitActor);
+	virtual	void TriggerBasicAttackHit(class UElementManipulationComponent* CastingComponent, class UBasePlayerCast* CastObject, class ABaseSpell* Spell, AActor* HitActor);
 	UFUNCTION(BlueprintCallable)
 	virtual void TriggerDamageTaken(class UBaseHealthComponent* DamagedComponent, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	UFUNCTION(BlueprintCallable)
+	virtual void TriggerElementAdded(class UElementManipulationComponent* ElementComponent, WizardElement OldElement, WizardElement NewElement);
 
 protected:
 	virtual void BeginPlay() override;

@@ -21,6 +21,7 @@ void UTriggerHandlingComponent::Initialize(UElementManipulationComponent* Elemen
 	ElementComponent->OnBasicAttackCastedDelegate.AddDynamic(this, &UTriggerHandlingComponent::TriggerBasicAttackCasted);
 	ElementComponent->OnSpellHitDelegate.AddDynamic(this, &UTriggerHandlingComponent::TriggerSpellHit);
 	ElementComponent->OnBasicAttackHitDelegate.AddDynamic(this, &UTriggerHandlingComponent::TriggerBasicAttackHit);
+	ElementComponent->OnElementAddedDelegate.AddDynamic(this, &UTriggerHandlingComponent::TriggerElementAdded);
 	HealthManager->OnDamageTakenDelegate.AddDynamic(this, &UTriggerHandlingComponent::TriggerDamageTaken);
 
 	TriggerEffects.FindOrAdd(TriggerCondition::OnBasicAttackCast);
@@ -30,6 +31,7 @@ void UTriggerHandlingComponent::Initialize(UElementManipulationComponent* Elemen
 	TriggerEffects.FindOrAdd(TriggerCondition::OnTakeHit);
 	TriggerEffects.FindOrAdd(TriggerCondition::OnDamageDealt);
 	TriggerEffects.FindOrAdd(TriggerCondition::OnEnemyKiled);
+	TriggerEffects.FindOrAdd(TriggerCondition::OnElementAdded);
 }
 
 void UTriggerHandlingComponent::AddTriggerEffect(TriggerCondition Condition, UBaseTriggerEffect* TriggerEffect)
@@ -64,7 +66,7 @@ void UTriggerHandlingComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UTriggerHandlingComponent::TriggerSpellCasted(AActor* Caster, ABaseSpell* Spell)
+void UTriggerHandlingComponent::TriggerSpellCasted(UElementManipulationComponent* CastingComponent, UBasePlayerCast* CastObject, ABaseSpell* Spell)
 {
 	if (ensure(Spell))
 	{
@@ -72,7 +74,7 @@ void UTriggerHandlingComponent::TriggerSpellCasted(AActor* Caster, ABaseSpell* S
 	}
 }
 
-void UTriggerHandlingComponent::TriggerBasicAttackCasted(AActor* Caster, ABaseSpell* Spell)
+void UTriggerHandlingComponent::TriggerBasicAttackCasted(UElementManipulationComponent* CastingComponent, UBasePlayerCast* CastObject, ABaseSpell* Spell)
 {
 	if (ensure(Spell))
 	{
@@ -80,7 +82,7 @@ void UTriggerHandlingComponent::TriggerBasicAttackCasted(AActor* Caster, ABaseSp
 	}
 }
 
-void UTriggerHandlingComponent::TriggerSpellHit(ABaseSpell* Spell, AActor* HitActor)
+void UTriggerHandlingComponent::TriggerSpellHit(UElementManipulationComponent* CastingComponent, UBasePlayerCast* CastObject, ABaseSpell* Spell, AActor* HitActor)
 {
 	if (ensure(IsValid(Spell)))
 	{
@@ -88,7 +90,7 @@ void UTriggerHandlingComponent::TriggerSpellHit(ABaseSpell* Spell, AActor* HitAc
 	}
 }
 
-void UTriggerHandlingComponent::TriggerBasicAttackHit(ABaseSpell* Spell, AActor* HitActor)
+void UTriggerHandlingComponent::TriggerBasicAttackHit(UElementManipulationComponent* CastingComponent, UBasePlayerCast* CastObject, ABaseSpell* Spell, AActor* HitActor)
 {
 	if (ensure(IsValid(Spell)))
 	{
@@ -100,6 +102,12 @@ void UTriggerHandlingComponent::TriggerDamageTaken(UBaseHealthComponent* Damaged
 {
 	ABaseSpell* SourceSpell = Cast<ABaseSpell>(DamageCauser);
 	TriggerTriggerEffects(TriggerCondition::OnTakeHit, SourceSpell, InstigatedBy ? InstigatedBy->GetPawn() : nullptr, Damage);
+}
+
+void UTriggerHandlingComponent::TriggerElementAdded(UElementManipulationComponent* ElementComponent, WizardElement OldElement, WizardElement NewElement)
+{
+	if (OldElement != NewElement)
+		TriggerTriggerEffects(TriggerCondition::OnElementAdded, nullptr, nullptr, 0.f);
 }
 
 void UTriggerHandlingComponent::TriggerTriggerEffects(TriggerCondition Condition, ABaseSpell* Spell, AActor* Target, float Damage)

@@ -24,35 +24,35 @@ void UProxyTriggerHandlingComponent::TriggerEnemyKilled(AActor* DamageCause, AAc
 	}
 }
 
-void UProxyTriggerHandlingComponent::TriggerSpellCasted(AActor* Caster, ABaseSpell* Spell)
+void UProxyTriggerHandlingComponent::TriggerSpellCasted(UElementManipulationComponent* CastingComponent, UBasePlayerCast* CastObject, ABaseSpell* Spell)
 {
 	if (IsValid(ProxiedComponent))
 	{
-		ProxiedComponent->TriggerSpellCasted(Caster, Spell);
+		ProxiedComponent->TriggerSpellCasted(CastingComponent, CastObject, Spell);
 	}
 }
 
-void UProxyTriggerHandlingComponent::TriggerBasicAttackCasted(AActor* Caster, ABaseSpell* Spell)
+void UProxyTriggerHandlingComponent::TriggerBasicAttackCasted(UElementManipulationComponent* CastingComponent, UBasePlayerCast* CastObject, ABaseSpell* Spell)
 {
 	if (IsValid(ProxiedComponent))
 	{
-		ProxiedComponent->TriggerBasicAttackCasted(Caster, Spell);
+		ProxiedComponent->TriggerBasicAttackCasted(CastingComponent, CastObject, Spell);
 	}
 }
 
-void UProxyTriggerHandlingComponent::TriggerSpellHit(ABaseSpell* Spell, AActor* HitActor)
+void UProxyTriggerHandlingComponent::TriggerSpellHit(UElementManipulationComponent* CastingComponent, UBasePlayerCast* CastObject, ABaseSpell* Spell, AActor* HitActor)
 {
 	if (IsValid(ProxiedComponent))
 	{
-		ProxiedComponent->TriggerSpellHit(Spell, HitActor);
+		ProxiedComponent->TriggerSpellHit(CastingComponent, CastObject, Spell, HitActor);
 	}
 }
 
-void UProxyTriggerHandlingComponent::TriggerBasicAttackHit(ABaseSpell* Spell, AActor* HitActor)
+void UProxyTriggerHandlingComponent::TriggerBasicAttackHit(UElementManipulationComponent* CastingComponent, UBasePlayerCast* CastObject, ABaseSpell* Spell, AActor* HitActor)
 {
 	if (IsValid(ProxiedComponent))
 	{
-		ProxiedComponent->TriggerBasicAttackHit(Spell, HitActor);
+		ProxiedComponent->TriggerBasicAttackHit(CastingComponent, CastObject, Spell, HitActor);
 	}
 }
 

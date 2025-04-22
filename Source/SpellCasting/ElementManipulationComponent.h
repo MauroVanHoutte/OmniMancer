@@ -8,13 +8,15 @@
 #include "Templates/Tuple.h"
 #include "ElementManipulationComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FElementAddedSignature, WizardElement, OldElement, WizardElement, NewElement);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSpellCastedSignature, AActor*, Caster, ABaseSpell*, Spell);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTriggeredSpellCastedSignature, AActor*, Caster, ABaseSpell*, Spell);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBasicAttackCastedSignature, AActor*, Caster, ABaseSpell*, Spell);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSpellHitSignature, ABaseSpell*, Spell, AActor*, HitActor);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBasicAttackHitSignature, ABaseSpell*, Spell, AActor*, HitActor);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSpellDestroyedSignature, ABaseSpell*, Spell);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FElementAddedSignature, UElementManipulationComponent*, SpellcastingComponent, WizardElement, OldElement, WizardElement, NewElement);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSpellCastStartedSignature, UElementManipulationComponent*, SpellcastingComponent, class UBasePlayerCast*, CastObject);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBasicAttackCastStartedSignature, UElementManipulationComponent*, SpellCastingComponent, class UBasePlayerCast*, CastObject);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSpellCastedSignature, UElementManipulationComponent*, SpellcastingComponent, class UBasePlayerCast*, CastObject, class ABaseSpell*, Spell);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTriggeredSpellCastedSignature, UElementManipulationComponent*, SpellcastingComponent, class ABaseSpell*, Spell);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FBasicAttackCastedSignature, UElementManipulationComponent*, SpellcastingComponent, class UBasePlayerCast*, CastObject, class ABaseSpell*, Spell);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FSpellHitSignature, UElementManipulationComponent*, SpellcastingComponent, class UBasePlayerCast*, CastObject, class ABaseSpell*, Spell, AActor*, HitActor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FBasicAttackHitSignature, UElementManipulationComponent*, SpellcastingComponent, class UBasePlayerCast*, CastObject, class ABaseSpell*, Spell, AActor*, HitActor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSpellDestroyedSignature, class ABaseSpell*, Spell);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FElementLearnedSignature, WizardElement, LearnedElement);
 
 USTRUCT(BlueprintType)
@@ -26,6 +28,19 @@ struct UNREALPROJECT_API FSpellConfig
 	TArray<WizardElement> ElementCombination;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<ABaseSpell> Spell;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UTexture2D* SpellIcon;
+};
+
+USTRUCT(BlueprintType)
+struct UNREALPROJECT_API FSpellCastConfig
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<WizardElement> ElementCombination;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Instanced)
+	class UBasePlayerCast* CastObject;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UTexture2D* SpellIcon;
 };
@@ -47,9 +62,21 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void TryCastSpell();
+	UFUNCTION(BlueprintCallable)
+	void HandleCastInputPressed();
+	UFUNCTION(BlueprintCallable)
+	void HandleCastInputDown();
+	UFUNCTION(BlueprintCallable)
+	void HandleCastInputReleased();
 
 	UFUNCTION(BlueprintCallable)
 	void TryCastBasicAttack();
+	UFUNCTION(BlueprintCallable)
+	void HandleBasicAttackInputPressed();
+	UFUNCTION(BlueprintCallable)
+	void HandleBasicAttackInputDown();
+	UFUNCTION(BlueprintCallable)
+	void HandleBasicAttackInputReleased();
 
 	UFUNCTION(BlueprintCallable)
 	class ABaseSpell* TriggeredCast(TSubclassOf<ABaseSpell> SpellClass, const FVector& TargetLocation, const FVector& SpawnLocation, bool SendSpellEvents);
@@ -62,9 +89,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void LearnElement(WizardElement Element);
+	UFUNCTION(BlueprintCallable)
+	void UnlearnElement(WizardElement Element);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	const TArray<FSpellConfig>& GetSpellConfigs();
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TArray<FSpellCastConfig>& GetSpellCastConfigs();
 
 	UFUNCTION(BlueprintCallable)
 	void AddCooldownMultiplier(TSubclassOf<ABaseSpell> ApplicableSpell, float CooldownMultiplier);
@@ -80,10 +111,14 @@ public:
 	void SetBasicAttackOrigin(class USceneComponent* NewBasicAttackOrigin);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	float CalculateSpellCooldown(TSubclassOf<class ABaseSpell> Spell);
+	float GetSpellCastCooldownMultiplier(class UBasePlayerCast* SpellCast);
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	float GetSpellCastDamageMultiplier(class UBasePlayerCast* SpellCast);
 
 	UPROPERTY(BlueprintAssignable)
 	FElementAddedSignature OnElementAddedDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FBasicAttackCastStartedSignature OnBasicAttackCastStartedSignature;
 	UPROPERTY(BlueprintAssignable)
 	FSpellCastedSignature OnSpellCastedDelegate;
 	UPROPERTY(BlueprintAssignable)
@@ -106,17 +141,38 @@ private:
 	void SetupSpells();
 
 	UFUNCTION()
-	void OnSpellHit(ABaseSpell* Spell, AActor* HitActor);
+	void OnSpellCastStarted(class UBasePlayerCast* CastObject);
 	UFUNCTION()
-	void OnBasicAttackHit(ABaseSpell* Spell, AActor* HitActor);
+	void OnSpellCasted(class UBasePlayerCast* CastObject, class ABaseSpell* Spell);
+	UFUNCTION()
+	void OnSpellHit(class UBasePlayerCast* CastObject, class ABaseSpell* Spell, AActor* HitActor);
+	UFUNCTION()
+	void OnTriggeredSpellHit(class ABaseSpell* Spell, AActor* HitActor);
+	UFUNCTION()
+	void OnBasicAttackCastStarted(class UBasePlayerCast* CastObject);
+	UFUNCTION()
+	void OnBasicAttackCasted(class UBasePlayerCast* CastObject, class ABaseSpell* Spell);
+	UFUNCTION()
+	void OnBasicAttackHit(class UBasePlayerCast* CastObject, class ABaseSpell* Spell, AActor* HitActor);
+
+	bool bCastingSpell = false;
+	bool bCastingBasicAttack = false;
+	int CurrentSpellId = 0;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSet<WizardElement> LearnedElements { WizardElement::Fire };
 
+	UPROPERTY(EditDefaultsOnly, Instanced)
+	class UBasePlayerCast* BasicAttackCast;
+
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpellConfig> SpellConfiguration;
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FSpellCastConfig> SpellCastConfiguration;
 	UPROPERTY(Transient)
 	TMap<int, TSubclassOf<class ABaseSpell>> Spells;
+	UPROPERTY(Transient)
+	TMap<int, class UBasePlayerCast*> SpellCastObjects;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class ABaseSpell> BasicAttack;
 	UPROPERTY(EditDefaultsOnly)
@@ -149,4 +205,7 @@ private:
 	UPROPERTY(Transient, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	class UNiagaraComponent* RightHandElementParticle;
 	bool bAddingElementLeft;
+
+	UPROPERTY(Transient)
+	class UActorPoolingSubsystem* PoolingSystem;
 };
