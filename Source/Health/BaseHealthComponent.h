@@ -36,6 +36,9 @@ public:
 	virtual void Heal(float HealAmount);
 
 	UFUNCTION(BlueprintCallable)
+	virtual void ResetHealth();
+
+	UFUNCTION(BlueprintCallable)
 	float GetMaxHealth() const;
 	UFUNCTION(BlueprintCallable)
 	void SetMaxHealth(float NewMaxHealth);
@@ -122,4 +125,7 @@ protected:
 	//If true overkill damage spills over to next highest priority health component
 	UPROPERTY(EditDefaultsOnly)
 	bool bOverflow = true;
+
+	UPROPERTY(Transient)
+	class UActorPoolingSubsystem* PoolingSystem;
 };

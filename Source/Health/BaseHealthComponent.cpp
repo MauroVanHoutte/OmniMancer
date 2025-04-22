@@ -2,6 +2,7 @@
 
 
 #include "BaseHealthComponent.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include "FloatingTextActor.h"
 #include "Healthbar.h"
 #include "Components/WidgetComponent.h"
@@ -41,6 +42,8 @@ void UBaseHealthComponent::BeginPlay()
 
 	if (BoundHealthbar)
 		BoundHealthbar->SetHealthPercentage(CurrentHealth / MaxHealth);
+
+	PoolingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UActorPoolingSubsystem>();
 }
 
 
@@ -103,7 +106,7 @@ void UBaseHealthComponent::SpawnDamageText(float damage)
 {
 	if (DamageFloatingTextClass == nullptr || FMath::IsNearlyEqual(damage, 0.f))
 		return;
-	AFloatingTextActor* TextActor = GetWorld()->SpawnActor<AFloatingTextActor>(DamageFloatingTextClass);
+	AFloatingTextActor* TextActor = Cast<AFloatingTextActor>(PoolingSystem->GetActorFromPool(DamageFloatingTextClass));
 	TextActor->Initialize(FText::FromString(FString::SanitizeFloat(FMath::RoundHalfToZero(damage * 100) / 100.f)));
 	TextActor->SetActorLocation(GetOwner()->GetActorLocation());
 }
@@ -123,9 +126,26 @@ void UBaseHealthComponent::Heal(float HealAmount)
 	if (HealFloatingTextClass == nullptr || FMath::IsNearlyEqual(HealAmount, 0.f))
 		return;
 
-	AFloatingTextActor* TextActor = GetWorld()->SpawnActor<AFloatingTextActor>(HealFloatingTextClass);
+	AFloatingTextActor* TextActor = Cast<AFloatingTextActor>(PoolingSystem->GetActorFromPool(HealFloatingTextClass));
 	TextActor->Initialize(FText::FromString(FString::SanitizeFloat(FMath::RoundHalfToZero(HealAmount * 100) / 100.f)));
 	TextActor->SetActorLocation(GetOwner()->GetActorLocation());
+}
+
+void UBaseHealthComponent::ResetHealth()
+{
+	if (bStartFullHealth)
+	{
+		SetCurrentHealth(MaxHealth);
+	}
+
+	if (bStartDepleted)
+	{
+		bIsDepleted = true;
+		SetCurrentHealth(0);
+	}
+
+	if (BoundHealthbar)
+		BoundHealthbar->SetHealthPercentage(CurrentHealth / MaxHealth);
 }
 
 float UBaseHealthComponent::GetMaxHealth() const
@@ -183,8 +203,8 @@ void UBaseHealthComponent::Kill(const UDamageType* DamageType, AController* Inst
 {
 	CurrentHealth = 0;
 	bIsDepleted = true;
-	OnDamageTakenDelegate.Broadcast(this, -1, DamageType, InstigatedBy, DamageCauser);
-	OnFatalDamageTakenDelegate.Broadcast(this, -1, -1, DamageType, InstigatedBy, DamageCauser);
+	OnDamageTakenDelegate.Broadcast(this, 0, DamageType, InstigatedBy, DamageCauser);
+	OnFatalDamageTakenDelegate.Broadcast(this, 0, 0, DamageType, InstigatedBy, DamageCauser);
 }
 
 bool UBaseHealthComponent::CanBeHealed() const
