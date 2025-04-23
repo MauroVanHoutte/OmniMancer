@@ -2,6 +2,7 @@
 
 
 #include "Enemies/Attacks/DelayedProjectilesAttackObject.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include "Algo/RandomShuffle.h"
 #include "SpellCasting/Spells/BaseProjectile.h"
 
@@ -56,9 +57,11 @@ void UDelayedProjectilesAttackObject::OnProjectileHit(ABaseSpell* Spell, AActor*
 void UDelayedProjectilesAttackObject::StoreProjectile()
 {
 	FVector LocalPosition = LocalProjectilePositions.Pop();
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = OwningActor;
-	ABaseProjectile* Projectile = GetWorld()->SpawnActor<ABaseProjectile>(*ProjectileClass, LocalPosition, FRotator(), SpawnParams);
+	UActorPoolingSubsystem* PoolingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UActorPoolingSubsystem>();
+	ABaseProjectile* Projectile = Cast<ABaseProjectile>(PoolingSystem->GetActorFromPool(ProjectileClass));
+	Projectile->SetOwner(OwningActor);
+	Projectile->SetInstigator(Cast<APawn>(OwningActor));
+	Projectile->SetActorLocationAndRotation(LocalPosition, FRotator(0, 0, 0));
 	StoredProjectiles.Add(Projectile);
 	Projectile->AttachToActor(OwningActor, FAttachmentTransformRules::KeepRelativeTransform);
 	Projectile->SetActorEnableCollision(false);
