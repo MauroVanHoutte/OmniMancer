@@ -2,6 +2,7 @@
 
 
 #include "ProjectileAttackObject.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include "SpellCasting/Spells/BaseProjectile.h"
 
 void UProjectileAttackObject::OnEndPlay()
@@ -54,7 +55,11 @@ void UProjectileAttackObject::InterruptAttack()
 
 void UProjectileAttackObject::FireProjectile()
 {
-	ABaseProjectile* Projectile = GetWorld()->SpawnActor<ABaseProjectile>(*ProjectileClass, OwningActor->GetActorLocation(), FRotator());
+	UActorPoolingSubsystem* PoolingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UActorPoolingSubsystem>();
+	ABaseProjectile* Projectile = Cast<ABaseProjectile>(PoolingSystem->GetActorFromPool(ProjectileClass));
+	Projectile->SetOwner(OwningActor);
+	Projectile->SetInstigator(Cast<APawn>(OwningActor));
+	Projectile->SetActorLocationAndRotation(OwningActor->GetActorLocation(), FRotator(0, 0, 0));
 	Projectile->InitSpell(bUseLocationTarget ? TargetLocation : (IsValid(TargetActor) ? TargetActor->GetActorLocation() : FVector(0, 0, 0)), Cast<APawn>(OwningActor));
 	Projectile->OnSpellHitDelegate.AddDynamic(this, &UProjectileAttackObject::OnProjectileHit);
 

@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Enemies/Attacks/SpellAttackObject.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
 #include "SpellCasting/Spells/BaseSpell.h"
 #include <AIController.h>
 
@@ -19,6 +20,10 @@ void USpellAttackObject::InitiateAttack(AActor* Target, const FVector& Location)
 	if (bUseLocationTarget)
 	{
 		Cast<APawn>(OwningActor)->GetController<AAIController>()->SetFocus(nullptr);
+	}
+	else
+	{
+		Cast<APawn>(OwningActor)->GetController<AAIController>()->SetFocus(Target);
 	}
 
 	if (!manager.IsTimerActive(TimerHandle))
@@ -47,9 +52,11 @@ void USpellAttackObject::CastSpell()
 {
 	if (IsValid(SpellClass))
 	{
-		FActorSpawnParameters Params{};
-		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		ABaseSpell* Spell = GetWorld()->SpawnActor<ABaseSpell>(*SpellClass, bUseLocationTarget ? TargetLocation : OwningActor->GetActorLocation(), FRotator(0, 0, 0), Params);
+		UActorPoolingSubsystem* PoolingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UActorPoolingSubsystem>();
+		ABaseSpell* Spell = Cast<ABaseSpell>(PoolingSystem->GetActorFromPool(SpellClass));
+		Spell->SetActorLocationAndRotation(OwningActor->GetActorLocation(), FRotator(0, 0, 0));
+		Spell->SetOwner(OwningActor);
+		Spell->SetInstigator(Cast<APawn>(OwningActor));
 		Spell->InitSpell(TargetActor->GetActorLocation(), Cast<APawn>(OwningActor));
 		Spell->OnSpellHitDelegate.AddDynamic(this, &USpellAttackObject::OnSpellHit);
 
