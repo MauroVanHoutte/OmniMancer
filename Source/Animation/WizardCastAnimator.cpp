@@ -4,14 +4,8 @@
 #include "SpellCasting/ElementManipulationComponent.h"
 #include "Animation/SpringMovementMeshComponent.h"
 
-// Sets default values for this component's properties
 UWizardCastAnimator::UWizardCastAnimator()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 void UWizardCastAnimator::Initialize(UElementManipulationComponent* ElementManipulation, 
@@ -28,11 +22,16 @@ void UWizardCastAnimator::Initialize(UElementManipulationComponent* ElementManip
 	RightAttackOriginComponent = RightAttackOrigin;
 	SpellCastOriginComponent = SpellCastOrigin;
 
+	ElementManipulationComponent->OnBasicAttackCastStartedSignature.AddDynamic(this, &UWizardCastAnimator::OnBasicAttackCastStarted);
 	ElementManipulationComponent->OnBasicAttackCastedDelegate.AddDynamic(this, &UWizardCastAnimator::OnBasicAttackCasted);
 	ElementManipulationComponent->OnSpellCastedDelegate.AddDynamic(this, &UWizardCastAnimator::OnSpellCasted);
 }
 
-void UWizardCastAnimator::OnBasicAttackCasted(AActor* Caster, ABaseSpell* Spell)
+void UWizardCastAnimator::OnBasicAttackCastStarted(UElementManipulationComponent* SpellCastingComponent, UBasePlayerCast* CastObject)
+{
+}
+
+void UWizardCastAnimator::OnBasicAttackCasted(UElementManipulationComponent* CastingComponent, UBasePlayerCast* CastObject, ABaseSpell* Spell)
 {
 	USceneComponent* CurrentAttackOrigin = ElementManipulationComponent->GetBasicAttackOrigin();
 	USpringMovementMeshComponent* CurrentHand;
@@ -54,7 +53,7 @@ void UWizardCastAnimator::OnBasicAttackCasted(AActor* Caster, ABaseSpell* Spell)
 	ElementManipulationComponent->SetBasicAttackOrigin(NextAttackOrigin);
 }
 
-void UWizardCastAnimator::OnSpellCasted(AActor* Caster, ABaseSpell* Spell)
+void UWizardCastAnimator::OnSpellCasted(UElementManipulationComponent* CastingComponent, UBasePlayerCast* CastObject, ABaseSpell* Spell)
 {
 	FTransform SpellOriginTransform = SpellCastOriginComponent->GetComponentTransform();
 	LeftHandComponent->SetMeshLocationAndRotation(SpellOriginTransform.GetLocation(), SpellOriginTransform.GetRotation().Rotator());

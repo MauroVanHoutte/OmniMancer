@@ -25,10 +25,11 @@ public:
 
 private:
 	UFUNCTION()
-	void OnBasicAttackCasted(AActor* Caster, class ABaseSpell* Spell);
-
+	void OnBasicAttackCastStarted(class UElementManipulationComponent* SpellCastingComponent, class UBasePlayerCast* CastObject);
 	UFUNCTION()
-	void OnSpellCasted(AActor* Caster, class ABaseSpell* Spell);
+	void OnBasicAttackCasted(UElementManipulationComponent* CastingComponent, class UBasePlayerCast* CastObject, class ABaseSpell* Spell);
+	UFUNCTION()
+	void OnSpellCasted(UElementManipulationComponent* CastingComponent, class UBasePlayerCast* CastObject, class ABaseSpell* Spell);
 
 	class UElementManipulationComponent* ElementManipulationComponent;
 	class USpringMovementMeshComponent* LeftHandComponent;
