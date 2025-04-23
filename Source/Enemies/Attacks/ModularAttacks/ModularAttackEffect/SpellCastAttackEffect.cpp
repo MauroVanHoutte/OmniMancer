@@ -2,6 +2,8 @@
 
 
 #include "Enemies/Attacks/ModularAttacks/ModularAttackEffect/SpellCastAttackEffect.h"
+#include "ActorPool/ActorPoolingSubsystem.h"
+#include <AIController.h>
 #include "Algo/RandomShuffle.h"
 #include "SpellCasting/Spells/BaseSpell.h"
 
@@ -24,6 +26,8 @@ void USpellCastAttackEffect::ExecuteEffect(AActor* TargetActor, const FVector& T
 	
 	if (!bAimDuringCasting)
 		GatherTargets(TargetLocation, TargetActors, TargetLocations);
+	else
+		Cast<APawn>(OwningActor)->GetController<AAIController>()->SetFocus(TargetActor, EAIFocusPriority::Default);
 
 	if (CastingTime > 0)
 	{
@@ -68,11 +72,13 @@ void USpellCastAttackEffect::CastSpell()
 
 	if (bCastAtAllTargetsSimultaneously)
 	{
+		UActorPoolingSubsystem* PoolingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UActorPoolingSubsystem>();
 		for (const FVector& Target : FinalTargets)
 		{
-			FActorSpawnParameters Params{};
-			Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			ABaseSpell* Spell = GetWorld()->SpawnActor<ABaseSpell>(*SpellClass, OwningActor->GetActorLocation(), FRotator(0, 0, 0), Params);
+			ABaseSpell* Spell = Cast<ABaseSpell>(PoolingSystem->GetActorFromPool(SpellClass));
+			Spell->SetOwner(OwningActor);
+			Spell->SetInstigator(Cast<APawn>(OwningActor));
+			Spell->SetActorLocationAndRotation(OwningActor->GetActorLocation(), FRotator(0, 0, 0));
 			if (IsValid(Spell))
 			{
 				Spell->OnSpellHitDelegate.AddDynamic(this, &USpellCastAttackEffect::OnSpellHit);
@@ -108,9 +114,11 @@ void USpellCastAttackEffect::CastSingleSpell()
 		FVector Target;
 		Target = FinalTargets.Pop();
 
-		FActorSpawnParameters Params{};
-		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		ABaseSpell* Spell = GetWorld()->SpawnActor<ABaseSpell>(*SpellClass, OwningActor->GetActorLocation(), FRotator(0, 0, 0), Params);
+		UActorPoolingSubsystem* PoolingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UActorPoolingSubsystem>();
+		ABaseSpell* Spell = Cast<ABaseSpell>(PoolingSystem->GetActorFromPool(SpellClass));
+		Spell->SetOwner(OwningActor);
+		Spell->SetInstigator(Cast<APawn>(OwningActor));
+		Spell->SetActorLocationAndRotation(OwningActor->GetActorLocation(), FRotator(0, 0, 0));
 		if (IsValid(Spell))
 		{
 			Spell->OnSpellHitDelegate.AddDynamic(this, &USpellCastAttackEffect::OnSpellHit);

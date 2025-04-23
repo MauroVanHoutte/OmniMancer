@@ -17,7 +17,7 @@ class UNREALPROJECT_API USpellCastAttackEffect : public UModularAttackEffectBase
 public:
 	virtual void OnBeginPlay(AActor* Owner) override;
 	virtual void OnEndPlay() override;
-	virtual void ExecuteEffect(AActor* TargetActors, const FVector& TargetLocations) override;
+	virtual void ExecuteEffect(AActor* TargetActor, const FVector& TargetLocation) override;
 	virtual void InterruptEffect() override;
 
 private:
