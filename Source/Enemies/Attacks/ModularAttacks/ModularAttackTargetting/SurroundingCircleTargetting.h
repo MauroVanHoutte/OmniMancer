@@ -25,4 +25,7 @@ private:
 	// Offset in degrees, at 0 the first target is located on the line between target and owner
 	UPROPERTY(EditAnywhere)
 	float AngleOffset = 0.f;
+	//if false surrounds target
+	UPROPERTY(EditAnywhere)
+	bool bSurroundCaster = true;
 };

@@ -13,6 +13,7 @@ void USurroundingCircleTargetting::GatherTargets(const FVector& TargetLocation, 
 
 	for (size_t i = 0; i < TargetCount; i++)
 	{
-		outTargetLocations.Add(TargetLocation + FVector(FMath::Sin(StartingAngle + AngleIncrement * i), FMath::Cos(StartingAngle + AngleIncrement * i), 0) * CircleRadius);
+		outTargetLocations.Add((bSurroundCaster ? OwningActor->GetActorLocation() : TargetLocation) 
+			+ FVector(FMath::Sin(StartingAngle + AngleIncrement * i), FMath::Cos(StartingAngle + AngleIncrement * i), 0) * CircleRadius);
 	}
 }
