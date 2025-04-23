@@ -16,7 +16,7 @@ class UNREALPROJECT_API UBackwardsJumpMove : public UBaseMove
 	
 public:
 	virtual void TickMove(float DeltaTime) override;
-	virtual void OnBeginPlay(AActor* Owner) override;
+	virtual void OnBeginPlay(AActor* Owner, class UMovesetComponent* MovesetComponent) override;
 	virtual void OnEndPlay() override;
 	virtual void Execute(AActor* Target, const FVector& TargetLocation) override;
 	virtual void Interrupt() override;

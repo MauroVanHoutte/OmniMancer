@@ -19,9 +19,9 @@ void UBackwardsJumpMove::TickMove(float DeltaTime)
 	}
 }
 
-void UBackwardsJumpMove::OnBeginPlay(AActor* Owner)
+void UBackwardsJumpMove::OnBeginPlay(AActor* Owner, UMovesetComponent* MovesetComponent)
 {
-	Super::OnBeginPlay(Owner);
+	Super::OnBeginPlay(Owner, MovesetComponent);
 }
 
 void UBackwardsJumpMove::OnEndPlay()
