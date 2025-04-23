@@ -17,3 +17,8 @@ bool UBaseAttackObject::TryInterruptAttack()
 	}
 	return false;
 }
+
+bool UBaseAttackObject::CompareTag(const FName& Tag)
+{
+	return Tag != NAME_None && AttackTag == Tag;
+}

@@ -31,6 +31,9 @@ public:
 	virtual bool IsAttackInterruptable() { return bIsInterruptable; };
 
 	UFUNCTION(BlueprintCallable)
+	bool CompareTag(const FName& Tag);
+
+	UFUNCTION(BlueprintCallable)
 	virtual bool WasActorHitBefore(AActor* TriggeredActor, class UPrimitiveComponent* ColliderComponent) { return true; };
 	UFUNCTION(BlueprintCallable)
 	virtual void OnHitTriggered(AActor* HitActor, class UPrimitiveComponent* ColliderComponent) {};
@@ -50,6 +53,8 @@ protected:
 	//Instead of location of target actor
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bUseLocationTarget = true;
+	UPROPERTY(EditDefaultsOnly)
+	FName AttackTag = NAME_None;
 	UPROPERTY(BlueprintReadOnly, Transient)
 	AActor* OwningActor;
 	UPROPERTY(BlueprintReadOnly, Transient)
