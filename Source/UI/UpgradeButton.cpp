@@ -253,29 +253,32 @@ void UUpgradeButton::SetConnections() const
 
 	for (size_t i = 0; i < Prerequisites.Num(); i++)
 	{
-		Cast<UCanvasPanelSlot>(ConnectionCanvas->AddChild(ConnectionWidgets[ConnectionWidgets.Num() - 1]))->SetAlignment(FVector2D(0.5f, 0.5f));
+		if (IsValid(Prerequisites[i]))
+		{
+			Cast<UCanvasPanelSlot>(ConnectionCanvas->AddChild(ConnectionWidgets[ConnectionWidgets.Num() - 1]))->SetAlignment(FVector2D(0.5f, 0.5f));
 
-		UCanvasPanelSlot* prereqSlot = Cast<UCanvasPanelSlot>(Prerequisites[i]->Slot);
-		UCanvasPanelSlot* connectionSlot = Cast<UCanvasPanelSlot>(ConnectionWidgets[i]->Slot);
+			UCanvasPanelSlot* prereqSlot = Cast<UCanvasPanelSlot>(Prerequisites[i]->Slot);
+			UCanvasPanelSlot* connectionSlot = Cast<UCanvasPanelSlot>(ConnectionWidgets[i]->Slot);
 
-		FVector2D prereqPos = prereqSlot->GetPosition();
-		FVector2D upgradePos = upgradeSlot->GetPosition();
+			FVector2D prereqPos = prereqSlot->GetPosition();
+			FVector2D upgradePos = upgradeSlot->GetPosition();
 
-		connectionSlot->SetPosition((prereqPos + upgradePos) / 2.f);
-		connectionSlot->SetSize(FVector2D(20.f, FVector2D::Distance(prereqPos, upgradePos)));
+			connectionSlot->SetPosition((prereqPos + upgradePos) / 2.f);
+			connectionSlot->SetSize(FVector2D(20.f, FVector2D::Distance(prereqPos, upgradePos)));
 
-		FVector2D direction = prereqPos - upgradePos;
-		direction.Normalize();
+			FVector2D direction = prereqPos - upgradePos;
+			direction.Normalize();
 
-		float angle = FMath::RadiansToDegrees(FMath::Atan2(direction.Y, direction.X)) - 90;
+			float angle = FMath::RadiansToDegrees(FMath::Atan2(direction.Y, direction.X)) - 90;
 
-		ConnectionWidgets[i]->SetRenderTransformAngle(angle);
-		//Set color
-		if (Bought)
-			ConnectionWidgets[i]->SetCoreColor(BoughtColor);
-		else if (Prerequisites[i]->Bought)
-			ConnectionWidgets[i]->SetCoreColor(BuyableColor);
-		else
-			ConnectionWidgets[i]->SetCoreColor(LockedColor);
+			ConnectionWidgets[i]->SetRenderTransformAngle(angle);
+			//Set color
+			if (Bought)
+				ConnectionWidgets[i]->SetCoreColor(BoughtColor);
+			else if (Prerequisites[i]->Bought)
+				ConnectionWidgets[i]->SetCoreColor(BuyableColor);
+			else
+				ConnectionWidgets[i]->SetCoreColor(LockedColor);
+		}
 	}
 }
