@@ -41,7 +41,7 @@ void UScreenOverlay::BeginPlay()
 		if (IsValid(Controller))
 		{
 			Widget = CreateWidget<UOverlayWidget>(Controller, WidgetClass);
-			Widget->AddToPlayerScreen();
+			Widget->AddToPlayerScreen(1000);
 			Widget->OnFadeCompletedDelegate.AddDynamic(this, &UScreenOverlay::OnWidgetFadeCompleted);
 		}
 	}
