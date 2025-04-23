@@ -106,6 +106,9 @@ void UChargeAttackObject::InitiateAttack(AActor* Target, const FVector& Location
 		}
 	}
 
+	if (!bUseLocationTarget)
+		TargetLocation = Target->GetActorLocation();
+
 	HitActors.Empty();
 	TargetLocation.Z = 0;
 	FVector OwnerLocation = OwningActor->GetActorLocation();

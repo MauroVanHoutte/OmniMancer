@@ -51,7 +51,7 @@ private:
 	UPROPERTY(Transient)
 	TArray<AActor*> HitActors;
 
-	FTimerHandle TimerHandle;
+	FTimerHandle TimerHandle{};
 	bool bCharging = false;
 	float ChargedDistance = 0.f;
 	FName NoCollisionProfileName = TEXT("NoCollision");
